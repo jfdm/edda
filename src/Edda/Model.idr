@@ -12,30 +12,34 @@ instance Show CiteTy where
   show ParenCite = "ParenCite"
   show TextCite  = "TextCite"
 
+data LinkTy = ExLink | InLink
+
+instance Show LinkTy where
+  show ExLink = "External"
+  show InLink = "Internal"
+
 Attributes : Type
 Attributes = List (String, String)
 
 mutual
 
   data Inline : Type where
-    Serif     : String      -> Inline
-    SmallCaps : List Inline -> Inline
-    SansSerif  : List Inline -> Inline
-    MonoSpace : List Inline -> Inline
+    Serif     : String -> Inline
+    SmallCaps : Inline -> Inline
+    SansSerif : Inline -> Inline
+    MonoSpace : Inline -> Inline
 
-    Emph   : List Inline -> Inline
-    Strong : List Inline -> Inline
-    Strike : List Inline -> Inline
+    Emph   : Inline -> Inline
+    Strong : Inline -> Inline
+    Strike : Inline -> Inline
+    Verb   : Inline -> Inline
 
-    Quote : QuoteTy -> List Inline -> Inline
+    Quote : QuoteTy -> Inline -> Inline
 
-    CodeSnippet : Attributes -> String -> Inline
-
+    CodeSnippet : String -> Inline
     MathSnippet : String -> Inline
 
-    URL  : String -> Inline
-    Link : String -> List Inline -> Inline
-    Ref  : String -> Inline
+    Link : LinkTy -> String -> Inline -> Inline
     Cite : CiteTy -> String -> Inline
 
 instance Show Inline where
@@ -47,17 +51,16 @@ instance Show Inline where
   show (Emph ss)      = "{Emph "   ++ show ss ++ "}"
   show (Strong ss)    = "{Strong " ++ show ss ++ "}"
   show (Strike ss)    = "{Strike " ++ show ss ++ "}"
+  show (Verb ss)      = "{Verb"    ++ show ss ++ "}"
 
   show (Quote qty ss) = "{" ++ show qty ++ " " ++ show ss ++ "}"
 
-  show (CodeSnippet as code) = "{Code \"" ++ code ++ "\"}"
+  show (CodeSnippet code) = "{Code \"" ++ code ++ "\"}"
   show (MathSnippet math)    = "{Math \"" ++ math ++ "\"}"
 
-  show (URL u)    = "{Url "  ++ u ++ "}"
-  show (Link u t) = "{Link " ++ "<" ++ u ++ "> " ++ show t ++ "}"
-  show (Ref u)    = "{Ref "  ++ u ++ "}"
+  show (Link ty u t) = "{Link " ++ show ty ++  "<" ++ u ++ "> " ++ show t ++ "}"
 
-  show (Cite ty id) = "{" ++ show ty ++ id ++ "}"
+  show (Cite ty id) = "{" ++ show ty ++ " " ++ id ++ "}"
 
 
 Sentance : Type
@@ -128,7 +131,7 @@ mutual
     TableBlock    : (label : String) -> (caption : Sentance) -> Table -> Block
     TheoremBlock  : (label : String) -> (caption : Sentance) -> TheoremTy -> List Block -> Block
 
-    Heading       : (lvl : Nat) -> (label : String) -> (caption : Sentance) -> List Block  -> Block
+    Heading       : (lvl : Nat) -> (label : String) -> (title : Sentance) -> Block
     Empty         : Block
 
 instance Show Table where
@@ -137,7 +140,7 @@ instance Show Table where
 
 instance Show Block where
   show Empty = "[Empty]"
-  show (Heading d l c bs) = "[Heading " ++ show d ++ " " ++ show l ++ " " ++ concatMap show bs ++ "]"
+  show (Heading d l t) = "[Heading " ++ show d ++ " " ++ show l ++ " " ++ show t ++ "]"
 
   show (TheoremBlock l c ty thm) = "[ThmBlock " ++ show ty ++ show l ++ " " ++ show c ++ " " ++ concatMap show thm ++ "]"
   show (TableBlock l c tbl)   = "[TblBlock " ++ show l ++ " " ++ show c ++ " " ++ show tbl ++ "]"
@@ -155,17 +158,8 @@ instance Show Block where
 
   show (Plain p) = "[Plain " ++ concatMap show p ++ "]"
 
-data PropType = Title
-              | Author
-              | Date
-
-instance Show PropType where
-  show Title  = "Title"
-  show Author = "Author"
-  show Date   = "Date"
-
 Property : Type
-Property = (PropType, String)
+Property = (String, String)
 
 Properties : Type
 Properties = List Property
@@ -175,4 +169,4 @@ data Edda : Type where
 
 instance Show Edda where
   -- incomplete
-  show (MkEdda _ body) = "[Edda " ++ concatMap show body ++ "]"
+  show (MkEdda ps body) = "[Edda " ++ "[Mdata " ++ concatMap show ps ++ "]" ++ concatMap show body ++ "]"

@@ -1,0 +1,12 @@
+package edda
+
+opts = "-p lightyear"
+
+sourcedir = src
+
+modules = Edda.Model
+        , Edda.Utils
+
+        , Edda.Reader.Org
+        , Edda.Reader.OrgUtils
+        , Edda.Reader.Utils
