@@ -6,16 +6,17 @@ die() {
 }
 
 clean_up() {
-	rm -f *.ibc test json output
+	rm -f *.ibc output eddatests
 }
 
 clean_up
 
 echo "compiling edda tests..."
-idris Test.idr -p lightyear -p edda -o test || die "* could not compile tests *"
+idris Main.idr -i src -p lightyear -p edda -o eddatests || die "* could not compile tests *"
 
 echo "compiled OK, running edda tests..."
-timeout 5s ./test > output || die "* test failed or timed out *"
+timeout 5s ./eddatests > output || die "* test failed or timed out *"
+
 
 if diff output expected; then
 	echo "### everything PASS ###"

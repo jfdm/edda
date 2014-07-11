@@ -78,19 +78,19 @@ instance Show TAlign where
   show AlignPar = "p"
 
 data Image : Type where
-  MkImage : Attributes -> String -> String -> Image
+  MkImage : Maybe Attributes -> String -> Inline -> Image
 
 instance Show Image where
-  show (MkImage ats alt url) = "[" ++ concatMap (\(x, y) => unwords ["(", x, ",", y, ")"]) ats ++ " " ++ show url ++ "]"
+  show (MkImage ats alt url) = "[" ++ concatMap (\(x, y) => unwords ["(", x, ",", y, ")"]) (fromMaybe [("no", "attributes")] ats) ++ " " ++ show alt ++ " " ++ show url ++ "]"
 
-data TheoremTy = Theorem
+data TheoremTy = Normal
                | Corollary
                | Lemma
                | Proposition
                | Proof
                | Definition
                | Example
-               | Exercises
+               | Exercise
                | Note
                | Problem
                | Question
@@ -98,65 +98,66 @@ data TheoremTy = Theorem
                | Solution
 
 instance Show TheoremTy where
-  show Theorem     = "Theorem"
-  show Corollary   = "Corollary"
-  show Lemma       = "Lemma"
-  show Proposition = "Proposition"
-  show Proof       = "Proof"
-  show Definition  = "Definition"
-  show Example     = "Example"
-  show Exercises   = "Exercises"
-  show Note        = "Note"
-  show Problem     = "Problem"
-  show Question    = "Question"
-  show Remark      = "Remark"
-  show Solution    = "Solution"
+  show Normal      = "THEOREM"
+  show Corollary   = "COROLLARY"
+  show Lemma       = "LEMMA"
+  show Proposition = "PROPOSITION"
+  show Proof       = "PROOF"
+  show Definition  = "DEFINITION"
+  show Example     = "EXAMPLE"
+  show Exercise   = "EXERCISE"
+  show Note        = "NOTE"
+  show Problem     = "PROBLEM"
+  show Question    = "QUESTION"
+  show Remark      = "REMARK"
+  show Solution    = "SOLUTION"
 
 mutual
-  data Table : Type where
-    MkTable : (align : Vect n TAlign) -> Vect m (Vect n (List Block)) -> Table
+  data Tabular : Type where
+    MkTabular : (align : Vect n TAlign) -> Vect m (Vect n (List Block)) -> Tabular
 
   data Block : Type where
-    Plain : Sentance -> Block
+    Para : Sentance -> Block
 
-    CodeBlock  : (label : String) -> (caption : Sentance) -> Attributes -> String -> Block
-    MathBlock  : (label : String) -> String -> Block
-    QuoteBlock : List Block -> Block
+    Generic   : (label : Maybe String) -> (caption : Maybe Sentance) -> Maybe Attributes -> String -> Block
+    Listing   : (label : Maybe String) -> (caption : Maybe Sentance) -> Maybe Attributes -> String -> Block
+    Equation  : (label : Maybe String) -> String -> Block
+    Quotation : List Inline -> Block
 
-    OList         : List Block -> Block
-    BList         : List Block -> Block
-    DList         : List (Sentance, List Block) -> Block
+    OList : List Block -> Block
+    BList : List Block -> Block
+    DList : List (Sentance, List Block) -> Block
 
-    FigureBlock   : (label : String) -> (caption : Sentance) -> Image -> Block
-    TableBlock    : (label : String) -> (caption : Sentance) -> Table -> Block
-    TheoremBlock  : (label : String) -> (caption : Sentance) -> TheoremTy -> List Block -> Block
+    Figure   : (label : String) -> (caption : Sentance) -> Image -> Block
+    Table    : (label : String) -> (caption : Sentance) -> Tabular -> Block
+    Theorem  : (label : Maybe String) -> (caption : Maybe Sentance) -> TheoremTy -> List Inline -> Block
 
-    Heading       : (lvl : Nat) -> (label : String) -> (title : Sentance) -> Block
-    Empty         : Block
+    Heading : (lvl : Nat) -> (label : String) -> (title : Sentance) -> Block
+    Empty   : Block
 
-instance Show Table where
+
+instance Show Tabular where
   -- incomplete
-  show (MkTable as cells) = "[Table " ++ "[" ++ concatMap (\x => show x ++ " ") as ++ "]" ++ " cells ]"
+  show (MkTabular as cells) = "[Table " ++ "[" ++ concatMap (\x => show x ++ " ") as ++ "]" ++ " cells ]"
 
 instance Show Block where
-  show Empty = "[Empty]"
-  show (Heading d l t) = "[Heading " ++ show d ++ " " ++ show l ++ " " ++ show t ++ "]"
-
-  show (TheoremBlock l c ty thm) = "[ThmBlock " ++ show ty ++ show l ++ " " ++ show c ++ " " ++ concatMap show thm ++ "]"
-  show (TableBlock l c tbl)   = "[TblBlock " ++ show l ++ " " ++ show c ++ " " ++ show tbl ++ "]"
-  show (FigureBlock l c img)  = "[FigBlock " ++ show l ++ " " ++ show c ++ " " ++ show img ++ "]"
+  show (Theorem l c ty thm) = "[ThmBlock " ++ show ty ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ concatMap show thm ++ "]"
+  show (Table l c tbl)   = "[TblBlock " ++ show l ++ " " ++ show c ++ " " ++ show tbl ++ "]"
+  show (Figure l c img)  = "[FigBlock " ++ show l ++ " " ++ show c ++ " " ++ show img ++ "]"
 
   show (DList ds) = "[DList " ++ concatMap (\(k,vs) => show k ++ " " ++ concatMap show vs ) ds ++ "]"
   show (BList is) = "[BList " ++ concatMap show is ++ "]"
   show (OList is) = "[OList " ++ concatMap show is ++ "]"
 
-  show (QuoteBlock p)       = "[BQuote " ++ concatMap show p ++ "]"
-  show (MathBlock l m)      = "[EqBlock " ++ show l ++ " \"" ++ m ++ "\"]"
-
+  show (Quotation p)   = "[BQuote " ++ concatMap show p ++ "]"
+  show (Equation l m)  = "[EqBlock " ++ fromMaybe "" l ++ " \"" ++ m ++ "\"]"
   -- Incomplete
-  show (CodeBlock l cap as co) = "[CodeBlock " ++ show l ++ " " ++ show cap ++ " \"" ++ co ++ "\"]"
+  show (Listing l cap as co) = "[CodeBlock " ++ (fromMaybe "" l) ++ show cap ++ " \"" ++ co ++ "\"]"
+  show (Generic l cap as co) = "[Generic " ++ (fromMaybe "" l) ++ " " ++ show cap ++ " \""
 
-  show (Plain p) = "[Plain " ++ concatMap show p ++ "]"
+  show (Heading d l t) = "[Heading " ++ show d ++ " " ++ show l ++ " " ++ show t ++ "]"
+  show (Para p) = "[Para " ++ concatMap show p ++ "]"
+  show Empty = "[Empty]"
 
 Property : Type
 Property = (String, String)

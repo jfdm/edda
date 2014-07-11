@@ -6,57 +6,26 @@ import Lightyear.Strings
 
 %access public
 
-{-
-comma : Parser ()
-comma = token "," <?> "Comma"
+manyTill : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str (List a)
+manyTill p end = scan
+  where
+    scan = do { end; return List.Nil } <|>
+           do { x <- p; xs <- scan; return (x::xs)}
 
-equals : Parser ()
-equals = token "=" <?> "equals"
-
-dot : Parser ()
-dot = token "." <?> "dot"
-
-colon : Parser ()
-colon = token ":" <?> "colon"
-
-semi : Parser ()
-semi = token ";" <?> "semi colon"
-
--}
 hash : Parser ()
-hash = token "#"
+hash = char '#'
+
+astrix : Parser ()
+astrix = char '*'
 
 plus : Parser ()
-plus = token "+"
-{-
-simpleLex : Monad m => ParserT m String a -> ParserT m String a
-simpleLex p = do
-    x <- p
-    space
-    return x
+plus = char '+'
 
-between : Monad m =>
-           (open : ParserT m str a)
-        -> (close : ParserT m str a)
-        -> (p : ParserT m str b)
-        -> ParserT m str b
-between open close p = open $!> p <$ close
+eol : Parser ()
+eol = char '\n'
 
-brackets : Monad m => ParserT m String a -> ParserT m String a
-brackets p = between (token "[") (token "]") (lexme p)
-
-braces : Monad m => ParserT m String a -> ParserT m String a
-braces p = between (token "{") (token "}") (lexme p)
-
-angles : Monad m => ParserT m String a -> ParserT m String a
-angles p = between (token "<") (token ">") (lexme p)
-
-squote : Monad m => ParserT m String a -> ParserT m String a
-squote p = between (char '\'') (char '\'') (lexme p)
-
-dquote : Monad m => ParserT m String a -> ParserT m String a
-dquote p = between (char '\"') (char '\"') (lexme p)
--}
+anyChar : Parser Char
+anyChar = satisfy (const True)
 
 isPunc : Char -> Bool
 isPunc c = List.elem c [',', '!', '?', '<', '>', ':', ';', '.', '-']
@@ -85,11 +54,11 @@ pathChar = specialChar
        <|> satisfy isDigit
 
 filepath : Parser String
-filepath = lexme $ map pack (some pathChar)
+filepath = map pack (some pathChar)
          <?> "filepath"
 
 fileLink : Parser String
-fileLink = lexme $ brackets filepath
+fileLink = brackets filepath
 --
 
 private
@@ -99,10 +68,13 @@ asciiChar = satisfy isAlphaNum
         <|> satisfy isPunc
 
 raw : Parser String
-raw = lexme $ map pack (some asciiChar)
+raw = map pack (some asciiChar)
+
+word : Parser String
+word = lexeme raw
 
 identifier : Parser String
-identifier = lexme $ map pack $ many (satisfy isAlphaNum)
+identifier = lexeme $ map pack $ many (satisfy isAlphaNum)
              <?> "Identifier"
 
 -- The following is 'inspired' from Bibdris
@@ -111,10 +83,10 @@ charLetter : Parser Char
 charLetter = satisfy (/= '\'')
 
 charLiteral : Parser Char
-charLiteral = lexme $ squote charLetter
+charLiteral = squote charLetter
 
 stringLetter : Parser Char
 stringLetter = satisfy (/= '"')
 
 stringLiteral : Parser String
-stringLiteral = lexme $ map pack $ dquote (many stringLetter)
+stringLiteral = map pack $ dquote (many stringLetter)
