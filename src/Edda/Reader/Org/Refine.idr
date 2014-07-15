@@ -1,4 +1,4 @@
-module Edda.Reader.Org
+module Edda.Reader.Org.Refine
 
 import Lightyear.Core
 import Lightyear.Combinators
@@ -7,7 +7,6 @@ import Lightyear.Strings
 import Edda.Model
 import Edda.Utils
 
-import Edda.Reader.Utils
 import Edda.Reader.OrgUtils -- Nasty Quote parsing lives there
 
 %access public
@@ -224,8 +223,8 @@ block =  block' <$ space
 
 -- --------------------------------------------------------------------- [ Org ]
 
-eddaOrgReader : Parser Edda
-eddaOrgReader = do
+eddaOrgRefine : EddaRaw -> EddaDoc
+eddaOrgRefine = do
   title  <- property "TITLE"
   author <- property "AUTHOR"
   date   <- property "DATE"

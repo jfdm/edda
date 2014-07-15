@@ -1,7 +1,7 @@
 module Edda.Utils
 
 import Edda.Model
-
+{-
 MkSection : String -> Sentance -> Block
 MkSection l c = Heading 0 l c
 
@@ -16,7 +16,7 @@ MkParagraph l c = Heading 3 l c
 
 MkSubParagraph : String -> Sentance -> Block
 MkSubParagraph l c = Heading 4 l c
-
+-}
 readTheorem : String -> Maybe TheoremTy
 readTheorem thm = case thm of
                     "THEOREM"     => Just Normal

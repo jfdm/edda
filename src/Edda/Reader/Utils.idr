@@ -77,7 +77,13 @@ asciiChar = satisfy isAlphaNum
         <|> satisfy isPunc
 
 word : Parser String
-word = map pack (some asciiChar)
+word = map pack (some $ satisfy isAlphaNum)
+
+punc : Parser Char
+punc = satisfy (\x => not $isAlphaNum x)
+
+--word : Parser String
+--word = map pack (some asciiChar)
 
 --word : Parser String
 --word = lexeme raw

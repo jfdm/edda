@@ -1,4 +1,4 @@
-module Edda.Reader.OrgUtils
+module Edda.Reader.Org.Utils
 
 import Lightyear.Core
 import Lightyear.Combinators
@@ -9,7 +9,7 @@ import Edda.Utils
 
 import Edda.Reader.Utils
 
-treatLink : String -> List Inline -> Inline
+treatLink : String -> List (Inline Refined) -> Inline Refined
 treatLink url tar = if length splitURL == 1
                       then Link InLink url (tar)
                       else case head' splitURL of

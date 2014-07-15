@@ -7,8 +7,8 @@ import Effect.File
 import Effect.StdIO
 
 import Edda.Model
-import Edda.Reader.Org
-
+--import Edda.Reader.Org
+import Edda.Reader.Org.Raw
 
 readFile : { [FILE_IO (OpenFile Read)] } Eff String
 readFile = readAcc ""
@@ -18,13 +18,13 @@ readFile = readAcc ""
                      then readAcc (acc ++ !readLine)
                      else pure acc
 
-readOrg : String -> { [FILE_IO ()] } Eff (Either String Edda)
+readOrg : String -> { [FILE_IO ()] } Eff (Either String (EddaRaw))
 readOrg f = do
     case !(open f Read) of
       True => do
         src <- readFile
         close
-        let res = parse eddaOrgReader (src)
+        let res = parse eddaOrgRawReader (src)
         pure res
       False => pure $ Left "Error"
 
