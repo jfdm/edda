@@ -64,8 +64,21 @@ rawPunc = do
 rawOrg : Parser (Inline Raw)
 rawOrg =  rawWord  <|> rawPuncSpecial <|> rawPunc <?> "Raw Inline"
 
+property : String -> Parser Property
+property key = do
+    string "#+" $!> string key
+    colon
+    space
+    ps <- manyTill (lexL word') eol
+    pure (key, unwords ps)
+  <?> "Formatted Property"
+
 eddaOrgRawReader : Parser EddaRaw
 eddaOrgRawReader = do
-  txt <- some rawOrg
-  pure $ MkEddaRaw Nothing txt
+  title  <- property "TITLE"
+  author <- property "AUTHOR"
+  date   <- property "DATE"
+  txt    <- many rawOrg
+  let ps = the (List Property) [title, author, date]
+  pure $ MkEddaRaw (Just ps) txt
  <?> "Raw Org Mode"
