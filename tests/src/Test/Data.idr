@@ -7,22 +7,25 @@ testAuthor : String
 testAuthor = "#+AUTHOR: I am an Author\n\n"
 
 testDate : String
-testDate = "#+DATE: I is a dat"
+testDate = "#+DATE: I is a date\n\n"
 
 testHeaders : String
 testHeaders = "* Introduction\n\n** Contribution\n\n** Outline\n\n* Methodology\n\n** System\n\n** Procedure\n\n* Results\n\n* Discussion\n\n* Conclusion\n\n"
 
 testFormatting : String
-testFormatting = "asasas *bold* /italic/ =code= +strike-through+ ~verbatim~ $mart$ Hello 'Bye bye'.\n\n"
+testFormatting = "asasas *bold* /italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.\n"
 
 testLinks : String
-testLinks = "[[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]]\n\n"
+testLinks = "[[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]]\n"
+
+testFNote : String
+testFNote = "[fn:label:description]\n"
 
 testInlineLinks : String
-testInlineLinks = "[[http://www.cs.st-andrews.ac.uk]] [[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]]\n\n"
+testInlineLinks = "[[http://www.cs.st-andrews.ac.uk]] [[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]]\n"
 
 testInline : String
-testInline = testFormatting ++ testLinks ++ testInlineLinks
+testInline = testFormatting ++ testLinks ++ testInlineLinks ++ testFNote
 
 testTheo : String
 testTheo = "#+CAPTION: sdsd\n#+NAME: asas:asasre\n#+BEGIN_THEOREM\n sdsdsdsd\n#+END_THEOREM"
@@ -40,11 +43,11 @@ testTheo = "#+CAPTION: sdsd\n#+NAME: asas:asasre\n#+BEGIN_THEOREM\n sdsdsdsd\n#+
         ++ "\n#+CAPTION: sdsd\n#+NAME: asas:asasre\n#+BEGIN_SOLUTION\n sdsdsdsd\n#+END_SOLUTION\n"
 
 testCode : String
-testCode = "#+CAPTION: sdsd\n#+NAME: asas:asasre\n#+BEGIN_SRC idris\n sldkjf;sdjf;dlfj\n#+END_SRC\n"
-        ++ "#+BEGIN_SRC idris\n sldkjf;sdjf;dlfj\n#+END_SRC\n"
+testCode = "#+CAPTION: sdsd\n#+NAME: asas:asasre\n#+BEGIN_SRC idris\n sldkjf;sdjf;dlfj\n#+END_SRC\n\n"
+        ++ "#+BEGIN_SRC idris\n sldkjf;sdjf;dlfj\n#+END_SRC\n\n"
 
 testQuote : String
-testQuote = "#+BEGIN_QUOTE\n dfkljfzdjf\n#+END_QUOTE\n"
+testQuote = "#+BEGIN_QUOTE\n dfkljfzdjf\n#+END_QUOTE\n\n"
 
 testFig : String
 testFig = "#+CAPTION: sdsd\n #+NAME: asas:asasre\n[[dfjkdjfldjkf]]\n\n"
@@ -88,9 +91,11 @@ testDList = """+ Term :: Description
 
 testBlock : String
 testBlock = testHeaders
-         ++ testInline
          ++ testCode
          ++ testQuote
          ++ testFig
          ++ testTheo
          ++ testEq
+         ++ testFNote
+         ++ testInline
+         ++ "End of Test Block\n\n"

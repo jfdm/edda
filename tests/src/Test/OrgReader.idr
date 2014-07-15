@@ -12,15 +12,16 @@ import Test.Utils
 
 orgReaderTests : List (TestRes String)
 orgReaderTests = [
-    parseTest (property "TITLE")       testTitle
-    , parseTest (property "AUTHOR")    testAuthor
-    , parseTest (property "DATE")      testDate
-    , parseTest (many header)          testHeaders
-    , parseTest (many $ lexeme inline) testFormatting
+      parseTest (many $ lexeme inline) testFormatting
     , parseTest (many inline)          testLinks
     , parseTest (many inline)          testInlineLinks
     , parseTest (many inline)          testLinks
+    , parseTest (many inline)          testFNote
     , parseTest (many $ lexeme inline) testInline
+    , parseTest (lex $ property "TITLE")     testTitle
+    , parseTest (lex $ property "AUTHOR")    testAuthor
+    , parseTest (lex $ property "DATE")      testDate
+    , parseTest (many header)          testHeaders
     , parseTest (many block)           testTheo
     , parseTest (many block)           testCode
     , parseTest (block)                testQuote

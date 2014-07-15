@@ -4,7 +4,7 @@ import Test.Utils
 
 runTests : Show a => List (TestRes a) -> IO ()
 runTests [] = do
-  putStrLn "All tests passed"
+  putStrLn "All tests completed execution."
   exitWithSuccess
 runTests (t::ts) = do
   case t of
@@ -14,5 +14,5 @@ runTests (t::ts) = do
       exitWithFailure 1
 
     Right res => do
-      print res
+      putStrLn $ show res
       runTests ts

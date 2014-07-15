@@ -10,77 +10,109 @@ import Edda.Utils
 import Edda.Reader.Utils
 import Edda.Reader.OrgUtils -- Nasty Quote parsing lives there
 
+%access public
+
 -- ------------------------------------------------------------------ [ Inline ]
+private
 literallyBetween : Char -> Parser String
 literallyBetween c = map pack $ between (char c) (char c) (some (satisfy (/= c)))
 
-markup : Char -> Parser Inline
-markup c = do
-    txt <- literallyBetween c
-    pure $ Serif txt
+code : Parser Inline
+code = map CodeSnippet (literallyBetween '~') <?> "Code"
 
-inlineLink : Parser Inline
-inlineLink = do
-    txt <- brackets fileLink
-    pure $ treatLink txt txt
+verb : Parser Inline
+verb = map Verbatim (literallyBetween '=') <?> "Verb"
 
-link : Parser Inline
-link = do
-    token "["
-    url <- fileLink
-    txt <- brackets (many word)
-    token "]"
-    space
-    pure $ treatLink url (unwords txt)
+math : Parser Inline
+math = map MathSnippet (literallyBetween '$') <?> "Math"
 
 text : Parser Inline
-text = do
-    txt <- some raw
-    pure $ Serif $ unwords txt
+text = map Serif word <?> "Text"
 
-inline : Parser Inline
-inline = inline'
-  where
-    inline' : Parser Inline
-    inline' = (map Emph (markup '/'))
-                   <|> (map Strong (markup '*'))
-                   <|> (map Verb (markup '~'))
-                   <|> (map Strike (markup '+'))
-                   <|> (map CodeSnippet (literallyBetween '='))
-                   <|> (map MathSnippet (literallyBetween '$'))
-                   <|> inlineLink
-                   <|> link
-                   <|> map (\x => Quote SQuote (Serif x)) (map pack $ squote (many (satisfy (/= '\''))))
-                   <|> map (\x => Quote DQuote (Serif x)) stringLiteral
-                   <|> text
-                   <?> "Markup"
+mutual
+  marker : Char -> Parser (List Inline)
+  marker c = between (char c)
+                     (char c)
+                     (do {x <- text; pure (the (List Inline) [x])})
 
--- ---------------------------------------------------------------- [ Property ]
+  bold : Parser Inline
+  bold = map Strong $ marker '*' <?> "Bold"
+
+  italic : Parser Inline
+  italic = map Emph $ marker '/' <?> "Italic"
+
+  strike : Parser Inline
+  strike = map Strike $ marker '+' <?> "Strike"
+
+  uline : Parser Inline
+  uline = map Uline $ marker '_' <?> "Underline"
+
+  markup : Parser Inline
+  markup = verb <|> code   <|> math
+       <|> bold <|> italic <|> strike <|> uline
+       <?> "Markup"
+
+  inlineLink : Parser Inline
+  inlineLink = do
+    txt <- brackets fileLink
+    pure $ treatLink txt [Serif txt]
+   <?> "Inline Link"
+
+  hyperLink : Parser Inline
+  hyperLink = do
+    token "["
+    url <- fileLink
+    txt <- brackets (some $ lexL text)
+    token "]"
+    pure $ treatLink url txt
+   <?> "Hyperlink"
+
+  fnote : Parser Inline
+  fnote = do
+    string "[fn"
+    label <- literallyBetween ':'
+    desc <- some $ lexL text
+    string "]"
+    pure $ FNote label desc
+   <?> "Footnote"
+
+  link : Parser Inline
+  link = inlineLink <|> hyperLink <|> fnote <?> "Link"
+
+  misc : Parser Inline
+  misc = map (\x => Quote DQuote x)    (marker '\"')
+--     <|> map (\x => Quote SQuote x)    (marker '\'')
+     <|> map (\x => Parens Parents x)  (parens   $ some $ lex markup)
+     <|> map (\x => Parens Brackets x) (brackets $ some $ lex markup)
+     <|> map (\x => Parens Braces x)   (braces   $ some $ lex markup)
+     <?> "Misc formatting"
+
+  inline : Parser Inline
+  inline = link <|> markup <|> misc <|> text <?> "Inline"
+
+-- -------------------------------------------------------------- [ Properties ]
 
 optionLine : String -> Parser Property
 optionLine key = do
     string "#+" $> string key
     colon
     ps <- (manyTill anyChar eol)
-    space
     pure (key, pack ps)
   <?> "Options Property"
-
 
 property : String -> Parser Property
 property key = do
     string "#+" $> string key
     colon
-    ps <- (some word)
+    space
+    ps <- manyTill (lexL word) eol
     pure (key, unwords ps)
   <?> "Formatted Property"
-
--- ------------------------------------------------------------------ [ Blocks ]
 
 caption : Parser (List Inline)
 caption = do
     token "#+CAPTION:"
-    ps <- some $ lexeme inline
+    ps <- some $ lex inline
     pure ps
   <?> "Caption"
 
@@ -90,12 +122,14 @@ label = do
     pure v
   <?> "Label"
 
+-- ------------------------------------------------------------------ [ Blocks ]
+
 figure : Parser Block
 figure = do
     cap <- caption
     lab <- label
     as  <- opt $ some (property "ATTR")
-    img <- inlineLink
+    img <- lex inlineLink
     let i = MkImage as "" img
     pure (Figure lab cap i)
   <?> "Figure"
@@ -104,21 +138,27 @@ listing : Parser Block
 listing = do
     cap <- opt $ caption
     lab <- opt $ label
-    token "#+BEGIN_SRC" >! do
+    string "#+BEGIN_SRC" >! do
+      space
       t <- word
-      txt <- manyTill anyChar (token "#+END_SRC")
+      space
+      txt <- manyTill anyChar (eol $> token "#+END_SRC")
       pure $ Listing lab cap (Just [("lang", t)]) (pack txt)
   <?> "Listing"
 
 quotation : Parser Block
 quotation = do
-    txt <- between (token "#+BEGIN_QUOTE") (token "#+END_QUOTE") (some $ lexeme inline)
+    txt <- between (token "#+BEGIN_QUOTE")
+                   (token "#+END_QUOTE")
+                   (some $ lex inline)
     pure $ Quotation txt
   <?> "Quotation"
 
 verse : Parser Block
 verse = do
-    txt <- between (token "#+BEGIN_VERSE") (token "#+END_VERSE") (some $ lexeme inline)
+    txt <- between (token "#+BEGIN_VERSE")
+                   (token "#+END_VERSE")
+                   (some $ lex inline)
     pure $ Quotation txt
   <?> "Verse"
 
@@ -136,39 +176,40 @@ generic = do
     lab <- opt label
     as  <- opt $ some (property "ATTR")
     string "#+BEGIN_"
-    ty <- raw
+    ty <- word
     space
 --    let ats = Just [("type", word)]
     case readTheorem ty of
         Just thm => do
-          txt <- manyTill (lexeme inline) (string "#+END_" $> token ty)
+          txt <- manyTill (lex inline) (string "#+END_" $> token ty)
           pure $ Theorem lab cap thm txt
         Nothing => do
           txt <- manyTill anyChar (string "#+END_" $> token ty)
           pure $ Generic lab cap as (pack txt)
+   <?> "Blocks"
 
 
 header : Parser Block
-header = char '*' >! do
-    depth <- opt (some astrix)
-    space
-    ws <- many word
+header = astrix >! do
+    depth <- opt (many astrix)
+    title <- manyTill (lexL inline) (eol $> space)
     let d = length (fromMaybe [] depth) + 1
-    let title = unwords ws
-    pure $ Heading d "" [Serif title]
+    --let t = map Serif title
+    pure $ Heading d "" title
   <?> "Heading"
+
 
 para : Parser Block
 para = do
-    t <- inline
-    xt <- manyTill (space $> inline) (string "\n\n")
-    pure $ Para (t :: xt)
+    xt <- manyTill (lexL inline) (eol $> space)
+    pure $ Para (xt)
   <?> "Paragraphs"
+
 
 -- Table
 -- Lists OL UL DT
 block : Parser Block
-block =  block'
+block =  block' <$ space
   where
     block' : Parser Block
     block' = header
@@ -185,10 +226,9 @@ block =  block'
 
 eddaOrgReader : Parser Edda
 eddaOrgReader = do
-  title <- property "TITLE"
+  title  <- property "TITLE"
   author <- property "AUTHOR"
-  date <- property "DATE"
-  opts <- opt $ many $ optionLine "OPTS"
-  body <- some block
-  let ps = [title, author, date] ++ fromMaybe [] opts
+  date   <- property "DATE"
+  body   <- space $> many block
+  let ps = the (List Property) [title, author, date]
   pure $ MkEdda (Just ps) body

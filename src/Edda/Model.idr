@@ -18,6 +18,13 @@ instance Show LinkTy where
   show ExLink = "External"
   show InLink = "Internal"
 
+data ParenTy = Parents | Brackets | Braces
+
+instance Show ParenTy where
+  show Parents = "Parens"
+  show Brackets = "Brackets"
+  show Braces = "Braces"
+
 Attributes : Type
 Attributes = List (String, String)
 
@@ -25,43 +32,45 @@ mutual
 
   data Inline : Type where
     Serif     : String -> Inline
-    SmallCaps : Inline -> Inline
-    SansSerif : Inline -> Inline
-    MonoSpace : Inline -> Inline
+    SmallCaps : List Inline -> Inline
+    SansSerif : List Inline -> Inline
 
-    Emph   : Inline -> Inline
-    Strong : Inline -> Inline
-    Strike : Inline -> Inline
-    Verb   : Inline -> Inline
+    Emph   : List Inline -> Inline
+    Strong : List Inline -> Inline
+    Strike : List Inline -> Inline
+    Uline  : List Inline -> Inline
 
-    Quote : QuoteTy -> Inline -> Inline
+    Quote  : QuoteTy -> List Inline -> Inline
+    Parens : ParenTy -> List Inline -> Inline
 
+    Verbatim    : String -> Inline
     CodeSnippet : String -> Inline
     MathSnippet : String -> Inline
 
-    Link : LinkTy -> String -> Inline -> Inline
-    Cite : CiteTy -> String -> Inline
+    Link  : LinkTy -> String -> List Inline -> Inline
+    Cite  : CiteTy -> String -> Inline
+    FNote : String -> List Inline -> Inline
 
 instance Show Inline where
-  show (Serif s) = "{" ++ s ++ "}"
+  show (Serif s) = "{Text \"" ++ s ++ "\"}"
   show (SmallCaps ss) = "{SmallCaps " ++ show ss ++ "}"
   show (SansSerif ss) = "{SansSerif " ++ show ss ++ "}"
-  show (MonoSpace ss) = "{MonoSpace " ++ show ss ++ "}"
 
-  show (Emph ss)      = "{Emph "   ++ show ss ++ "}"
-  show (Strong ss)    = "{Strong " ++ show ss ++ "}"
-  show (Strike ss)    = "{Strike " ++ show ss ++ "}"
-  show (Verb ss)      = "{Verb"    ++ show ss ++ "}"
+  show (Emph ss)   = "{Emph "   ++ show ss ++ "}"
+  show (Strong ss) = "{Strong " ++ show ss ++ "}"
+  show (Strike ss) = "{Strike " ++ show ss ++ "}"
+  show (Uline ss)  = "{Verb "    ++ show ss ++ "}"
 
   show (Quote qty ss) = "{" ++ show qty ++ " " ++ show ss ++ "}"
+  show (Parens pty ss) = "{" ++ show pty ++ " " ++ show ss ++ "}"
 
+  show (Verbatim verb)    = "{Verb \"" ++ verb ++ "\"}"
   show (CodeSnippet code) = "{Code \"" ++ code ++ "\"}"
-  show (MathSnippet math)    = "{Math \"" ++ math ++ "\"}"
+  show (MathSnippet math) = "{Math \"" ++ math ++ "\"}"
 
-  show (Link ty u t) = "{Link " ++ show ty ++  "<" ++ u ++ "> " ++ show t ++ "}"
-
+  show (Link ty u t) = "{Link " ++ show ty ++  " <" ++ u ++ "> " ++ show t ++ "}"
   show (Cite ty id) = "{" ++ show ty ++ " " ++ id ++ "}"
-
+  show (FNote label desc) = "{FNote \"" ++ label ++ "\" \"" ++ show desc ++ "\"}"
 
 Sentance : Type
 Sentance = List Inline
@@ -138,26 +147,26 @@ mutual
 
 instance Show Tabular where
   -- incomplete
-  show (MkTabular as cells) = "[Table " ++ "[" ++ concatMap (\x => show x ++ " ") as ++ "]" ++ " cells ]"
+  show (MkTabular as cells) = "[Table " ++ "[" ++ concatMap (\x => show x ++ " ") as ++ "]" ++ " cells ]\n"
 
 instance Show Block where
-  show (Theorem l c ty thm) = "[ThmBlock " ++ show ty ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ concatMap show thm ++ "]"
-  show (Table l c tbl)   = "[TblBlock " ++ show l ++ " " ++ show c ++ " " ++ show tbl ++ "]"
-  show (Figure l c img)  = "[FigBlock " ++ show l ++ " " ++ show c ++ " " ++ show img ++ "]"
+  show (Theorem l c ty thm) = "[ThmBlock " ++ show ty ++ " " ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ concatMap show thm ++ "]\n"
+  show (Table l c tbl)   = "[TblBlock " ++ show l ++ " " ++ show c ++ " " ++ show tbl ++ "]\n"
+  show (Figure l c img)  = "[FigBlock " ++ show l ++ " " ++ show c ++ " " ++ show img ++ "]\n"
 
-  show (DList ds) = "[DList " ++ concatMap (\(k,vs) => show k ++ " " ++ concatMap show vs ) ds ++ "]"
-  show (BList is) = "[BList " ++ concatMap show is ++ "]"
-  show (OList is) = "[OList " ++ concatMap show is ++ "]"
+  show (DList ds) = "[DList " ++ concatMap (\(k,vs) => show k ++ " " ++ concatMap show vs ) ds ++ "]\n"
+  show (BList is) = "[BList " ++ concatMap show is ++ "]\n"
+  show (OList is) = "[OList " ++ concatMap show is ++ "]\n"
 
-  show (Quotation p)   = "[BQuote " ++ concatMap show p ++ "]"
-  show (Equation l m)  = "[EqBlock " ++ fromMaybe "" l ++ " \"" ++ m ++ "\"]"
+  show (Quotation p)   = "[BQuote " ++ concatMap show p ++ "]\n"
+  show (Equation l m)  = "[EqBlock " ++ fromMaybe "" l ++ " \"" ++ m ++ "\"]\n"
   -- Incomplete
-  show (Listing l cap as co) = "[CodeBlock " ++ (fromMaybe "" l) ++ show cap ++ " \"" ++ co ++ "\"]"
-  show (Generic l cap as co) = "[Generic " ++ (fromMaybe "" l) ++ " " ++ show cap ++ " \""
+  show (Listing l cap as co) = "[CodeBlock " ++ (fromMaybe "" l) ++ show cap ++ " \"" ++ co ++ "\"]\n"
+  show (Generic l cap as co) = "[Generic " ++ (fromMaybe "" l) ++ " " ++ show cap ++ " \"]\n"
 
-  show (Heading d l t) = "[Heading " ++ show d ++ " " ++ show l ++ " " ++ show t ++ "]"
-  show (Para p) = "[Para " ++ concatMap show p ++ "]"
-  show Empty = "[Empty]"
+  show (Heading d l t) = "[Heading " ++ show d ++ " " ++ show l ++ " " ++ show t ++ "]\n"
+  show (Para p) = "[Para " ++ concatMap show p ++ "]\n"
+  show Empty = "[Empty]\n"
 
 Property : Type
 Property = (String, String)
@@ -170,4 +179,4 @@ data Edda : Type where
 
 instance Show Edda where
   -- incomplete
-  show (MkEdda ps body) = "[Edda " ++ "[Mdata " ++ concatMap show ps ++ "]" ++ concatMap show body ++ "]"
+  show (MkEdda ps body) = "[Edda " ++ "[Mdata " ++ concatMap show ps ++ "]\n" ++ concatMap show body ++ "]\n"

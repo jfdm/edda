@@ -12,6 +12,15 @@ manyTill p end = scan
     scan = do { end; return List.Nil } <|>
            do { x <- p; xs <- scan; return (x::xs)}
 
+lexemeL : Monad m => ParserT m String a -> ParserT m String a
+lexemeL p = space $> p
+
+lexL : Monad m => ParserT m String a -> ParserT m String a
+lexL p = lexemeL p
+
+lex : Monad m => ParserT m String a -> ParserT m String a
+lex p = lexeme p
+
 hash : Parser ()
 hash = char '#'
 
@@ -28,7 +37,7 @@ anyChar : Parser Char
 anyChar = satisfy (const True)
 
 isPunc : Char -> Bool
-isPunc c = List.elem c [',', '!', '?', '<', '>', ':', ';', '.', '-']
+isPunc c = List.elem c [',', '!', '?', '<', '>', ':', ';', '.', '-', '\'']
 
 -- Inspired by Json.idr in Lightyear examples
 
@@ -67,11 +76,11 @@ asciiChar = satisfy isAlphaNum
         <|> satisfy isDigit
         <|> satisfy isPunc
 
-raw : Parser String
-raw = map pack (some asciiChar)
-
 word : Parser String
-word = lexeme raw
+word = map pack (some asciiChar)
+
+--word : Parser String
+--word = lexeme raw
 
 identifier : Parser String
 identifier = lexeme $ map pack $ many (satisfy isAlphaNum)

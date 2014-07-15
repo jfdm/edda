@@ -7,4 +7,5 @@ import Test.Runner
 import Test.OrgReader
 
 main : IO ()
-main = runTests orgReaderTests
+main = do
+    runTests orgReaderTests

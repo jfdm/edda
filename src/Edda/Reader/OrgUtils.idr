@@ -9,15 +9,15 @@ import Edda.Utils
 
 import Edda.Reader.Utils
 
-treatLink : String -> String -> Inline
+treatLink : String -> List Inline -> Inline
 treatLink url tar = if length splitURL == 1
-                      then Link InLink url (Serif tar)
+                      then Link InLink url (tar)
                       else case head' splitURL of
                         Just "bib"   => (Cite ParenCite url)
                         Just "citet" => (Cite TextCite url)
                         Just "citep" => (Cite ParenCite url)
-                        Just _       => (Link ExLink url (Serif tar))
-                        Nothing      => (Link ExLink url (Serif tar))
+                        Just _       => (Link ExLink url (tar))
+                        Nothing      => (Link ExLink url (tar))
   where
     splitURL : List String
     splitURL = (split (== ':') url)
