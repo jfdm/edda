@@ -78,13 +78,12 @@ RawListInline : Type
 RawListInline = List (Inline Raw)
 
 data Image : Type where
-  MkImage : Maybe Attributes -> String -> ListInline -> Image
+  MkImage : String -> ListInline -> Image
 
 instance Show Image where
-  show (MkImage ats alt url) = "["
-       ++ concatMap (\(x, y) => unwords ["(", x, ",", y, ")"])
-                    (fromMaybe [("no", "attributes")] ats)
-       ++ " " ++ show alt ++ " " ++ show url ++ "]"
+  show (MkImage alt url) = "[Image "
+       ++ show alt ++ " "
+       ++ show url ++ "]"
 
 
 mutual
@@ -94,10 +93,21 @@ mutual
               -> Tabular
 
   data Block :  Step -> Type where
-    RawBlock : (label : Maybe String)
-             -> (caption : Maybe ListInline)
+    RawBlock :  (label : Maybe String)
+             -> (caption : Maybe RawListInline)
              -> Maybe Attributes
-             -> ListInline -> Block Raw
+             -> Either String RawListInline -> Block Raw
+    RawPara : RawListInline
+            -> Block Raw
+    RawHeader : (lvl : Nat)
+              -> (label : String)
+              -> (title : RawListInline) -> Block Raw
+    RawFigure : (label : String)
+              -> (caption : RawListInline)
+              -> Maybe Attributes
+              -> RawListInline
+              -> Block Raw
+    RawEmpty : Block Raw
 
     Para : ListInline -> Block Refined
 
@@ -122,6 +132,7 @@ mutual
 
     Figure : (label : String)
            -> (caption : ListInline)
+           -> (Maybe Attributes)
            -> Image
            -> Block Refined
 
@@ -156,7 +167,39 @@ instance Show Tabular where
     ++ "[" ++ concatMap (\x => show x ++ " ") as ++ "]"
     ++ " cells ]\n"
 
+
+
+{-
+    RawBlock :  (label : Maybe String)
+             -> (caption : Maybe RawListInline)
+             -> Maybe Attributes
+             -> Either String RawListInline -> Block Raw
+    RawPara : RawListInline -> Block Raw
+    RawHeader : (lvl : Nat) -> (title : RawListInline) -> Block Raw
+
+-}
+
 instance Show (Block x)where
+  show (RawPara txt) = "[RawPara " ++ concatMap show txt ++ "]\n"
+  show (RawBlock lab cap as txt) = "[RawBlock "
+       ++ show lab  ++ " "
+       ++ show cap ++ " "
+       ++ show as   ++ " "
+       ++ case txt of
+            Left vrb => " \"" ++ vrb ++ "\""
+            Right t  => show t
+       ++ "]\n"
+  show (RawHeader d l t) = "[RawHeading "
+       ++ show d ++ " "
+       ++ show l ++ " "
+       ++ show t ++ "]\n"
+  show (RawFigure l c as img)  = "[RawFigBlock "
+       ++ show l ++ " "
+       ++ show c ++ " "
+       ++ show as ++ " "
+       ++ show img ++ "]\n"
+  show RawEmpty = "[RawEmpty]\n"
+
   show (Theorem l c ty thm) = "[ThmBlock "
        ++ show ty ++ " "
        ++ fromMaybe "" l ++ " "
@@ -168,9 +211,10 @@ instance Show (Block x)where
        ++ show c ++ " "
        ++ show tbl ++ "]\n"
 
-  show (Figure l c img)  = "[FigBlock "
+  show (Figure l c as img)  = "[FigBlock "
        ++ show l ++ " "
        ++ show c ++ " "
+       ++ show as ++ " "
        ++ show img ++ "]\n"
 
   show (DList ds) = "[DList "
@@ -185,22 +229,25 @@ instance Show (Block x)where
 
   -- Incomplete
   show (Listing l cap as co) = "[CodeBlock "
-       ++ (fromMaybe "" l) ++ show cap ++ " \"" ++ co ++ "\"]\n"
+       ++ show l ++ " "
+       ++ show cap
+       ++ " \"" ++ co ++ "\"]\n"
 
   show (Generic l cap as co) = "[Generic "
-       ++ (fromMaybe "" l) ++ " "
+       ++ show l ++ " "
        ++ show cap ++ " \"]\n"
 
   show (Heading d l t) = "[Heading "
-       ++ show d ++ " " ++ show l ++ " "
+       ++ show d ++ " "
+       ++ show l ++ " "
        ++ show t ++ "]\n"
 
   show (Para p) = "[Para " ++ concatMap show p ++ "]\n"
   show Empty = "[Empty]\n"
 
 data Edda : Step -> Type where
-  MkEddaRaw : (ps : Maybe Properties) -> List (Inline Raw) -> Edda Raw
-  MkEddaDoc : (ps : Maybe Properties) -> List (Block Refined) -> Edda Refined
+  MkEddaRaw : (ps : Maybe Attributes) -> List (Block Raw) -> Edda Raw
+  MkEddaDoc : (ps : Maybe Attributes) -> List (Block Refined) -> Edda Refined
 
 EddaRaw : Type
 EddaRaw = Edda Raw

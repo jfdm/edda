@@ -39,6 +39,7 @@ anyChar = satisfy (const True)
 isPunc : Char -> Bool
 isPunc c = List.elem c [',', '!', '?', '<', '>', ':', ';', '.', '-', '\'']
 
+
 -- Inspired by Json.idr in Lightyear examples
 
 private

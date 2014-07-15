@@ -57,28 +57,120 @@ rawPunc = do
     '?'  => map (RawPunc QMark) (pure '?')
     '#'  => map (RawPunc Hash) (pure '#')
     '='  => map (RawPunc Equals) (pure '=')
+    '$'  => map (RawPunc Dollar) (pure '$')
     '|'  => map (RawPunc Pipe) (pure '|')
     x    => map (RawPunc Other) (pure x)
  <?> "Raw Punctuation"
 
-rawOrg : Parser (Inline Raw)
-rawOrg =  rawWord  <|> rawPuncSpecial <|> rawPunc <?> "Raw Inline"
+rawInline : Parser (Inline Raw)
+rawInline =  rawWord  <|> rawPuncSpecial <|> rawPunc <?> "Raw Inline"
 
-property : String -> Parser Property
-property key = do
-    string "#+" $!> string key
+-- -------------------------------------------------------------- [ Properties ]
+-- @TODO Factorise this.
+
+rawAttribute : String -> Parser (String, String)
+rawAttribute key = do
+    string "#+" $> string key
+    colon
+    ps <- manyTill (anyChar) eol
+    pure (key, pack ps)
+  <?> "Raw Attribute"
+
+rawInlineKeyWord : String -> Parser (String, RawListInline)
+rawInlineKeyWord key = do
+    string "#+" $> string key
     colon
     space
-    ps <- manyTill (lexL word') eol
-    pure (key, unwords ps)
-  <?> "Formatted Property"
+    ps <- manyTill (rawInline) eol
+    pure (key, ps)
+  <?> "Attribute."
+
+caption : Parser RawListInline
+caption = do
+    (k,v) <- rawInlineKeyWord "CAPTION"
+    pure v
+  <?> "Caption"
+
+label : Parser String
+label = do
+    (k,v) <- rawAttribute "NAME"
+    pure v
+  <?> "Label"
+
+-- ------------------------------------------------------------------ [ Blocks ]
+
+foobar : String -> Maybe String -> Maybe Attributes
+       -> Attributes
+foobar ty srcOpts as = [("type", ty)]
+                            ++ fooOpts "src_opts" srcOpts
+                            ++ fromMaybe [] as
+  where
+    fooOpts tag (Just opts) = [(tag, opts)]
+    fooOpts tag Nothing     = []
+
+bar : Maybe (List Char) -> Maybe String
+bar b = case b of
+          Just x => Just (pack x)
+          Nothing => Nothing
+
+rawBlock : Parser BlockRaw
+rawBlock = do
+    cap <- opt caption
+    lab <- opt label
+    rawAs  <- opt $ some (rawAttribute "ATTR")
+    string "#+BEGIN_"
+    ty <- word
+    bopts <- opt $ char ' ' $> manyTill (anyChar) eol
+    let as = foobar ty (bar bopts) rawAs
+    case readTheorem ty of
+      Just thm => do
+        txt <- manyTill rawInline (string "#+END_" $> token ty)
+        pure $ RawBlock lab cap (Just as) (Right txt)
+      Nothing => do
+        txt <- manyTill anyChar (string "#+END_" $> token ty)
+        pure $ RawBlock lab cap (Just as) (Left $ pack txt)
+   <?> "Raw Blocks"
+
+rawFigure : Parser BlockRaw
+rawFigure = do
+    cap <- caption
+    lab <- label
+    as  <- opt $ some (rawAttribute "ATTR")
+    img <- manyTill (rawInline) eol
+    space
+    pure (RawFigure lab cap as img)
+  <?> "Raw Figure"
+
+rawPara : Parser BlockRaw
+rawPara = do
+    xt <- manyTill rawInline (eol $> eol)
+    space
+    pure $ RawPara xt
+  <?> "Raw Paragraphs"
+
+rawParaLast : Parser BlockRaw
+rawParaLast = do
+    xt <- manyTill rawInline (eol $> space)
+    pure $ RawPara xt
+
+rawHeader : Parser BlockRaw
+rawHeader = astrix >! do
+    depth <- opt (many astrix)
+    space
+    title <- manyTill (rawInline) (eol $> space)
+    let d = length (fromMaybe [] depth) + 1
+    pure (RawHeader d "" title)
+
+rawOrg : Parser BlockRaw
+rawOrg = rawHeader <|> rawBlock <|> rawFigure <|> rawPara
 
 eddaOrgRawReader : Parser EddaRaw
 eddaOrgRawReader = do
-  title  <- property "TITLE"
-  author <- property "AUTHOR"
-  date   <- property "DATE"
+  title  <- rawAttribute "TITLE"
+  author <- rawAttribute "AUTHOR"
+  date   <- rawAttribute "DATE"
   txt    <- many rawOrg
-  let ps = the (List Property) [title, author, date]
-  pure $ MkEddaRaw (Just ps) txt
+  lpara  <- many rawParaLast -- Dirty Hack
+  let ps = the Attributes [title, author, date]
+  pure $ MkEddaRaw (Just ps) (txt ++ lpara)
  <?> "Raw Org Mode"

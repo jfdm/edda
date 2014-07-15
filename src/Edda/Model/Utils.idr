@@ -25,14 +25,12 @@ instance Show ParenTy where
   show Brackets = "Brackets"
   show Braces = "Braces"
 
+
+Attribute : Type
+Attribute = (String, String)
+
 Attributes : Type
 Attributes = List (String, String)
-
-Property : Type
-Property = (String, String)
-
-Properties : Type
-Properties = List Property
 
 data PuncTy = Space      | Newline | Tab
             | LBrace     | RBrace
@@ -45,6 +43,7 @@ data PuncTy = Space      | Newline | Tab
             | Plus       | Minus
             | Apostrophe | SMark
             | Pipe
+            | Dollar
             | Comma
             | Ellipsis
             | Bang
@@ -67,6 +66,7 @@ instance Show PuncTy where
   show RBrack     = "]"
   show LAngle     = "<"
   show RAngle     = ">"
+  show Dollar     = "Dollar"
   show Colon      = "Colon"
   show Semi       = "Semi"
   show EnDash     = "EnDash"
