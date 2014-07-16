@@ -6,6 +6,7 @@ import Lightyear.Strings
 
 import Edda.Model
 import Edda.Utils
+import Edda.Reduce
 
 import Edda.Reader.Utils
 
@@ -133,7 +134,6 @@ label = do
 
 -- ------------------------------------------------------------------ [ Blocks ]
 
-
 block : Parser (Block Raw)
 block = do
     cap <- opt caption
@@ -195,5 +195,5 @@ parseOrg = do
   lpara  <- many paraLast -- Dirty Hack
   let ps = the Attributes [title, author, date]
   let txt' = intersperse (Empty Raw) txt
-  pure $ MkEddaRaw (Just ps) (txt' ++ [Empty Raw] ++ lpara)
+  pure $ MkEddaRaw (Just ps) $ reduceParas (txt' ++ [Empty Raw] ++ lpara)
  <?> "Raw Org Mode"

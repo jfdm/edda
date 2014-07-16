@@ -2,37 +2,6 @@ module Edda.Refine
 
 import Edda.Model
 
--- Pairwise reduce
--- Change to effectful state reduce
--- use state to keep track of length of list.
--- x <- reduce list
--- y <- get
--- if length x == y
---   then return
---   else do
---     put $ length x
---     reduce x
-reduceBlock : List (Block Raw) -> List (Block Raw)
-reduceBlock Nil        = Nil
-reduceBlock (x::y::z) = case reduce' x y of
-                          Just yes => yes :: reduceBlock z
-                          Nothing  => x :: reduceBlock (y::z)
-  where
-    reduce' : Block Raw -> Block Raw -> Maybe (Block Raw)
-    reduce' (RawPara x) (RawPara y) = Just $ RawPara (x ++ y)
-    reduce' _           _           = Nothing
-
-{-
-reduceList : List (Inline Raw) -> List (Inline Raw)
-reduceList Nil  = Nil
-reduceList (x::y::z) = case reduce' x y of
-                         Just yes => yes :: reduceList z
-                         Nothing  =>  x :: reduceList (y::z)
-  where
-    reduce' : Inline Raw -> Inline Raw -> Maybe (Inline Raw)
-    reduce' ()
-    reduce' _ _ = Nothing
--}
 RefineEffs : List EFFECT
 RefineEffs = [STDIO]
 
@@ -51,6 +20,7 @@ refineDoc (MkEdda ps body) = do
 
 refineEdda : EddaRaw -> EddaDoc
 refineEdda rdoc = runPure $ refineDoc rdoc
+
 
 treatLink : String -> List (Inline Refined) -> Inline Refined
 treatLink url tar = if length splitURL == 1

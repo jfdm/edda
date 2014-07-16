@@ -10,7 +10,6 @@ import Edda.Reader.Org
 
 -- Maybe Construct a reader class akin to marshal
 
-
 readFile : { [FILE_IO (OpenFile Read)] } Eff String
 readFile = readAcc ""
   where
@@ -20,10 +19,8 @@ readFile = readAcc ""
                      else pure acc
 
 
-
-
-readEddaRaw : String -> Parser EddaRaw -> { [FILE_IO ()] } Eff (Either String EddaRaw)
-readEddaRaw f p = do
+readEddaRaw : Parser EddaRaw -> String -> { [FILE_IO ()] } Eff (Either String EddaRaw)
+readEddaRaw p f = do
     case !(open f Read) of
       True => do
         src <- readFile
@@ -33,8 +30,5 @@ readEddaRaw f p = do
       False => pure $ Left "Error"
 
 
-readShowOrgFile : String -> {[STDIO, FILE_IO ()]} Eff ()
-readShowOrgFile fname = do
-    case !(readEddaRaw fname parseOrg) of
-      Left err  => putStrLn $ err
-      Right res => putStrLn $ show res
+readOrgRaw : String -> {[FILE_IO ()]} Eff (Either String EddaRaw)
+readOrgRaw = readEddaRaw parseOrg
