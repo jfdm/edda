@@ -12,7 +12,7 @@ modules = Edda.Model
         , Edda.Reader.Org
 
         , Edda.Utils
-
+        , Edda.Squash
         , Edda.Refine
         , Main
 

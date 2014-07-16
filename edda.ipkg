@@ -11,4 +11,7 @@ modules = Edda.Model
         , Edda.Reader.Utils
         , Edda.Reader.Org
 
+        , Edda.Refine
+        , Edda.Squash
+
         , Edda.Utils

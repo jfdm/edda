@@ -6,7 +6,7 @@ RefineEffs : List EFFECT
 RefineEffs = [STDIO]
 
 refineInline : Inline Raw -> { RefineEffs } Eff (Inline Refined)
-refineInline = ()
+refineInline =
 
 refineBlock : RawBlock -> { RefineEffs } Eff BlockRefd
 refineBlock = ()

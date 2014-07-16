@@ -2,10 +2,11 @@ module Edda.Model
 
 import Edda.Model.Utils
 
-data Step = Raw | Prime
+data Step = Raw | Dash | Prime
 
 instance Show Step where
   show Raw   = "Raw"
+  show Dash  = "Dash"
   show Prime = "Prime"
 
 data Inline : Step -> Type where

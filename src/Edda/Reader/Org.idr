@@ -195,5 +195,5 @@ parseOrg = do
   lpara  <- many paraLast -- Dirty Hack
   let ps = the Attributes [title, author, date]
   let txt' = intersperse (Empty Raw) txt
-  pure $ MkEddaRaw (Just ps) $ reduceParas (txt' ++ [Empty Raw] ++ lpara)
+  pure $ MkEddaRaw (Just ps) (txt' ++ [Empty Raw] ++ lpara)
  <?> "Raw Org Mode"
