@@ -6,6 +6,9 @@ OPTS  :=
 
 .PHONY: clean build
 
+exe:
+	${IDRIS} ${OPTS} --build eddabin.ipkg
+
 install: build
 	${IDRIS} ${OPTS} --install ${PKG}.ipkg
 

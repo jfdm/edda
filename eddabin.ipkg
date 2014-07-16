@@ -1,4 +1,4 @@
-package edda
+package eddabin
 
 opts = "-p lightyear -p effects"
 
@@ -12,3 +12,9 @@ modules = Edda.Model
         , Edda.Reader.Org
 
         , Edda.Utils
+
+        , Edda.Refine
+        , Main
+
+main = Main
+executable = eddabin
