@@ -4,6 +4,9 @@ import Lightyear.Core
 import Lightyear.Combinators
 import Lightyear.Strings
 
+import Edda.Model
+import Edda.Model.Utils
+
 %access public
 
 manyTill : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str (List a)
@@ -21,14 +24,8 @@ lexL p = lexemeL p
 lex : Monad m => ParserT m String a -> ParserT m String a
 lex p = lexeme p
 
-hash : Parser ()
-hash = char '#'
-
-astrix : Parser ()
-astrix = char '*'
-
-plus : Parser ()
-plus = char '+'
+literallyBetween : Char -> Parser String
+literallyBetween c = map pack $ between (char c) (char c) (some (satisfy (/= c)))
 
 eol : Parser ()
 eol = char '\n'
@@ -36,73 +33,48 @@ eol = char '\n'
 anyChar : Parser Char
 anyChar = satisfy (const True)
 
-isPunc : Char -> Bool
-isPunc c = List.elem c [',', '!', '?', '<', '>', ':', ';', '.', '-', '\'']
-
-
--- Inspired by Json.idr in Lightyear examples
-
-private
-specialChar : Parser Char
-specialChar = do
-  c <- satisfy (const True)
-  case c of
-    '\\' => pure '\\'
-    '/'  => pure '/'
-    '.'  => pure '.'
-    ':'  => pure ':'
-    '#'  => pure '#'
-    '='  => pure '='
-    '?'  => pure '?'
-    '-'  => pure '-'
-    _    => satisfy (const False)
-
 private
 pathChar : Parser Char
-pathChar = specialChar
-       <|> satisfy isAlphaNum
-       <|> satisfy isDigit
+pathChar = urlChar <|> satisfy isAlphaNum <?> "Path Char"
+  where
+    urlChar : Parser Char
+    urlChar = do
+      c <- satisfy (const True)
+      case c of
+        '\\' => pure '\\'
+        '/'  => pure '/'
+        '.'  => pure '.'
+        ':'  => pure ':'
+        '#'  => pure '#'
+        '='  => pure '='
+        '?'  => pure '?'
+        '-'  => pure '-'
+        _    => satisfy (const False)
 
-filepath : Parser String
-filepath = map pack (some pathChar)
-         <?> "filepath"
-
-fileLink : Parser String
-fileLink = brackets filepath
---
-
-private
-asciiChar : Parser Char
-asciiChar = satisfy isAlphaNum
-        <|> satisfy isDigit
-        <|> satisfy isPunc
+url : Parser String
+url = map pack (some pathChar) <?> "URL"
 
 word : Parser String
-word = map pack (some $ satisfy isAlphaNum)
+word = map pack (some $ satisfy isAlphaNum) <?> "Word"
 
 punc : Parser Char
-punc = satisfy (\x => not $isAlphaNum x)
+punc = satisfy (\x => not $ isAlphaNum x) <?> "Punctuation"
 
-word' : Parser String
-word' = map pack (some asciiChar)
+isVerbBlock : String -> Bool
+isVerbBlock bTy = List.elem bTy ["COMMENT", "SRC", "EXAMPLE"]
 
---word : Parser String
---word = lexeme raw
+convertOpts : Maybe (List Char) -> Maybe String
+convertOpts b = case b of
+                  Just x => Just (pack x)
+                  Nothing => Nothing
 
-identifier : Parser String
-identifier = lexeme $ map pack $ many (satisfy isAlphaNum)
-             <?> "Identifier"
-
--- The following is 'inspired' from Bibdris
-
-charLetter : Parser Char
-charLetter = satisfy (/= '\'')
-
-charLiteral : Parser Char
-charLiteral = squote charLetter
-
-stringLetter : Parser Char
-stringLetter = satisfy (/= '"')
-
-stringLiteral : Parser String
-stringLiteral = map pack $ dquote (many stringLetter)
+dealWithAttrs :  String
+              -> Maybe String
+              -> Maybe Attributes
+              -> Attributes
+dealWithAttrs ty srcOpts as = [("type", ty)]
+                            ++ fooOpts "src_opts" srcOpts
+                            ++ fromMaybe [] as
+  where
+    fooOpts tag (Just opts) = [(tag, opts)]
+    fooOpts tag Nothing     = []

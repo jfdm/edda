@@ -24,6 +24,9 @@ clean:
 check: clean
 	${IDRIS} --checkpkg ${PKG}.ipkg
 
+clobber : clean
+	rm eddabin
+
 test :
 	(cd tests; bash runtests.sh)
 

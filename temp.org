@@ -34,7 +34,7 @@ pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
 culpa qui officia deserunt mollit anim id est laborum.
 
 #+BEGIN_VERSE
-uhuhuhuhuh
+/uh/ uhuhuhuh
 #+END_VERSE
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
@@ -44,6 +44,7 @@ aliquip ex ea commodo consequat. Duis aute irure dolor in
 reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
 culpa qui officia deserunt mollit anim id est laborum.
+
 
 
 * Example
@@ -94,11 +95,14 @@ reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
 culpa qui officia deserunt mollit anim id est laborum.
 
+
+
+
 * Conclusion
 
 #+CAPTION: Shit
 #+NAME: fig:Shit
-[[rawlink][sdsdsdsd]]
+[[asasasasas]]
 
 
 
@@ -110,3 +114,9 @@ aliquip ex ea commodo consequat. Duis aute irure dolor in
 reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
 culpa qui officia deserunt mollit anim id est paborum.
+
+
+culpa qui officia deserunt mollit anim id est laborum. asasas *bold*
+/italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.
+[[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [fn:label:description] [[http://www.cs.st-andrews.ac.uk]]
+[[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]] [fn:label:description]

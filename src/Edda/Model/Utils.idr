@@ -12,11 +12,12 @@ instance Show CiteTy where
   show ParenCite = "ParenCite"
   show TextCite  = "TextCite"
 
-data LinkTy = ExLink | InLink
+data LinkTy = Hyperlink | Exposed
 
 instance Show LinkTy where
-  show ExLink = "External"
-  show InLink = "Internal"
+  show Hyperlink = "HyperLink"
+  show Exposed   = "Exposed"
+  show Internal  = "Internal"
 
 data ParenTy = Parents | Brackets | Braces
 
