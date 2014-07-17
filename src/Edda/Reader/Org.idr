@@ -82,17 +82,14 @@ hyper = do
     (uri, desc) <- brackets internal
     pure $ Link Raw Hyperlink uri (Just desc)
   where
-    foobar : Parser (Inline Raw)
-    foobar = rawWord <|> rawPuncSpecial <|> rawPunc
-
     internal : Parser (String, RawListInline)
     internal = do
       u <- brackets url
-      d <- brackets $ many foobar
-      pure (u,d)
+      d <- brackets $ some rawWord
+      pure (u, intersperse (Punc Raw Space ' ' ) d)
 
 link : Parser (Inline Raw)
-link = expLink <|> hyper <?> "Link"
+link = hyper <|> expLink <?> "Link"
 
 rawInline : Parser (Inline Raw)
 rawInline =  rawWord

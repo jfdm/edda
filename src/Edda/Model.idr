@@ -18,9 +18,6 @@ data Inline : Step -> Type where
   CodeSnippet : (s : Step) -> String -> Inline s
   MathSnippet : (s : Step) -> String -> Inline s
 
-  SmallCaps : List (Inline Prime) -> Inline Prime
-  SansSerif : List (Inline Prime) -> Inline Prime
-
   Emph   : List (Inline Prime) -> Inline Prime
   Strong : List (Inline Prime) -> Inline Prime
   Strike : List (Inline Prime) -> Inline Prime
@@ -31,7 +28,6 @@ data Inline : Step -> Type where
 
   Cite  : CiteTy -> String -> Inline Prime
   FNote : String -> List (Inline Prime) -> Inline Prime
-
 
 instance Show (Inline ty) where
   show (Text s txt)   = "{Text " ++ show s ++ " \"" ++ txt ++ "\"}"
@@ -49,9 +45,6 @@ instance Show (Inline ty) where
   show (Verbatim s verb)    = "{Verb " ++ show s ++ " \"" ++ verb ++ "\"}"
   show (CodeSnippet s code) = "{Code " ++ show s ++ " \"" ++ code ++ "\"}"
   show (MathSnippet s math) = "{Math " ++ show s ++ " \"" ++ math ++ "\"}"
-
-  show (SmallCaps ss) = "{SmallCaps " ++ show ss ++ "}"
-  show (SansSerif ss) = "{SansSerif " ++ show ss ++ "}"
 
   show (Emph ss)   = "{Emph "   ++ show ss ++ "}"
   show (Strong ss) = "{Strong " ++ show ss ++ "}"
