@@ -57,8 +57,8 @@ url = map pack (some pathChar) <?> "URL"
 word : Parser String
 word = map pack (some $ satisfy isAlphaNum) <?> "Word"
 
-punc : Parser Char
-punc = satisfy (\x => not $ isAlphaNum x) <?> "Punctuation"
+punctuation : Parser Char
+punctuation = satisfy (\x => not $ isAlphaNum x) <?> "Punctuation"
 
 isVerbBlock : String -> Bool
 isVerbBlock bTy = List.elem bTy ["COMMENT", "SRC", "EXAMPLE"]

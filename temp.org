@@ -104,9 +104,6 @@ culpa qui officia deserunt mollit anim id est laborum.
 #+NAME: fig:Shit
 [[asasasasas]]
 
-
-
-
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
 minim veniam, quis nostrud exercitation ullamco laboris nisi ut
@@ -115,8 +112,8 @@ reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
 culpa qui officia deserunt mollit anim id est paborum.
 
-
-culpa qui officia deserunt mollit anim id est laborum. asasas *bold*
-/italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.
 [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [fn:label:description] [[http://www.cs.st-andrews.ac.uk]]
 [[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]] [fn:label:description]
+*as* *I am test* *sdsd* *asas *
+culpa qui officia deserunt mollit anim id est laborum. asasas *bold*
+/italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.

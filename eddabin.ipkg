@@ -13,6 +13,7 @@ modules = Edda.Model
 
         , Edda.Utils
         , Edda.Squash
+        , Edda.Walk
 --        , Edda.Refine
 
         , Main

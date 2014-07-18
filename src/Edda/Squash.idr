@@ -31,22 +31,32 @@ squash squaFunc xs = runPureInit [length xs] (doSquash squaFunc xs)
 
 -- --------------------------------------------------------- [ Block Reduction ]
 
-squashRBPair : Block Raw -> Block Raw -> Maybe (Block Raw)
-squashRBPair (Para Model.Raw x) (Para Model.Raw y) = Just $ Para Raw (x ++ y)
-squashRBPair _                  _                  = Nothing
+squashRBPair : Block s -> Block s -> Maybe (Block s)
+squashRBPair {s} (Para s x) (Para s y) = Just $ Para s (x ++ y)
+squashRBPair _                  _      = Nothing
 
 
-squashRawBlocks : List (Block Raw) -> List (Block Raw)
+squashRawBlocks : List (Block s) -> List (Block s)
 squashRawBlocks bs = squash (squashRBPair) bs
 
 
 -- -------------------------------------------------------- [ Inline Reduction ]
-squashRIPair : Inline Raw -> Inline Raw -> Maybe (Inline Raw)
-squashRIPair (Text Model.Raw x) (Text Model.Raw y)= Just $ Text Raw (x ++ " " ++ y)
-squashRIPair (Punc Model.Raw Space x) (Punc Model.Raw Space y) = Just $ Punc Raw Space x
-squashRIPair _  (Punc Model.Raw Newline x) = Just $ Punc Raw Space ' '
-squashRIPair _                  _                          = Nothing
+squashRIPair : Inline s -> Inline s -> Maybe (Inline s)
+squashRIPair Space Space = Just Space
+squashRIPair _            _        = Nothing
 
 
-squashRawInlines : List (Inline Raw) -> List (Inline Raw)
+squashRawInlines : List (Inline s) -> List (Inline s)
 squashRawInlines is = squash (squashRIPair) is
+
+
+
+{-
+
+squashRIPair (Punc x) (Punc y) = case x /= y of
+    True  => Nothing
+    False => case x of
+               ' ' => Just $ Punc x
+               '\n' => Just $ Punc x
+
+-}

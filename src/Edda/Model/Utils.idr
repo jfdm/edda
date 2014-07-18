@@ -12,13 +12,6 @@ instance Show CiteTy where
   show ParenCite = "ParenCite"
   show TextCite  = "TextCite"
 
-data LinkTy = Hyperlink | Exposed
-
-instance Show LinkTy where
-  show Hyperlink = "HyperLink"
-  show Exposed   = "Exposed"
-  show Internal  = "Internal"
-
 data ParenTy = Parents | Brackets | Braces
 
 instance Show ParenTy where
@@ -32,63 +25,6 @@ Attribute = (String, String)
 
 Attributes : Type
 Attributes = List (String, String)
-
-data PuncTy = Space      | Newline | Tab
-            | LBrace     | RBrace
-            | RParen     | LParen
-            | LBrack     | RBrack
-            | LAngle     | RAngle
-            | Colon      | Semi
-            | EnDash     | EmDash
-            | FSlash     | BSlash
-            | Plus       | Minus
-            | Apostrophe | SMark
-            | Pipe
-            | Dollar
-            | Comma
-            | Ellipsis
-            | Bang
-            | Hyphen
-            | Period
-            | QMark
-            | Hash
-            | Equals
-            | Other
-
-instance Show PuncTy where
-  show Space      = "Space"
-  show Newline    = "Newline"
-  show Tab        = "Tab"
-  show LBrace     = "LBrace"
-  show RBrace     = "RBrace"
-  show LParen     = "LParen"
-  show RParen     = "RParen"
-  show LBrack     = "LBrack"
-  show RBrack     = "RBrack"
-  show LAngle     = "LAngle"
-  show RAngle     = "RAngle"
-  show Dollar     = "Dollar"
-  show Colon      = "Colon"
-  show Semi       = "Semi"
-  show EnDash     = "EnDash"
-  show EmDash     = "EmDash"
-  show FSlash     = "Forwardslash"
-  show BSlash     = "Backslash"
-  show Apostrophe = "Apostrophe"
-  show SMark      = "Speech Mark"
-  show Comma      = "Comma"
-  show Plus       = "Plus"
-  show Minus      = "Minus"
-  show Ellipsis   = "Ellipsis"
-  show Hyphen     = "Hyphen"
-  show Bang       = "Bang"
-  show Period     = "Period"
-  show QMark      = "Question Mark"
-  show Hash       = "Hash"
-  show Equals     = "Equals"
-  show Other      = "Other"
-  show Pipe       = "Pipe"
-
 
 data TAlign = AlignLeft
             | AlignRight
