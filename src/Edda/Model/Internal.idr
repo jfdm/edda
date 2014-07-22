@@ -8,13 +8,14 @@ instance Show FontTy where
   show ScapTy = "SmallCaps"
   show MonoTy  = "Monospaced"
 
-data LinkTy = HyperTy | ExposedTy | FnoteTy | RefTy
+data LinkTy = HyperTy | ExposedTy | FnoteTy | RefTy | CiteTy
 
 instance Show LinkTy where
   show HyperTy   = "HyperLink"
   show ExposedTy = "Exposed"
   show FnoteTy   = "Footnote"
   show RefTy     = "Internal"
+  show CiteTy    = "Citation"
 
 data MarkupTy = BoldTy | EmphTy | StrikeTy | UlineTy
 
