@@ -11,7 +11,7 @@ aliquip ex ea commodo consequat. Duis aute irure dolor in
 reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
 culpa qui officia deserunt mollit anim id est laborum. asasas *bold*
-/italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.
+/italic/ ~code~ +strike-through+ =verbatim= $math$ Hello 'Bye bye'.
 [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [fn:label:description] [[http://www.cs.st-andrews.ac.uk]]
 [[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]] [fn:label:description]
 
@@ -52,9 +52,9 @@ culpa qui officia deserunt mollit anim id est laborum.
 Idris data types are declared using a similar syntax to Haskell data types. For example, natural numbers, an option type and lists are declared in the standard library:
 
 #+BEGIN_SRC idris
-data Nat     = Z       | S Nat
-data Maybe a = Nothing | Just a
-data List a  = Nil     | (::) a (List a)
+  data Nat     = Z       | S Nat
+  data Maybe a = Nothing | Just a
+  data List a  = Nil     | (::) a (List a)
 #+END_SRC
 
 Functions are implemented by pattern matching. For example, addition on natural numbers can be defined as follows, again taken from the standard library:
@@ -117,3 +117,5 @@ culpa qui officia deserunt mollit anim id est paborum.
 *as* *I am test* *sdsd* *asas *
 culpa qui officia deserunt mollit anim id est laborum. asasas *bold*
 /italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.
+I am more text in this paragraph
+--- ...

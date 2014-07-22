@@ -26,6 +26,7 @@ check: clean
 
 clobber : clean
 	rm eddabin
+	find . -name "*.ibc" -delete
 
 test :
 	(cd tests; bash runtests.sh)

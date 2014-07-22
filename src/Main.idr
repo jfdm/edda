@@ -8,8 +8,10 @@ import Effect.StdIO
 
 import Edda.Model
 import Edda.Reader
+import Edda.Refine
 import Edda.Walk
 
+import Debug.Trace
 
 allCaps : Inline s -> Inline s
 allCaps (Font ty str) = Font ty $ toUpper str
@@ -35,12 +37,22 @@ readShowOrgFile fname = do
         let nd = walk makeMono res
         putStrLn $ show nd
 
+readShowEddaOrg : String -> {[STDIO, FILE_IO ()]} Eff ()
+readShowEddaOrg fname = do
+    d <- readOrgRaw fname
+    case d of
+      Left err  => putStrLn err
+      Right doc => do
+        putStrLn $ show doc
+        case refineEdda doc of
+          Left err  => putStrLn err
+          Right res => putStrLn $ show res
 
 main : IO ()
 main = do
     args <- getArgs
     case (processArgs args) of
-      Just f  => run $ readShowOrgFile f
+      Just f  => run $ readShowEddaOrg f
 
       Nothing => putStrLn "Wrong"
   where

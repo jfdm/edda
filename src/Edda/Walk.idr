@@ -157,7 +157,7 @@ instance Walkable (Inline s) (Block s) where
 
   walk f (Listing l c as s)  = Listing l c as s
   walk f (Equation l s)      = Equation l s
-  walk f (Quotation xs)      = Quotation (walk f xs)
+  walk f (Quotation l xs)    = Quotation l (walk f xs)
   walk f (Theorem l c ty xs) = Theorem l c ty (walk f xs)
 
   walk {s} f (Empty s)   = Empty s
@@ -177,7 +177,7 @@ instance Walkable (Block s) (Block s) where
 
   walk f (Listing l c as s)  = f $ Listing l c as s
   walk f (Equation l s)      = f $ Equation l s
-  walk f (Quotation xs)      = f $ Quotation (walk f xs)
+  walk f (Quotation l xs)      = f $ Quotation l (walk f xs)
   walk f (Theorem l c ty xs) = f $ Theorem l c ty (walk f xs)
 
   walk {s} f (Empty s)   = Empty s

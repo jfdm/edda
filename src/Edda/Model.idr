@@ -6,8 +6,8 @@ import Edda.Model.Utils
 data Step = Simple | Prime
 
 instance Show Step where
-  show Simple  = "Raw"
-  show Prime = "Prime"
+  show Simple = "Simple"
+  show Prime  = "Prime"
 
 data Inline : Step -> Type where
   Font : FontTy -> String -> Inline Simple
@@ -50,8 +50,6 @@ data Inline : Step -> Type where
   Apostrophe : Inline Prime
   SMark      : Inline Prime
   Hyphen     : Inline Prime
-  EmDash     : Inline Prime
-  EnDash     : Inline Prime
   Comma      : Inline Prime
   Plus       : Inline Prime
   Bang       : Inline Prime
@@ -62,6 +60,8 @@ data Inline : Step -> Type where
   Dollar     : Inline Prime
   Pipe       : Inline Prime
   Ellipsis   : Inline Prime
+  EmDash     : Inline Prime
+  EnDash     : Inline Prime
 
   LBrace     : Inline Prime
   RBrace     : Inline Prime
@@ -73,7 +73,7 @@ data Inline : Step -> Type where
   MiscPunc   : Char -> Inline Prime
 
 instance Show (Inline ty) where
-  show (Punc c)      = "{Punc \"" ++ show c  ++ "\"}"
+  show (Punc c)      = "{Punc " ++ show c  ++ "}"
   show (Font ty t)   = "{Font "   ++ show ty ++ " " ++ show t ++ "}"
   show (Raw ty t)    = "{Raw "    ++ show ty ++ " " ++ show t ++ "}"
   show (Mark ty t)   = "{Mark "   ++ show ty ++ " " ++ show t ++ "}"
@@ -122,7 +122,6 @@ instance Show (Inline ty) where
   show SMark      = "{Speech Mark}"
   show Comma      = "{Comma}"
   show Plus       = "{Plus}"
-  show Minus      = "{Minus}"
   show Ellipsis   = "{Ellipsis}"
   show Hyphen     = "{Hyphen}"
   show Bang       = "{Bang}"
@@ -189,7 +188,7 @@ data Block : Step -> Type where
           -> Block Prime
 
   Equation : (label : Maybe String) -> String -> Block Prime
-  Quotation : List (Inline Prime)-> Block Prime
+  Quotation : (labal : Maybe String) -> List (Inline Prime)-> Block Prime
 
   Theorem : (label : Maybe String)
           -> (caption : Maybe (List (Inline Prime)))
@@ -250,7 +249,7 @@ instance Show (Block x) where
   show (BList is) = "[BList " ++ concatMap show is ++ "]\n"
   show (OList is) = "[OList " ++ concatMap show is ++ "]\n"
 
-  show (Quotation p)   = "[BQuote " ++ concatMap show p ++ "]\n"
+  show (Quotation l p) = "[BQuote " ++ fromMaybe "" l ++ " " ++concatMap show p ++ "]\n"
   show (Equation l m)  = "[EqBlock " ++ fromMaybe "" l ++ " \"" ++ m ++ "\"]\n"
 
 data Edda : Step -> Type where
@@ -264,9 +263,9 @@ EddaDoc = Edda Prime
 EddaRaw : Type
 EddaRaw = Edda Simple
 
-instance Show (Edda x) where
-  show (MkEdda s ps body) = "[Edda "
-        ++ show s ++ "\n"
+instance Show (Edda ty) where
+  show (MkEdda step ps body) = "[Edda "
+       ++ show step ++ "\n"
        ++ "[Mdata " ++ concatMap show ps ++ "]\n"
        ++ concatMap show body ++ "]\n"
 

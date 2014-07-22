@@ -15,5 +15,5 @@ modules = Edda.Model
 
         , Edda.Walk
 
---        , Edda.Refine
+        , Edda.Refine
         , Edda.Squash

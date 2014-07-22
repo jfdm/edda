@@ -7,6 +7,10 @@ getAttr : String -> Maybe Attributes -> Maybe Attribute
 getAttr _ Nothing = Nothing
 getAttr key (Just as) = find (\(k,v) => k == key) as
 
+getType : Maybe Attributes -> Maybe String
+getType as = case getAttr "type" as of
+    Just (k,v) => Just v
+    Nothing    => Nothing
 
 readTheorem : String -> Maybe TheoremTy
 readTheorem thm = case thm of

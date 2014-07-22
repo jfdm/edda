@@ -5,7 +5,7 @@ data FontTy = SerifTy | SansTy | ScapTy | MonoTy
 instance Show FontTy where
   show SerifTy = "Serif"
   show SansTy  = "Sans"
-  show ScapTy = "SmallCaps"
+  show ScapTy  = "SmallCaps"
   show MonoTy  = "Monospaced"
 
 data LinkTy = HyperTy | ExposedTy | FnoteTy | RefTy | CiteTy
