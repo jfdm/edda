@@ -2,12 +2,6 @@ module Edda.Utils
 
 import Edda.Model
 
-
-getAttr : String -> Maybe Attributes -> Maybe Attribute
-getAttr _ Nothing = Nothing
-getAttr key (Just as) = find (\(k,v) => k == key) as
-
-
 readTheorem : String -> Maybe TheoremTy
 readTheorem thm = case thm of
                     "THEOREM"     => Just Normal

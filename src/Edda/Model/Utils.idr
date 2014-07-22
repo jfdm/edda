@@ -6,11 +6,11 @@ instance Show QuoteTy where
   show SQuote = "SQuote"
   show DQuote = "DQuote"
 
-data CiteSty = ParenSty | TextSty
+data CiteTy = ParenCite | TextCite
 
-instance Show CiteSty where
-  show ParenSty = "ParenCite"
-  show TextSty  = "TextCite"
+instance Show CiteTy where
+  show ParenCite = "ParenCite"
+  show TextCite  = "TextCite"
 
 data ParenTy = Parents | Brackets | Braces
 
@@ -18,6 +18,7 @@ instance Show ParenTy where
   show Parents = "Parens"
   show Brackets = "Brackets"
   show Braces = "Braces"
+
 
 Attribute : Type
 Attribute = (String, String)

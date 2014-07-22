@@ -33,10 +33,10 @@ data Inline : Step -> Type where
   Quote  : QuoteTy -> List (Inline Prime) -> Inline Prime
   Parens : ParenTy -> List (Inline Prime) -> Inline Prime
 
-  Ref   : String  -> Inline Prime
-  Cite  : CiteSty -> String -> Inline Prime
-  Hyper : String  -> List (Inline Prime) -> Inline Prime
-  Note  : String  -> List (Inline Prime) -> Inline Prime
+  Ref   : String -> Inline Prime
+  Cite  : CiteTy -> String -> Inline Prime
+  Hyper : String -> List (Inline Prime) -> Inline Prime
+  Note  : String -> List (Inline Prime) -> Inline Prime
 
   Space      : Inline Prime
   Newline    : Inline Prime
@@ -133,13 +133,14 @@ instance Show (Inline ty) where
   show Pipe       = "{Pipe}"
   show (MiscPunc c) = "{Punc " ++ show c ++"}"
 
-data Tabular : Type where
-  MkTabular : Vect n TAlign
-            -> Vect m (Vect n (List String))
-            -> Tabular
+data Tabular : Step -> Type where
+  MkTabular : (s : Step)
+            -> Vect n TAlign
+            -> Vect m (Vect n (List (Inline s)))
+            -> Tabular s
 
 -- incomplete
-instance Show Tabular where
+instance Show (Tabular ty) where
   show tbl = ""
 
 data Block : Step -> Type where
@@ -175,7 +176,7 @@ data Block : Step -> Type where
   Table : (s : Step)
         -> (label : String)
         -> (caption : List (Inline s))
-        -> Tabular
+        -> Tabular s
         -> Block s
 
   OList : List (Block Prime)  -> Block Prime

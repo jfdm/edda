@@ -3,34 +3,16 @@ module Edda.Refine.Utils
 import Edda.Model
 import Edda.Model.Utils
 
-treatPunc : Char -> Maybe (Inline Prime)
-treatPunc c = case c of
-    ' '   => Just Space
-    '\n'  => Just Newline
-    '\t'  => Just Tab
-    '<'   => Just LAngle
-    '>'   => Just RAngle
-    ':'   => Just Colon
-    ';'   => Just Semi
-    '/'   => Just FSlash
-    '\\'  => Just BSlash
-    '\''  => Just Apostrophe
-    '-'   => Just Hyphen
-    ','   => Just Comma
-    '+'   => Just Plus
-    '!'   => Just Bang
-    '.'   => Just Period
-    '?'   => Just QMark
-    '#'   => Just Hash
-    '='   => Just Equals
-    '$'   => Just Dollar
-    '|'   => Just Pipe
 
-    '{' => Just LBrace
-    '}' => Just RBrace
-    '(' => Just LParen
-    ')' => Just RParen
-    '[' => Just LBrack
-    ']' => Just RBrack
-    '"' => Just SMark
-    otherwise => Nothing
+treatLink : String -> List (Inline Prime) -> Inline Prime
+treatLink url tar = if length splitURL == 1
+                      then Link InLink url (tar)
+                      else case head' splitURL of
+                        Just "bib"   => (Cite ParenCite url)
+                        Just "citet" => (Cite TextCite url)
+                        Just "citep" => (Cite ParenCite url)
+                        Just _       => (Link ExLink url (tar))
+                        Nothing      => (Link ExLink url (tar))
+  where
+    splitURL : List String
+    splitURL = (split (== ':') url)

@@ -9,6 +9,7 @@ import Edda.Model.Utils
 import Edda.Model.Internal
 
 import Edda.Utils
+import Edda.Reduce
 
 import Edda.Reader.Utils
 

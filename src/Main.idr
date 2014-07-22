@@ -8,6 +8,7 @@ import Effect.StdIO
 
 import Edda.Model
 import Edda.Reader
+import Edda.Reduce
 import Edda.Walk
 
 
