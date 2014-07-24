@@ -188,7 +188,7 @@ data Block : Step -> Type where
           -> Block Prime
 
   Equation : (label : Maybe String) -> String -> Block Prime
-  Quotation : (labal : Maybe String) -> List (Inline Prime)-> Block Prime
+  Quotation : (label : Maybe String) -> List (Inline Prime)-> Block Prime
 
   Theorem : (label : Maybe String)
           -> (caption : Maybe (List (Inline Prime)))

@@ -46,6 +46,9 @@ mutual
   refineMaybeInlines (Just is) = Just $ refineInlines is
 
 -- ----------------------------------------------------------- [ Refine Blocks ]
+-- @TODO Refine Lists
+-- @TODO Refine quotes
+-- @TODO Refine Parens
 covering
 refineBlock : Block Simple -> Block Prime
 refineBlock (Empty Simple)             = Empty Prime

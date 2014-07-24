@@ -10,13 +10,12 @@ import Edda.Model.Utils
 
 class Walkable a z where
   walk : (a -> a) -> z -> z
---  search : (a -> res) -> z -> res
 
 instance Walkable a b => Walkable a (List b) where
-  walk f xs = map (walk f) xs
+  walk  f xs = map (walk f) xs
 
 instance (Walkable a b, Walkable a c) => Walkable a (b,c) where
-  walk f (x,y) = (walk f x, walk f y)
+  walk  f (x,y) = (walk f x, walk f y)
 
 instance Walkable (Inline s) (Inline s) where
   walk f (Punc c)       = f $ Punc c
@@ -43,10 +42,10 @@ instance Walkable (Inline s) (Inline s) where
   walk f (Quote ty xs)  = f $ Quote ty (walk f xs)
   walk f (Parens ty xs) = f $ Parens ty (walk f xs)
 
-  walk f (Ref l)      = f $ Ref l
-  walk f (Cite ty l)  = f $ Cite ty l
-  walk f (Hyper l xs) = f $ Hyper l (walk f xs)
-  walk f (MiscPunc c) = f $ MiscPunc c
+  walk f (Ref uri)        = f $ Ref uri
+  walk f (Cite ty uri)    = f $ Cite ty uri
+  walk f (Hyper uri desc) = f $ Hyper uri (walk f desc)
+  walk f (MiscPunc c)     = f $ MiscPunc c
 
   walk f Space      = f $ Space
   walk f Newline    = f $ Newline
@@ -70,7 +69,6 @@ instance Walkable (Inline s) (Inline s) where
   walk f SMark      = f $ SMark
   walk f Comma      = f $ Comma
   walk f Plus       = f $ Plus
-  walk f Minus      = f $ Minus
   walk f Ellipsis   = f $ Ellipsis
   walk f Hyphen     = f $ Hyphen
   walk f Bang       = f $ Bang
@@ -79,6 +77,26 @@ instance Walkable (Inline s) (Inline s) where
   walk f Hash       = f $ Hash
   walk f Equals     = f $ Equals
   walk f Pipe       = f $ Pipe
+
+instance Walkable (Inline s) (Block s) where
+  walk {s} f (Para s xs) = Para s $ walk f xs
+
+  walk {s} f (Header s d l t)        = Header s d l (walk f t)
+  walk {s} f (Figure s l c as fig)   = Figure s l (walk f c) as (walk f fig)
+  walk {s} f (TextBlock s l c as xs) = TextBlock s l c as (walk f xs)
+  walk {s} f (VerbBlock s l c as v)  = VerbBlock s l c as v
+  walk {s} f (Table s l c tbl)       = Table s l c tbl
+
+  walk f (OList xs)  = OList (walk f xs)
+  walk f (BList xs)  = BList (walk f xs)
+  walk f (DList kvs) = DList (walk f kvs)
+
+  walk f (Listing l c as s)  = Listing l c as s
+  walk f (Equation l s)      = Equation l s
+  walk f (Quotation l xs)    = Quotation l (walk f xs)
+  walk f (Theorem l c ty xs) = Theorem l c ty (walk f xs)
+
+  walk {s} f (Empty s)   = Empty s
 
 instance Walkable (Block s) (Inline s) where
   walk f (Punc c)       = Punc c
@@ -142,26 +160,8 @@ instance Walkable (Block s) (Inline s) where
   walk f Equals     = Equals
   walk f Pipe       = Pipe
 
-instance Walkable (Inline s) (Block s) where
-  walk {s} f (Para s xs) = Para s $ walk f xs
-
-  walk {s} f (Header s d l t)        = Header s d l (walk f t)
-  walk {s} f (Figure s l c as fig)   = Figure s l (walk f c) as (walk f fig)
-  walk {s} f (TextBlock s l c as xs) = TextBlock s l c as (walk f xs)
-  walk {s} f (VerbBlock s l c as v)  = VerbBlock s l c as v
-  walk {s} f (Table s l c tbl)       = Table s l c tbl
-
-  walk f (OList xs)  = OList (walk f xs)
-  walk f (BList xs)  = BList (walk f xs)
-  walk f (DList kvs) = DList (walk f kvs)
-
-  walk f (Listing l c as s)  = Listing l c as s
-  walk f (Equation l s)      = Equation l s
-  walk f (Quotation l xs)    = Quotation l (walk f xs)
-  walk f (Theorem l c ty xs) = Theorem l c ty (walk f xs)
-
-  walk {s} f (Empty s)   = Empty s
-
+-- @TODO Query Table
+-- @TODO Query Lists
 instance Walkable (Block s) (Block s) where
   walk {s} f (Para s xs) = f $ Para s $ walk f xs
 
@@ -177,7 +177,7 @@ instance Walkable (Block s) (Block s) where
 
   walk f (Listing l c as s)  = f $ Listing l c as s
   walk f (Equation l s)      = f $ Equation l s
-  walk f (Quotation l xs)      = f $ Quotation l (walk f xs)
+  walk f (Quotation l xs)    = f $ Quotation l (walk f xs)
   walk f (Theorem l c ty xs) = f $ Theorem l c ty (walk f xs)
 
   walk {s} f (Empty s)   = Empty s

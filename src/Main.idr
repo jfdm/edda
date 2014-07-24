@@ -10,8 +10,8 @@ import Edda.Model
 import Edda.Reader
 import Edda.Refine
 import Edda.Walk
+import Edda.Query
 
-import Debug.Trace
 
 allCaps : Inline s -> Inline s
 allCaps (Font ty str) = Font ty $ toUpper str
@@ -27,6 +27,9 @@ makeMono : Inline s -> Inline s
 makeMono (Font _ str) = Font MonoTy str
 makeMono x = x
 
+getURL : Inline Prime -> List String
+getURL (Hyper uri _) = [uri]
+getURL _            = Nil
 
 readShowOrgFile : String -> {[STDIO, FILE_IO ()]} Eff ()
 readShowOrgFile fname = do
@@ -43,10 +46,10 @@ readShowEddaOrg fname = do
     case d of
       Left err  => putStrLn err
       Right doc => do
-        putStrLn $ show doc
+--        putStrLn $ show doc
         case refineEdda doc of
           Left err  => putStrLn err
-          Right res => putStrLn $ show res
+          Right res => putStrLn $ show $ query getURL res
 
 main : IO ()
 main = do
