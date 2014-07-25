@@ -5,7 +5,6 @@ import Lightyear.Combinators
 import Lightyear.Strings
 
 import Edda.Model
-import Edda.Model.Utils
 
 %access public
 

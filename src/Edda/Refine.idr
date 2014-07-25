@@ -16,7 +16,7 @@ mutual
       RefTy     => Ref url
       ExposedTy => Hyper url [Text url]
       HyperTy   => Hyper url $ fromMaybe [Text "Missing"] $ refineMaybeInlines desc
-      FnoteTy   => Note  url $ fromMaybe [Text "Missing"] $ refineMaybeInlines desc
+      FnoteTy   => FNote  url $ fromMaybe [Text "Missing"] $ refineMaybeInlines desc
       CiteTy    => Cite ParenSty url -- <= TODO
   refineInline (Mark ty txt) = case ty of
       BoldTy   => Bold   $ refineInlines txt
@@ -49,39 +49,43 @@ mutual
 -- @TODO Refine Lists
 -- @TODO Refine quotes
 -- @TODO Refine Parens
-covering
-refineBlock : Block Simple -> Block Prime
-refineBlock (Empty Simple)             = Empty Prime
-refineBlock (Para  Simple t)           = Para Prime (refineInlines t)
-refineBlock (Header Simple d l t)      = Header Prime d l (refineInlines t)
-refineBlock (Table Simple l c tbl)     = Table Prime l (refineInlines c) tbl
-refineBlock (Figure Simple l c as img) = Figure Prime l (refineInlines c)
-                                                        as
-                                                        (refineInline img)
-refineBlock (TextBlock Simple l c as t) = case getType as of
-  Just "QUOTE" => Quotation l (refineInlines t)
-  Just "VERSE" => Quotation l (refineInlines t)
-  Just thm     => case readTheorem thm of
-                    Just thm' => Theorem l (refineMaybeInlines c)
-                                           thm'
-                                           (refineInlines t)
-                    otherwise => TextBlock Prime l (refineMaybeInlines c)
-                                                   as
-                                                   (refineInlines t)
-  Nothing    => TextBlock Prime l (refineMaybeInlines c) as (refineInlines t)
-refineBlock (VerbBlock Simple l c as s) = case getType as of
-  Just "SRC" => Listing l (refineMaybeInlines c) as s
-  Just "EQUATION" => Equation l s
-  Nothing => VerbBlock Prime l (refineMaybeInlines c) as s
+mutual
+  covering
+  refineBlock : Block Simple -> Block Prime
+  refineBlock (Empty Simple)             = Empty Prime
+  refineBlock (Para  Simple t)           = Para Prime (refineInlines t)
+  refineBlock (Header Simple d l t)      = Header Prime d l (refineInlines t)
+  refineBlock (Table Simple l c tbl)     = Table Prime l (refineInlines c) tbl
+  refineBlock (Figure Simple l c as img) = Figure Prime l (refineInlines c)
+                                                          as
+                                                          (refineInline img)
+  refineBlock (TextBlock Simple l c as t) = case getType as of
+    Just "QUOTE" => Quotation l (refineInlines t)
+    Just "VERSE" => Quotation l (refineInlines t)
+    Just thm     => case readTheorem thm of
+                      Just thm' => Theorem l (refineMaybeInlines c)
+                                             thm'
+                                             (refineInlines t)
+                      otherwise => TextBlock Prime l (refineMaybeInlines c)
+                                                     as
+                                                     (refineInlines t)
+    Nothing    => TextBlock Prime l (refineMaybeInlines c) as (refineInlines t)
+  refineBlock (VerbBlock Simple l c as s) = case getType as of
+    Just "SRC" => Listing l (refineMaybeInlines c) as s
+    Just "EQUATION" => Equation l s
+    Nothing => VerbBlock Prime l (refineMaybeInlines c) as s
+  refineBlock (DList Simple kvs) = DList Prime $ map (\(k, vs) => (refineInlines k, (map refineBlock vs))) kvs
+  refineBlock (ListBlock ty bs) = case ty of
+    NumberTy => OList $ map refineBlock bs
+    BulletTy => BList $ map refineBlock bs
 
-covering
-refineBlocks : List (Block Simple) -> List (Block Prime)
-refineBlocks bs = squash2Blocks $ map refineBlock bs
+  covering
+  refineBlocks : List (Block Simple) -> List (Block Prime)
+  refineBlocks bs = squash2Blocks $ map refineBlock bs
 
 -- -------------------------------------------------------------- [ Refine Doc ]
 public
 covering
-refineEdda : EddaRaw -> Either String EddaDoc
-refineEdda (MkEdda Simple ps body) = Right $ MkEddaDoc ps (refineBlocks body)
-refineEdda (MkEddaSimple ps body) = Right $ MkEddaDoc ps (refineBlocks body)
-refineEdda _  = Left "Already refined"
+refineEdda : EddaRaw -> EddaDoc
+refineEdda (MkEdda Simple ps body) = MkEddaDoc ps (refineBlocks body)
+refineEdda (MkEddaSimple ps body)  = MkEddaDoc ps (refineBlocks body)

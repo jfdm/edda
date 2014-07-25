@@ -5,11 +5,8 @@ import Lightyear.Combinators
 import Lightyear.Strings
 
 import Edda.Model
-import Edda.Model.Utils
-import Edda.Model.Internal
-
 import Edda.Utils
-
+import Edda.Reader.Common
 import Edda.Reader.Utils
 
 %access public
@@ -37,7 +34,6 @@ borderPunc = do
 
 mText : Parser (Inline Simple)
 mText = text <|> map Punc borderPunc <?> "Texted used in markup"
-
 
 code : Parser (Inline Simple)
 code = map (Raw CodeTy) (literallyBetween '~') <?> "Code"
@@ -86,16 +82,28 @@ hyper = do
 link : Parser (Inline Simple)
 link = hyper <|> expLink <?> "Link"
 
+fnote : Parser (Inline Simple)
+fnote = do
+   (l,d) <- brackets doFnote
+   pure $ Link FnoteTy (fromMaybe "" l) d
+ where
+   doFnote : Parser (Maybe String, Maybe (List (Inline Simple)))
+   doFnote = do
+     string "fn"
+     colon
+     lab <- opt word
+     colon
+     desc <- opt $ some text
+     pure (lab, desc)
+
 inline : Parser (Inline Simple)
 inline = text
-     <|> link
+     <|> fnote <|> link
      <|> bold <|> emph <|> strike <|> uline
      <|> code <|> verb <|> math <|> punc
      <?> "Raw Inline"
 
 -- -------------------------------------------------------------- [ Properties ]
--- @TODO Factorise this.
-
 attribute : String -> Parser (String, String)
 attribute key = do
     string "#+" $> string key
@@ -126,6 +134,7 @@ label = do
   <?> "Label"
 
 -- ------------------------------------------------------------------ [ Blocks ]
+
 -- @TODO Parse Lists
 block : Parser (Block Simple)
 block = do
@@ -177,8 +186,61 @@ header = char '*' >! do
     let d = length (fromMaybe [] depth) + 1
     pure (Header Simple d "" title)
 
+
+ulMarker : Parser ()
+ulMarker = char '+' <|> char '-' <?> "UList Marker"
+
+olMarker : Parser ()
+olMarker = marker '.' <|> marker ')'
+  where
+    marker : Char -> Parser ()
+    marker c = do
+      some $ satisfy (isDigit)
+      char c
+      (satisfy isSpace)
+      pure ()
+
+-- @TODO Add coninuations
+listItem : Parser () -> Parser (Block Simple)
+listItem mark = do
+    mark
+    line <- manyTill inline eol
+    pure $ Para Simple line
+
+olist : Parser (Block Simple)
+olist = do
+    is <- some (listItem olMarker)
+    eol
+    pure $ ListBlock NumberTy is
+
+blist : Parser (Block Simple)
+blist = do
+    is <- some (listItem ulMarker)
+    eol
+    pure $ ListBlock BulletTy is
+
+dlist : Parser (Block Simple)
+dlist = do
+    is <- some defItem <$ eol
+    pure $ DList Simple is
+  <?> "Description Lists"
+  where
+    marker : Parser (List (Inline Simple))
+    marker = ulMarker $> space $> manyTill inline (space $> colon $> colon)
+
+    defItem : Parser (List (Inline Simple), List (Block Simple))
+    defItem = do
+        key <- marker
+        space
+        values <- manyTill inline eol
+        pure (key, [Para Simple values])
+
+
+list : Parser (Block Simple)
+list = dlist <|> blist <|> olist
+
 orgBlock : Parser (Block Simple)
-orgBlock = header <|> block <|> figure <|> para
+orgBlock = header <|> block <|> list <|> figure <|> para
 
 parseOrg : Parser (Edda Simple)
 parseOrg = do
@@ -191,3 +253,7 @@ parseOrg = do
   let txt' = intersperse (Empty Simple) txt
   pure $ MkEddaSimple (Just ps) (txt' ++ [Empty Simple] ++ lpara)
  <?> "Raw Org Mode"
+
+-- -------------------------------------------------------------------- [ Read ]
+readOrg : String -> {[FILE_IO ()]} Eff (Either String EddaDoc)
+readOrg = readEddaFile parseOrg

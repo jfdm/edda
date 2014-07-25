@@ -13,6 +13,8 @@
 + Footnotes
 * Caveats
 + VERSE and CENTER are treated like QUOTE
++ Footnotes are anonymous or labeled.
++ Lists items must be on a single line
 * Missing
 + Markup associated with outling.
 + Tables

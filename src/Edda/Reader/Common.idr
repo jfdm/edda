@@ -1,14 +1,17 @@
-module Edda.Reader
+module Edda.Reader.Common
+
+import Lightyear.Core
+import Lightyear.Combinators
+import Lightyear.Strings
 
 import Effects
 import Effect.File
 import Effect.StdIO
 
 import Edda.Model
-import Edda.Reader.Org
+import Edda.Refine
 
-
--- Maybe Construct a reader class akin to marshal
+%access private
 
 readFile : { [FILE_IO (OpenFile Read)] } Eff String
 readFile = readAcc ""
@@ -18,17 +21,14 @@ readFile = readAcc ""
                      then readAcc (acc ++ !readLine)
                      else pure acc
 
-
-readEddaRaw : Parser EddaRaw -> String -> { [FILE_IO ()] } Eff (Either String EddaRaw)
-readEddaRaw p f = do
+public
+readEddaFile : Parser EddaRaw -> String -> { [FILE_IO ()] } Eff (Either String EddaDoc)
+readEddaFile p f = do
     case !(open f Read) of
       True => do
         src <- readFile
         close
-        let res = parse p src
-        pure res
+        case parse p src of
+          Left err  => pure $ Left err
+          Right res => pure $ Right $ refineEdda res
       False => pure $ Left "Error"
-
-
-readOrgRaw : String -> {[FILE_IO ()]} Eff (Either String EddaRaw)
-readOrgRaw = readEddaRaw parseOrg

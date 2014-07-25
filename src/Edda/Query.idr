@@ -5,7 +5,6 @@ import Effect.State
 import Effect.StdIO
 
 import Edda.Model
-import Edda.Model.Utils
 
 class Queryable a b where
   query : Monoid res => (a -> res) -> b -> res
@@ -34,10 +33,11 @@ instance Queryable (Inline Prime) (Inline Prime) where
   query f (Quote ty xs)  = f (Quote ty xs) <+> (query f xs)
   query f (Parens ty xs) = f (Parens ty xs) <+> (query f xs)
 
-  query f (Ref l)      = f $ Ref l
-  query f (Cite ty l)  = f $ Cite ty l
-  query f (Hyper l xs) = f (Hyper l xs) <+> (query f xs)
-  query f (MiscPunc c) = f $ MiscPunc c
+  query f (Ref l)       = f $ Ref l
+  query f (Cite ty l)   = f $ Cite ty l
+  query f (Hyper l xs)  = f (Hyper l xs) <+> (query f xs)
+  query f (FNote l xs)  = f (FNote l xs) <+> (query f xs)
+  query f (MiscPunc c)  = f $ MiscPunc c
 
   query f Space      = f $ Space
   query f Newline    = f $ Newline
@@ -81,7 +81,7 @@ instance Queryable (Inline Prime) (Block Prime) where
 
   query f (OList xs)  = query f xs
   query f (BList xs)  = query f xs
-  query f (DList kvs) = query f kvs
+  query f (DList Prime kvs) = query f kvs
 
   query f (Listing l c as s)  = neutral -- caption
   query f (Equation l s)      = neutral
@@ -111,6 +111,7 @@ instance Queryable (Block Prime) (Inline Prime) where
   query f (Ref l)      = neutral
   query f (Cite ty l)  = neutral
   query f (Hyper l xs) = query f xs
+  query f (FNote l xs) = query f xs
   query f (MiscPunc c) = neutral
 
   query f Space      = neutral
@@ -158,7 +159,7 @@ instance Queryable (Block Prime) (Block Prime) where
 
   query f (OList xs)  = f (OList xs) <+> (query f xs)
   query f (BList xs)  = f (BList xs) <+> (query f xs)
-  query f (DList kvs) = f (DList kvs) <+> (query f kvs)
+  query f (DList Prime kvs) = f (DList Prime kvs) <+> (query f kvs)
 
   query f (Listing l c as s)  = f (Listing l c as s) -- caption
   query f (Equation l s)      = f (Equation l s)

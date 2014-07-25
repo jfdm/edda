@@ -1,7 +1,6 @@
 module Edda.Walk
 
 import Edda.Model
-import Edda.Model.Utils
 
 --%default total
 
@@ -45,6 +44,7 @@ instance Walkable (Inline s) (Inline s) where
   walk f (Ref uri)        = f $ Ref uri
   walk f (Cite ty uri)    = f $ Cite ty uri
   walk f (Hyper uri desc) = f $ Hyper uri (walk f desc)
+  walk f (FNote uri desc) = f $ FNote uri (walk f desc)
   walk f (MiscPunc c)     = f $ MiscPunc c
 
   walk f Space      = f $ Space
@@ -86,10 +86,11 @@ instance Walkable (Inline s) (Block s) where
   walk {s} f (TextBlock s l c as xs) = TextBlock s l c as (walk f xs)
   walk {s} f (VerbBlock s l c as v)  = VerbBlock s l c as v
   walk {s} f (Table s l c tbl)       = Table s l c tbl
+  walk f (ListBlock ty is)     = ListBlock ty (walk f is)
 
   walk f (OList xs)  = OList (walk f xs)
   walk f (BList xs)  = BList (walk f xs)
-  walk f (DList kvs) = DList (walk f kvs)
+  walk {s} f (DList s kvs) = DList s (walk f kvs)
 
   walk f (Listing l c as s)  = Listing l c as s
   walk f (Equation l s)      = Equation l s
@@ -126,6 +127,7 @@ instance Walkable (Block s) (Inline s) where
   walk f (Ref l)      = Ref l
   walk f (Cite ty l)  = Cite ty l
   walk f (Hyper l xs) = Hyper l (walk f xs)
+  walk f (FNote l xs) = FNote l (walk f xs)
   walk f (MiscPunc c) = MiscPunc c
 
   walk f Space      = Space
@@ -170,10 +172,11 @@ instance Walkable (Block s) (Block s) where
   walk {s} f (TextBlock s l c as xs) = f $ TextBlock s l c as (walk f xs)
   walk {s} f (VerbBlock s l c as v)  = f $ VerbBlock s l c as v
   walk {s} f (Table s l c tbl)       = f $ Table s l c tbl
+  walk f (ListBlock ty is)     = f $ ListBlock ty (walk f is)
 
   walk f (OList xs)  = f $ OList (walk f xs)
   walk f (BList xs)  = f $ BList (walk f xs)
-  walk f (DList kvs) = f $ DList (walk f kvs)
+  walk {s} f (DList s kvs) = f $ DList s (walk f kvs)
 
   walk f (Listing l c as s)  = f $ Listing l c as s
   walk f (Equation l s)      = f $ Equation l s

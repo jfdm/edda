@@ -5,15 +5,14 @@ opts = "-p lightyear -p effects"
 sourcedir = src
 
 modules = Edda.Model
-        , Edda.Model.Utils
+        , Edda.Model.Show
 
         , Edda.Reader
         , Edda.Reader.Utils
         , Edda.Reader.Org
 
         , Edda.Utils
-
-        , Edda.Walk
-
-        , Edda.Refine
         , Edda.Squash
+        , Edda.Walk
+        , Edda.Refine
+        , Edda.Query

@@ -1,7 +1,6 @@
 module Edda.Refine.Utils
 
 import Edda.Model
-import Edda.Model.Utils
 import Edda.Squash
 
 treatPunc : Char -> Maybe (Inline Prime)

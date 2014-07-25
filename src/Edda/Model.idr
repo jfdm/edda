@@ -1,20 +1,27 @@
 module Edda.Model
 
-import Edda.Model.Internal
-import Edda.Model.Utils
-
 data Step = Simple | Prime
 
-instance Show Step where
-  show Simple = "Simple"
-  show Prime  = "Prime"
+data FontTy   = SerifTy | SansTy | ScapTy | MonoTy
+data QuoteTy  = SQuote | DQuote
+data CiteSty  = ParenSty | TextSty
+data ParenTy  = Parents | Brackets | Braces
+data LinkTy   = HyperTy | ExposedTy | FnoteTy | RefTy | CiteTy
+data MarkupTy = BoldTy | EmphTy | StrikeTy | UlineTy
+data RawTy    = VerbTy | CodeTy | MathTy
+
+Attribute : Type
+Attribute = (String, String)
+
+Attributes : Type
+Attributes = List (String, String)
 
 data Inline : Step -> Type where
-  Font : FontTy -> String -> Inline Simple
-  Punc : Char -> Inline Simple
-  Link : LinkTy -> String -> Maybe (List (Inline Simple)) -> Inline Simple
+  Font : FontTy   -> String -> Inline Simple
+  Punc : Char     -> Inline Simple
+  Link : LinkTy   -> String -> Maybe (List (Inline Simple)) -> Inline Simple
   Mark : MarkupTy -> List (Inline Simple) -> Inline Simple
-  Raw  : RawTy -> String -> Inline Simple
+  Raw  : RawTy    -> String -> Inline Simple
 
   Text : String -> Inline Prime
   Sans : String -> Inline Prime
@@ -36,7 +43,7 @@ data Inline : Step -> Type where
   Ref   : String  -> Inline Prime
   Cite  : CiteSty -> String -> Inline Prime
   Hyper : String  -> List (Inline Prime) -> Inline Prime
-  Note  : String  -> List (Inline Prime) -> Inline Prime
+  FNote : String  -> List (Inline Prime) -> Inline Prime
 
   Space      : Inline Prime
   Newline    : Inline Prime
@@ -72,74 +79,18 @@ data Inline : Step -> Type where
 
   MiscPunc   : Char -> Inline Prime
 
-instance Show (Inline ty) where
-  show (Punc c)      = "{Punc " ++ show c  ++ "}"
-  show (Font ty t)   = "{Font "   ++ show ty ++ " " ++ show t ++ "}"
-  show (Raw ty t)    = "{Raw "    ++ show ty ++ " " ++ show t ++ "}"
-  show (Mark ty t)   = "{Mark "   ++ show ty ++ " " ++ show t ++ "}"
-  show (Link ty u t) = "{Link "   ++ show ty ++ " <" ++ u ++ "> \"" ++ show t ++ "\"}"
-
-  show (Text text) = "{Text \"" ++ text ++ "\"}"
-  show (Mono mono) = "{Mono \"" ++ mono ++ "\"}"
-  show (Scap scap) = "{Scap \"" ++ scap ++ "\"}"
-
-  show (Verb verb) = "{Verb \"" ++ verb ++ "\"}"
-  show (Code code) = "{Code \"" ++ code ++ "\"}"
-  show (Math math) = "{Math \"" ++ math ++ "\"}"
-
-  show (Emph e)   = "{Emph "   ++ show e ++ "}"
-  show (Bold b) = "{Strong " ++ show b ++ "}"
-  show (Strike s) = "{Strike " ++ show s ++ "}"
-  show (Uline u)  = "{Verb "   ++ show u ++ "}"
-
-  show (Quote qty ss)  = "{" ++ show qty ++ " " ++ show ss ++ "}"
-  show (Parens pty ss) = "{" ++ show pty ++ " " ++ show ss ++ "}"
-
-  show (Ref l)      = "{Ref " ++ show l ++ "}"
-  show (Cite ty id) = "{" ++ show ty ++ " " ++ id ++ "}"
-  show (Hyper u d)  = "{Hyper " ++ " <" ++ u ++ "> \"" ++ show d ++ "\"}"
-  show (Note l d)   = "{Fnote " ++ l ++ " \"" ++ show d ++ "\"}"
-
-  show Space      = "{Space}"
-  show Newline    = "{Newline}"
-  show Tab        = "{Tab}"
-  show LBrace     = "{LBrace}"
-  show RBrace     = "{RBrace}"
-  show LParen     = "{LParen}"
-  show RParen     = "{RParen}"
-  show LBrack     = "{LBrack}"
-  show RBrack     = "{RBrack}"
-  show LAngle     = "{LAngle}"
-  show RAngle     = "{RAngle}"
-  show Dollar     = "{Dollar}"
-  show Colon      = "{Colon}"
-  show Semi       = "{Semi}"
-  show EnDash     = "{EnDash}"
-  show EmDash     = "{EmDash}"
-  show FSlash     = "{Forwardslash}"
-  show BSlash     = "{Backslash}"
-  show Apostrophe = "{Apostrophe}"
-  show SMark      = "{Speech Mark}"
-  show Comma      = "{Comma}"
-  show Plus       = "{Plus}"
-  show Ellipsis   = "{Ellipsis}"
-  show Hyphen     = "{Hyphen}"
-  show Bang       = "{Bang}"
-  show Period     = "{Period}"
-  show QMark      = "{Question Mark}"
-  show Hash       = "{Hash}"
-  show Equals     = "{Equals}"
-  show Pipe       = "{Pipe}"
-  show (MiscPunc c) = "{Punc " ++ show c ++"}"
+data TAlign = AlignLeft | AlignRight | AlignCenter | AlignPar
 
 data Tabular : Type where
   MkTabular : Vect n TAlign
             -> Vect m (Vect n (List String))
             -> Tabular
 
--- incomplete
-instance Show Tabular where
-  show tbl = ""
+data TheoremTy = Normal | Corollary | Lemma | Proposition | Proof | Definition
+               | Example | Exercise | Note | Problem | Question | Remark
+               | Solution
+
+data ListTy = BulletTy | NumberTy
 
 data Block : Step -> Type where
   Para  : (s : Step) -> List (Inline s) -> Block s
@@ -177,9 +128,15 @@ data Block : Step -> Type where
         -> Tabular
         -> Block s
 
+  ListBlock : ListTy
+            -> List (Block Simple)
+            -> Block Simple
+
+  DList : (s : Step) -> List (List (Inline s), List (Block s)) -> Block s
+
+
   OList : List (Block Prime)  -> Block Prime
   BList : List (Block Prime)  -> Block Prime
-  DList : List (List (Inline Prime), List (Block Prime)) -> Block Prime
 
   Listing : (label : Maybe String)
           -> (caption : Maybe (List (Inline Prime)))
@@ -196,62 +153,6 @@ data Block : Step -> Type where
           -> List (Inline Prime)
           -> Block Prime
 
-instance Show (Block x) where
-  show (Para s txt) = "[Para "  ++ show s ++ " " ++ concatMap show txt ++ "]\n"
-  show (Empty s)    = "[Empty " ++ show s ++ "]\n"
-  show (Header s d l t) = "[Heading " ++ show s ++ " "
-       ++ show d ++ " "
-       ++ show l ++ " "
-       ++ show t ++ "]\n"
-  show (Figure s l c as img)  = "[FigBlock "
-       ++ show s ++ " "
-       ++ show l ++ " "
-       ++ show c ++ " "
-       ++ show as ++ " "
-       ++ show img ++ "]\n"
-
-  show (TextBlock s lab cap as txt) = "[TextBlock "
-       ++ show s   ++ " "
-       ++ show lab ++ " "
-       ++ show cap ++ " "
-       ++ show as  ++ " "
-       ++ show txt ++ "]\n"
-
-  show (VerbBlock s lab cap as txt) = "[VerbBlock "
-       ++ show s   ++ " "
-       ++ show lab ++ " "
-       ++ show cap ++ " "
-       ++ show as  ++ " "
-       ++ show txt ++ "]\n"
-
-  show (Listing l cap as co) = "[CodeBlock "
-       ++ show l ++ " "
-       ++ show cap
-       ++ show as ++ " "
-       ++ " \"" ++ co ++ "\"]\n"
-
-  show (Table s l c tbl) = "[TblBlock "
-       ++ show s ++ " "
-       ++ show l ++ " "
-       ++ show c ++ " "
-       ++ show tbl ++ "]\n"
-
-  show (Theorem l c ty thm) = "[ThmBlock "
-       ++ show ty ++ " "
-       ++ fromMaybe "" l ++ " "
-       ++ show c ++ " "
-       ++ concatMap show thm ++ "]\n"
-
-  show (DList ds) = "[DList "
-       ++ concatMap (\(k,vs) => show k ++ " "
-       ++ concatMap show vs ) ds ++ "]\n"
-
-  show (BList is) = "[BList " ++ concatMap show is ++ "]\n"
-  show (OList is) = "[OList " ++ concatMap show is ++ "]\n"
-
-  show (Quotation l p) = "[BQuote " ++ fromMaybe "" l ++ " " ++concatMap show p ++ "]\n"
-  show (Equation l m)  = "[EqBlock " ++ fromMaybe "" l ++ " \"" ++ m ++ "\"]\n"
-
 data Edda : Step -> Type where
   MkEdda : (s : Step) -> (ps : Maybe Attributes) -> List (Block s) -> Edda s
   MkEddaSimple : (ps : Maybe Attributes) -> List (Block Simple) -> Edda Simple
@@ -262,17 +163,3 @@ EddaDoc = Edda Prime
 
 EddaRaw : Type
 EddaRaw = Edda Simple
-
-instance Show (Edda ty) where
-  show (MkEdda step ps body) = "[Edda "
-       ++ show step ++ "\n"
-       ++ "[Mdata " ++ concatMap show ps ++ "]\n"
-       ++ concatMap show body ++ "]\n"
-
-  show (MkEddaDoc ps body) = "[EddaDoc "
-       ++ "[Mdata " ++ concatMap show ps ++ "]\n"
-       ++ concatMap show body ++ "]\n"
-
-  show (MkEddaSimple ps body) = "[EddaSimple"
-       ++ "[MData " ++ concatMap show ps ++ "]\n"
-       ++ concatMap show body ++ "]\n"
