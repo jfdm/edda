@@ -4,8 +4,10 @@ import Edda.Model
 
 --%default total
 
--- TODO walk attributes
--- TODO walk maybe
+-- @TODO walk attributes
+-- @TODO walk maybe
+-- @TODO Walk captions
+-- @TODO Walk Table
 
 class Walkable a z where
   walk : (a -> a) -> z -> z
@@ -79,25 +81,40 @@ instance Walkable (Inline s) (Inline s) where
   walk f Pipe       = f $ Pipe
 
 instance Walkable (Inline s) (Block s) where
-  walk {s} f (Para s xs) = Para s $ walk f xs
+  walk f (ListBlock ty is)        = ListBlock ty (walk f is)
+  walk f (TextBlock ty l c as xs) = TextBlock ty l c as (walk f xs)  -- caption
+  walk f (VerbBlock ty l c as v)  = VerbBlock ty l c as v            -- caption
 
-  walk {s} f (Header s d l t)        = Header s d l (walk f t)
-  walk {s} f (Figure s l c as fig)   = Figure s l (walk f c) as (walk f fig)
-  walk {s} f (TextBlock s l c as xs) = TextBlock s l c as (walk f xs)
-  walk {s} f (VerbBlock s l c as v)  = VerbBlock s l c as v
-  walk {s} f (Table s l c tbl)       = Table s l c tbl
-  walk f (ListBlock ty is)     = ListBlock ty (walk f is)
+  walk {s} f (Empty s)             = Empty s
+  walk {s} f (Header s d l t)      = Header s d l (walk f t)
+  walk {s} f (Figure s l c as fig) = Figure s l (walk f c) as (walk f fig)
+  walk {s} f (Table s l c tbl)     = Table s l c tbl                        -- caption
+  walk {s} f (DList s kvs)         = DList s (walk f kvs)
 
   walk f (OList xs)  = OList (walk f xs)
   walk f (BList xs)  = BList (walk f xs)
-  walk {s} f (DList s kvs) = DList s (walk f kvs)
 
-  walk f (Listing l c as s)  = Listing l c as s
-  walk f (Equation l s)      = Equation l s
+  walk f (Comment ss)           = Comment ss
+  walk f (Equation l s)         = Equation l s
+  walk f (Literal l c ss)       = Literal l c ss   -- caption
+  walk f (Listing l c ty as s)  = Listing l c ty as s -- caption
+
+  walk f (Para xs) = Para $ walk f xs
   walk f (Quotation l xs)    = Quotation l (walk f xs)
-  walk f (Theorem l c ty xs) = Theorem l c ty (walk f xs)
 
-  walk {s} f (Empty s)   = Empty s
+  walk f (Theorem l c xs)     = Theorem l c (walk f xs) -- caption
+  walk f (Corollary l c xs)   = Corollary l c (walk f xs) -- caption
+  walk f (Lemma l c xs)       = Lemma l c (walk f xs) -- caption
+  walk f (Proposition l c xs) = Proposition l c (walk f xs) -- caption
+  walk f (Proof l c xs)       = Proof l c (walk f xs) -- caption
+  walk f (Definition l c xs)  = Definition l c (walk f xs) -- caption
+  walk f (Exercise l c xs)    = Exercise l c (walk f xs) -- caption
+  walk f (Note l c xs)        = Note l c (walk f xs) -- caption
+  walk f (Remark l c xs)      = Remark l c (walk f xs) -- caption
+  walk f (Problem l c xs)     = Problem l c (walk f xs) -- caption
+  walk f (Question l c xs)    = Question l c (walk f xs) -- caption
+  walk f (Solution l c xs)    = Solution l c (walk f xs) -- caption
+  walk f (Example l c xs)     = Example l c (walk f xs) -- caption
 
 instance Walkable (Block s) (Inline s) where
   walk f (Punc c)       = Punc c
@@ -162,40 +179,55 @@ instance Walkable (Block s) (Inline s) where
   walk f Equals     = Equals
   walk f Pipe       = Pipe
 
--- @TODO Query Table
--- @TODO Query Lists
-instance Walkable (Block s) (Block s) where
-  walk {s} f (Para s xs) = f $ Para s $ walk f xs
 
-  walk {s} f (Header s d l t)        = f $ Header s d l (walk f t)
-  walk {s} f (Figure s l c as fig)   = f $ Figure s l (walk f c) as (walk f fig)
-  walk {s} f (TextBlock s l c as xs) = f $ TextBlock s l c as (walk f xs)
-  walk {s} f (VerbBlock s l c as v)  = f $ VerbBlock s l c as v
-  walk {s} f (Table s l c tbl)       = f $ Table s l c tbl
-  walk f (ListBlock ty is)     = f $ ListBlock ty (walk f is)
+instance Walkable (Block s) (Block s) where
+
+  walk f (ListBlock ty is)        = f $ ListBlock ty (walk f is)
+  walk f (TextBlock ty l c as xs) = f $ TextBlock ty l c as (walk f xs)  -- caption
+  walk f (VerbBlock ty l c as v)  = f $ VerbBlock ty l c as v            -- caption
+
+  walk {s} f (Empty s)             = f $ Empty s
+  walk {s} f (Header s d l t)      = f $ Header s d l (walk f t)
+  walk {s} f (Figure s l c as fig) = f $ Figure s l (walk f c) as (walk f fig)
+  walk {s} f (Table s l c tbl)     = f $ Table s l c tbl                        -- caption
+  walk {s} f (DList s kvs)         = f $ DList s (walk f kvs)
 
   walk f (OList xs)  = f $ OList (walk f xs)
   walk f (BList xs)  = f $ BList (walk f xs)
-  walk {s} f (DList s kvs) = f $ DList s (walk f kvs)
 
-  walk f (Listing l c as s)  = f $ Listing l c as s
-  walk f (Equation l s)      = f $ Equation l s
+  walk f (Comment ss)           = f $ Comment ss
+  walk f (Equation l s)         = f $ Equation l s
+  walk f (Literal l c ss)       = f $ Literal l c ss   -- caption
+  walk f (Listing l c ty as s)  = f $ Listing l c ty as s -- caption
+
+  walk f (Para xs)           = f $ Para $ walk f xs
   walk f (Quotation l xs)    = f $ Quotation l (walk f xs)
-  walk f (Theorem l c ty xs) = f $ Theorem l c ty (walk f xs)
 
-  walk {s} f (Empty s)   = Empty s
+  walk f (Theorem l c xs)     = f $ Theorem l c (walk f xs) -- caption
+  walk f (Corollary l c xs)   = f $ Corollary l c (walk f xs) -- caption
+  walk f (Lemma l c xs)       = f $ Lemma l c (walk f xs) -- caption
+  walk f (Proposition l c xs) = f $ Proposition l c (walk f xs) -- caption
+  walk f (Proof l c xs)       = f $ Proof l c (walk f xs) -- caption
+  walk f (Definition l c xs)  = f $ Definition l c (walk f xs) -- caption
+  walk f (Exercise l c xs)    = f $ Exercise l c (walk f xs) -- caption
+  walk f (Note l c xs)        = f $ Note l c (walk f xs) -- caption
+  walk f (Remark l c xs)      = f $ Remark l c (walk f xs) -- caption
+  walk f (Problem l c xs)     = f $ Problem l c (walk f xs) -- caption
+  walk f (Question l c xs)    = f $ Question l c (walk f xs) -- caption
+  walk f (Solution l c xs)    = f $ Solution l c (walk f xs) -- caption
+  walk f (Example l c xs)     = f $ Example l c (walk f xs) -- caption
 
 instance Walkable (Block s) (Edda s) where
   walk {s} f (MkEdda s as xs) = MkEdda s as (walk f xs)
   walk f (MkEddaDoc ps xs)    = MkEddaDoc ps (walk f xs)
-  walk f (MkEddaSimple ps xs) = MkEddaSimple ps (walk f xs)
+  walk f (MkEddaStar ps xs) = MkEddaStar ps (walk f xs)
 
 instance Walkable (Inline s) (Edda s) where
   walk {s} f (MkEdda s as xs) = MkEdda s as (walk f xs)
   walk f (MkEddaDoc ps xs)    = MkEddaDoc ps (walk f xs)
-  walk f (MkEddaSimple ps xs) = MkEddaSimple ps (walk f xs)
+  walk f (MkEddaStar ps xs) = MkEddaStar ps (walk f xs)
 
 instance Walkable (Edda s) (Edda s) where
   walk {s} f (MkEdda s as xs) = f $ MkEdda s as xs
   walk f (MkEddaDoc ps xs)    = f $ MkEddaDoc ps xs
-  walk f (MkEddaSimple ps xs) = f $ MkEddaSimple ps xs
+  walk f (MkEddaStar ps xs) = f $ MkEddaStar ps xs

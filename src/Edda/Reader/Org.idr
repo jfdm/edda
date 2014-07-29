@@ -15,10 +15,10 @@ import Edda.Reader.Utils
 rsvp : List Char
 rsvp = ['+', '=', '*', '/', '~', '_']
 
-text : Parser (Inline Simple)
+text : Parser (Inline Star)
 text = map (Font SerifTy) word <?> "Raw Word"
 
-punc : Parser (Inline Simple)
+punc : Parser (Inline Star)
 punc = map Punc punctuation <?> "Raw Punctuation"
 
 borderPunc : Parser (Char)
@@ -32,62 +32,62 @@ borderPunc = do
                 then satisfy (const False)
                 else pure x
 
-mText : Parser (Inline Simple)
+mText : Parser (Inline Star)
 mText = text <|> map Punc borderPunc <?> "Texted used in markup"
 
-code : Parser (Inline Simple)
+code : Parser (Inline Star)
 code = map (Raw CodeTy) (literallyBetween '~') <?> "Code"
 
-verb : Parser (Inline Simple)
+verb : Parser (Inline Star)
 verb = map (Raw VerbTy) (literallyBetween '=') <?> "Verb"
 
-math : Parser (Inline Simple)
+math : Parser (Inline Star)
 math = map (Raw MathTy) (literallyBetween '$') <?> "Math"
 
-markup : MarkupTy -> Char -> Parser (Inline Simple)
+markup : MarkupTy -> Char -> Parser (Inline Star)
 markup mTy c = do
     txt <- between (char c) (char c) (some mText)
     pure $ Mark mTy txt
   <?> "Markup"
 
-bold : Parser (Inline Simple)
+bold : Parser (Inline Star)
 bold = markup BoldTy '*' <?> "Bold"
 
-emph : Parser (Inline Simple)
+emph : Parser (Inline Star)
 emph = markup EmphTy '/'  <?> "Emph"
 
-strike : Parser (Inline Simple)
+strike : Parser (Inline Star)
 strike = markup StrikeTy '+' <?> "Strike"
 
-uline : Parser (Inline Simple)
+uline : Parser (Inline Star)
 uline = markup UlineTy '_' <?> "Uline"
 
-expLink : Parser (Inline Simple)
+expLink : Parser (Inline Star)
 expLink = do
     txt <- brackets $ brackets url
     pure $ Link ExposedTy txt Nothing
   <?> "Exposed Link"
 
-hyper : Parser (Inline Simple)
+hyper : Parser (Inline Star)
 hyper = do
     (uri, desc) <- brackets internal
     pure $ Link HyperTy uri (Just desc)
   where
-    internal : Parser (String, List (Inline Simple))
+    internal : Parser (String, List (Inline Star))
     internal = do
       u <- brackets url
       d <- brackets $ some text
       pure (u, intersperse (Punc ' ' ) d)
 
-link : Parser (Inline Simple)
+link : Parser (Inline Star)
 link = hyper <|> expLink <?> "Link"
 
-fnote : Parser (Inline Simple)
+fnote : Parser (Inline Star)
 fnote = do
    (l,d) <- brackets doFnote
    pure $ Link FnoteTy (fromMaybe "" l) d
  where
-   doFnote : Parser (Maybe String, Maybe (List (Inline Simple)))
+   doFnote : Parser (Maybe String, Maybe (List (Inline Star)))
    doFnote = do
      string "fn"
      colon
@@ -96,7 +96,7 @@ fnote = do
      desc <- opt $ some text
      pure (lab, desc)
 
-inline : Parser (Inline Simple)
+inline : Parser (Inline Star)
 inline = text
      <|> fnote <|> link
      <|> bold <|> emph <|> strike <|> uline
@@ -112,7 +112,7 @@ attribute key = do
     pure (key, pack ps)
   <?> "Raw Attribute"
 
-inlineKeyWord : String -> Parser (String, List (Inline Simple))
+inlineKeyWord : String -> Parser (String, List (Inline Star))
 inlineKeyWord key = do
     string "#+" $> string key
     colon
@@ -121,7 +121,7 @@ inlineKeyWord key = do
     pure (key, ps)
   <?> "Attribute."
 
-caption : Parser (List (Inline Simple))
+caption : Parser (List (Inline Star))
 caption = do
     (k,v) <- inlineKeyWord "CAPTION"
     pure v
@@ -134,56 +134,95 @@ label = do
   <?> "Label"
 
 -- ------------------------------------------------------------------ [ Blocks ]
+-- @TODO Add equations
 
-block : Parser (Block Simple)
+getOrgBlockType : String -> Either VerbBlockTy TextBlockTy
+getOrgBlockType str = case str of
+    "COMMENT"     => Left CommentTy
+    "SRC"         => Left ListingTy
+    "EXAMPLE"     => Left LiteralTy
+    "QUOTE"       => Right QuotationTy
+    "VERSE"       => Right QuotationTy
+    "THEOREM"     => Right TheoremTy
+    "COROLLARY"   => Right CorollaryTy
+    "LEMMA"       => Right LemmaTy
+    "PROPOSITION" => Right PropositionTy
+    "PROOF"       => Right ProofTy
+    "DEFINITION"  => Right DefinitionTy
+    "EXERCISE"    => Right ExerciseTy
+    "NOTE"        => Right NoteTy
+    "PROBLEM"     => Right ProblemTy
+    "QUESTION"    => Right QuestionTy
+    "REMARK"      => Right RemarkTy
+    "SOLUTION"    => Right SolutionTy
+    otherwise     => Left LiteralTy
+
+dealWithSrcAttrs : Maybe String
+              -> Maybe Attributes
+              -> Maybe Attributes
+dealWithSrcAttrs Nothing         Nothing   = Nothing
+dealWithSrcAttrs Nothing         (Just as) = Just as
+dealWithSrcAttrs (Just srcattrs) as        = Just $ srcLang ++ srcOpts ++ fromMaybe [] as
+  where
+    foo : (String, String)
+    foo = break (== ' ') srcattrs
+
+    srcLang : Attributes
+    srcLang = [("src_lang", fst foo)]
+    srcOpts : Attributes
+    srcOpts = [("src_opts", trim $ snd foo)]
+
+
+block : Parser (Block Star)
 block = do
-    cap <- opt caption
-    lab <- opt label
-    rawAs  <- opt $ some (attribute "ATTR")
+    cap  <- opt caption
+    lab  <- opt label
+    attr <- opt $ attribute "ATTR"
     string "#+BEGIN_"
     ty <- word
-    if isVerbBlock ty
-      then do
-        bopts <- opt $ char ' ' $> manyTill (anyChar) eol
-        let as = dealWithAttrs ty (convertOpts bopts) rawAs
+    case getOrgBlockType ty of
+      Left x => do
+        srcopts <- opt $ char ' ' $> manyTill (anyChar) eol
+        let as = dealWithSrcAttrs (convertOpts srcopts) (convertAttrs attr)
+
         txt <- manyTill anyChar (string "#+END_" $> token ty)
-        pure $ VerbBlock Simple lab cap (Just as) (pack txt)
-      else do
+        pure $ VerbBlock x lab cap as (pack txt)
+      Right y => do
         txt <- manyTill inline (string "#+END_" $> token ty)
-        pure $ TextBlock Simple lab cap rawAs txt
+        pure $ TextBlock y lab cap (convertAttrs attr) txt
 
    <?> "Blocks"
 
-figure : Parser (Block Simple)
+figure : Parser (Block Star)
 figure = do
     cap <- caption
     lab <- label
     as  <- opt $ some (attribute "ATTR")
     img <- expLink
     space
-    pure (Figure Simple lab cap as img)
+    pure (Figure Star lab cap as img)
   <?> "Figure"
 
-para : Parser (Block Simple)
+para : Parser (Block Star)
 para = do
-    xt <- manyTill inline (eol $> eol)
+    txt <- manyTill inline (eol $> eol)
     space
-    pure $ Para Simple xt
+    pure $ TextBlock ParaTy Nothing Nothing Nothing txt
   <?> "Paragraphs"
 
-paraLast : Parser (Block Simple)
+paraLast : Parser (Block Star)
 paraLast = do
-    xt <- manyTill inline (eol $> space)
-    pure $ Para Simple xt
+    txt <- manyTill inline (eol $> space)
+    pure $ TextBlock ParaTy Nothing Nothing Nothing txt
   <?> "Filthy hack for last para"
 
-header : Parser (Block Simple)
+header : Parser (Block Star)
 header = char '*' >! do
     depth <- opt (many $ char '*')
     space
     title <- manyTill (inline) (eol $> space)
     let d = length (fromMaybe [] depth) + 1
-    pure (Header Simple d "" title)
+    pure (Header Star d "" title)
 
 
 ulMarker : Parser ()
@@ -200,48 +239,48 @@ olMarker = marker '.' <|> marker ')'
       pure ()
 
 -- @TODO Add coninuations
-listItem : Parser () -> Parser (Block Simple)
+listItem : Parser () -> Parser (Block Star)
 listItem mark = do
     mark
     line <- manyTill inline eol
-    pure $ Para Simple line
+    pure $ TextBlock ParaTy Nothing Nothing Nothing line
 
-olist : Parser (Block Simple)
+olist : Parser (Block Star)
 olist = do
     is <- some (listItem olMarker)
     eol
     pure $ ListBlock NumberTy is
 
-blist : Parser (Block Simple)
+blist : Parser (Block Star)
 blist = do
     is <- some (listItem ulMarker)
     eol
     pure $ ListBlock BulletTy is
 
-dlist : Parser (Block Simple)
+dlist : Parser (Block Star)
 dlist = do
     is <- some defItem <$ eol
-    pure $ DList Simple is
+    pure $ DList Star is
   <?> "Description Lists"
   where
-    marker : Parser (List (Inline Simple))
+    marker : Parser (List (Inline Star))
     marker = ulMarker $> space $> manyTill inline (space $> colon $> colon)
 
-    defItem : Parser (List (Inline Simple), List (Block Simple))
+    defItem : Parser (List (Inline Star), List (Block Star))
     defItem = do
         key <- marker
         space
         values <- manyTill inline eol
-        pure (key, [Para Simple values])
+        pure (key, [TextBlock ParaTy Nothing Nothing Nothing values])
 
 
-list : Parser (Block Simple)
+list : Parser (Block Star)
 list = dlist <|> blist <|> olist
 
-orgBlock : Parser (Block Simple)
+orgBlock : Parser (Block Star)
 orgBlock = header <|> block <|> list <|> figure <|> para
 
-parseOrg : Parser (Edda Simple)
+parseOrg : Parser (Edda Star)
 parseOrg = do
   title  <- attribute "TITLE"
   author <- attribute "AUTHOR"
@@ -249,8 +288,8 @@ parseOrg = do
   txt    <- many orgBlock
   lpara  <- many paraLast -- Dirty Hack
   let ps = the Attributes [title, author, date]
-  let txt' = intersperse (Empty Simple) txt
-  pure $ MkEddaSimple (Just ps) (txt' ++ [Empty Simple] ++ lpara)
+  let txt' = intersperse (Empty Star) txt
+  pure $ MkEddaStar (Just ps) (txt' ++ [Empty Star] ++ lpara)
  <?> "Raw Org Mode"
 
 -- -------------------------------------------------------------------- [ Read ]

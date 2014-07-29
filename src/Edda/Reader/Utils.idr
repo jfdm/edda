@@ -5,6 +5,7 @@ import Lightyear.Combinators
 import Lightyear.Strings
 
 import Edda.Model
+import Edda.Utils
 
 %access public
 
@@ -59,21 +60,11 @@ word = map pack (some $ satisfy isAlphaNum) <?> "Word"
 punctuation : Parser Char
 punctuation = satisfy (\x => not $ isAlphaNum x) <?> "Punctuation"
 
-isVerbBlock : String -> Bool
-isVerbBlock bTy = List.elem bTy ["COMMENT", "SRC", "EXAMPLE"]
-
 convertOpts : Maybe (List Char) -> Maybe String
 convertOpts b = case b of
                   Just x => Just (pack x)
                   Nothing => Nothing
 
-dealWithAttrs :  String
-              -> Maybe String
-              -> Maybe Attributes
-              -> Attributes
-dealWithAttrs ty srcOpts as = [("type", ty)]
-                            ++ fooOpts "src_opts" srcOpts
-                            ++ fromMaybe [] as
-  where
-    fooOpts tag (Just opts) = [(tag, opts)]
-    fooOpts tag Nothing     = []
+convertAttrs : Maybe Attribute -> Maybe Attributes
+convertAttrs Nothing  = Nothing
+convertAttrs (Just x) = Just [x]

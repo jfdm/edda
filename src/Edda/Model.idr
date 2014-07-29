@@ -1,6 +1,6 @@
 module Edda.Model
 
-data Step = Simple | Prime
+data Step = Star | Prime
 
 data FontTy   = SerifTy | SansTy | ScapTy | MonoTy
 data QuoteTy  = SQuote | DQuote
@@ -17,11 +17,11 @@ Attributes : Type
 Attributes = List (String, String)
 
 data Inline : Step -> Type where
-  Font : FontTy   -> String -> Inline Simple
-  Punc : Char     -> Inline Simple
-  Link : LinkTy   -> String -> Maybe (List (Inline Simple)) -> Inline Simple
-  Mark : MarkupTy -> List (Inline Simple) -> Inline Simple
-  Raw  : RawTy    -> String -> Inline Simple
+  Font : FontTy   -> String -> Inline Star
+  Punc : Char     -> Inline Star
+  Link : LinkTy   -> String -> Maybe (List (Inline Star)) -> Inline Star
+  Mark : MarkupTy -> List (Inline Star) -> Inline Star
+  Raw  : RawTy    -> String -> Inline Star
 
   Text : String -> Inline Prime
   Sans : String -> Inline Prime
@@ -86,16 +86,35 @@ data Tabular : Type where
             -> Vect m (Vect n (List String))
             -> Tabular
 
-data TheoremTy = Normal | Corollary | Lemma | Proposition | Proof | Definition
-               | Exercise | Note | Problem | Question | Remark
-               | Solution
+data TextBlockTy = ParaTy | TheoremTy | CorollaryTy | LemmaTy | PropositionTy | ProofTy | DefinitionTy
+               | ExerciseTy | NoteTy | ProblemTy | QuestionTy | RemarkTy
+               | SolutionTy | ExampleTy | QuotationTy
 
-data VerbatimTy = ExampleTy | CommentTy | ListingTy | LiteralTy
+data VerbBlockTy = CommentTy | ListingTy | LiteralTy | EquationTy
 
 data ListTy = BulletTy | NumberTy
 
+-- @TODO Make blocks multi block
 data Block : Step -> Type where
-  Para  : (s : Step) -> List (Inline s) -> Block s
+-- Star Constructors
+  TextBlock : TextBlockTy
+          -> (label : Maybe String)
+          -> (caption : Maybe (List (Inline Star)))
+          -> Maybe Attributes
+          -> List (Inline Star)
+          -> Block Star
+
+  VerbBlock : VerbBlockTy
+            -> (label : Maybe String)
+            -> (caption : Maybe (List (Inline Star)))
+            -> Maybe Attributes
+            -> String
+            -> Block Star
+
+  ListBlock : ListTy
+            -> List (Block Star)
+            -> Block Star
+-- Starry Prime Constructors
   Empty : (s : Step) -> Block s
 
   Header : (s : Step)
@@ -110,58 +129,54 @@ data Block : Step -> Type where
          -> Inline s
          -> Block s
 
-  TextBlock : (s : Step)
-          -> (label : Maybe String)
-          -> (caption : Maybe (List (Inline s)))
-          -> Maybe Attributes
-          -> List (Inline s)
-          -> Block s
-
-  VerbBlock : (s : Step)
-            -> (label : Maybe String)
-            -> (caption : Maybe (List (Inline s)))
-            -> Maybe Attributes
-            -> String
-            -> Block s
-
   Table : (s : Step)
         -> (label : String)
         -> (caption : List (Inline s))
         -> Tabular
         -> Block s
 
-  ListBlock : ListTy
-            -> List (Block Simple)
-            -> Block Simple
-
   DList : (s : Step) -> List (List (Inline s), List (Block s)) -> Block s
-
-
+-- Prime Constructors
   OList : List (Block Prime)  -> Block Prime
   BList : List (Block Prime)  -> Block Prime
 
+  Comment : String -> Block Prime
+  Equation : (label : Maybe String) -> String -> Block Prime
+  Literal : (label : Maybe String)
+          -> (caption : Maybe (List (Inline Prime)))
+          -> (src : String)
+          -> Block Prime
   Listing : (label : Maybe String)
           -> (caption : Maybe (List (Inline Prime)))
-          -> Maybe Attributes
-          -> String
-          -> Block Prime
+          -> (lang : Maybe String)
+          -> (opts : Maybe Attributes)
+          -> (src : String)
+         -> Block Prime
 
-  Equation : (label : Maybe String) -> String -> Block Prime
-  Quotation : (label : Maybe String) -> List (Inline Prime)-> Block Prime
+  Para        : List (Inline Prime)    -> Block Prime
+  Quotation   : (label : Maybe String) -> List (Inline Prime)-> Block Prime
 
-  Theorem : (label : Maybe String)
-          -> (caption : Maybe (List (Inline Prime)))
-          -> TheoremTy
-          -> List (Inline Prime)
-          -> Block Prime
+  Theorem     : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Corollary   : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Lemma       : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Proposition : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Proof       : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Definition  : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Exercise    : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Note        : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Remark      : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Problem     : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Question    : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Solution    : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Example     : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
 
 data Edda : Step -> Type where
   MkEdda : (s : Step) -> (ps : Maybe Attributes) -> List (Block s) -> Edda s
-  MkEddaSimple : (ps : Maybe Attributes) -> List (Block Simple) -> Edda Simple
+  MkEddaStar : (ps : Maybe Attributes) -> List (Block Star) -> Edda Star
   MkEddaDoc : (ps : Maybe Attributes) -> List (Block Prime) -> Edda Prime
 
 EddaDoc : Type
 EddaDoc = Edda Prime
 
 EddaRaw : Type
-EddaRaw = Edda Simple
+EddaRaw = Edda Star

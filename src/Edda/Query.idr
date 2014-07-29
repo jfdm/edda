@@ -72,23 +72,36 @@ instance Queryable (Inline Prime) (Inline Prime) where
 
 -- @TODO Captions
 instance Queryable (Inline Prime) (Block Prime) where
-  query f (Para Prime xs)             = query f xs
-  query f (Header Prime d l t)        = query f t
-  query f (Figure Prime l c as fig)   = query f c <+> query f fig
-  query f (TextBlock Prime l c as xs) = query f xs -- caption
-  query f (VerbBlock Prime l c as v)  = neutral    -- caption
-  query f (Table Prime l c tbl)       = neutral    -- caption and table
+  query f (Empty Prime)             = neutral
+  query f (Header Prime d l t)      = query f t
+  query f (Figure Prime l c as fig) = query f c <+> query f fig
+  query f (Table Prime l c tbl)     = neutral    -- caption and table
+  query f (DList Prime kvs)         = query f kvs
 
   query f (OList xs)  = query f xs
   query f (BList xs)  = query f xs
-  query f (DList Prime kvs) = query f kvs
 
-  query f (Listing l c as s)  = neutral -- caption
-  query f (Equation l s)      = neutral
-  query f (Quotation l xs)    = query f xs
-  query f (Theorem l c ty xs) = query f xs -- caption
+  query f (Comment ss)          = neutral
+  query f (Equation l s)        = neutral
+  query f (Literal l c ss)      = neutral -- caption
+  query f (Listing l c ty as s) = neutral -- caption
 
-  query f (Empty Prime)   = neutral
+  query f (Para xs)        = query f xs
+  query f (Quotation l xs) = query f xs
+
+  query f (Theorem l c xs)     = query f xs -- caption
+  query f (Corollary l c xs)   = query f xs -- caption
+  query f (Lemma l c xs)       = query f xs -- caption
+  query f (Proposition l c xs) = query f xs -- caption
+  query f (Proof l c xs)       = query f xs -- caption
+  query f (Definition l c xs)  = query f xs -- caption
+  query f (Exercise l c xs)    = query f xs -- caption
+  query f (Note l c xs)        = query f xs -- caption
+  query f (Remark l c xs)      = query f xs -- caption
+  query f (Problem l c xs)     = query f xs -- caption
+  query f (Question l c xs)    = query f xs -- caption
+  query f (Solution l c xs)    = query f xs -- caption
+  query f (Example l c xs)     = query f xs -- caption
 
 instance Queryable (Block Prime) (Inline Prime) where
   query f (Text t) = neutral
@@ -147,27 +160,37 @@ instance Queryable (Block Prime) (Inline Prime) where
   query f Pipe       = neutral
 
 -- @TODO Query Table
--- @TODO Query Lists
 instance Queryable (Block Prime) (Block Prime) where
-  query f (Para Prime xs) = f (Para Prime xs) <+> query f xs
-
+  query f (Empty Prime)               = f (Empty Prime)
   query f (Header Prime d l t)        = f (Header Prime d l t) <+> (query f t)
   query f (Figure Prime l c as fig)   = f (Figure Prime l c as fig) <+> (query f fig) -- caption
-  query f (TextBlock Prime l c as xs) = f (TextBlock Prime l c as xs) <+> (query f xs) -- caption
-  query f (VerbBlock Prime l c as v)  = f (VerbBlock Prime l c as v) -- caption
   query f (Table Prime l c tbl)       = f (Table Prime l c tbl) -- caption
+  query f (DList Prime kvs)           = f (DList Prime kvs) <+> (query f kvs)
 
   query f (OList xs)  = f (OList xs) <+> (query f xs)
   query f (BList xs)  = f (BList xs) <+> (query f xs)
-  query f (DList Prime kvs) = f (DList Prime kvs) <+> (query f kvs)
 
-  query f (Listing l c as s)  = f (Listing l c as s) -- caption
-  query f (Equation l s)      = f (Equation l s)
-  query f (Quotation l xs)    = f (Quotation l xs) <+> (query f xs)
-  query f (Theorem l c ty xs) = f (Theorem l c ty xs) <+> (query f xs) -- caption
+  query f (Comment ss)          = f (Comment ss)
+  query f (Equation l s)        = f (Equation l s)
+  query f (Literal l c ss)      = f (Literal l c ss)      -- caption
+  query f (Listing l c ty as s) = f (Listing l c ty as s) -- caption
 
-  query f (Empty Prime)   = f (Empty Prime)
+  query f (Para xs)        = f (Para xs) <+> query f xs
+  query f (Quotation l xs) = f (Quotation l xs) <+> (query f xs)
 
+  query f (Theorem l c xs)     = f (Theorem l c xs) <+> (query f xs) -- caption
+  query f (Corollary l c xs)   = f (Corollary l c xs) <+> (query f xs) -- caption
+  query f (Lemma l c xs)       = f (Lemma l c xs) <+> (query f xs) -- caption
+  query f (Proposition l c xs) = f (Proposition l c xs) <+> (query f xs) -- caption
+  query f (Proof l c xs)       = f (Proof l c xs) <+> (query f xs) -- caption
+  query f (Definition l c xs)  = f (Definition l c xs) <+> (query f xs) -- caption
+  query f (Exercise l c xs)    = f (Exercise l c xs) <+> (query f xs) -- caption
+  query f (Note l c xs)        = f (Note l c xs) <+> (query f xs) -- caption
+  query f (Remark l c xs)      = f (Remark l c xs) <+> (query f xs) -- caption
+  query f (Problem l c xs)     = f (Problem l c xs) <+> (query f xs) -- caption
+  query f (Question l c xs)    = f (Question l c xs) <+> (query f xs) -- caption
+  query f (Solution l c xs)    = f (Solution l c xs) <+> (query f xs) -- caption
+  query f (Example l c xs)     = f (Example l c xs) <+> (query f xs) -- caption
 
 instance Queryable (Block Prime) (Edda Prime) where
   query f (MkEdda Prime as xs) = query f xs
