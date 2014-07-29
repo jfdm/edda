@@ -135,7 +135,6 @@ label = do
 
 -- ------------------------------------------------------------------ [ Blocks ]
 
--- @TODO Parse Lists
 block : Parser (Block Simple)
 block = do
     cap <- opt caption

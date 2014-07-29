@@ -87,8 +87,10 @@ data Tabular : Type where
             -> Tabular
 
 data TheoremTy = Normal | Corollary | Lemma | Proposition | Proof | Definition
-               | Example | Exercise | Note | Problem | Question | Remark
+               | Exercise | Note | Problem | Question | Remark
                | Solution
+
+data VerbatimTy = ExampleTy | CommentTy | ListingTy | LiteralTy
 
 data ListTy = BulletTy | NumberTy
 

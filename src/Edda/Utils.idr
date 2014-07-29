@@ -19,7 +19,6 @@ readTheorem thm = case thm of
                     "PROPOSITION" => Just Proposition
                     "PROOF"       => Just Proof
                     "DEFINITION"  => Just Definition
-                    "EXAMPLE"     => Just Example
                     "EXERCISE"    => Just Exercise
                     "NOTE"        => Just Note
                     "PROBLEM"     => Just Problem
