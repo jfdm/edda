@@ -229,6 +229,6 @@ instance Show (Edda ty) where
        ++ "[Mdata " ++ concatMap show ps ++ "]\n"
        ++ concatMap show body ++ "]\n"
 
-  show (MkEddaStar ps body) = "[EddaStar"
+  show (MkEddaRaw ps body) = "[EddaStar"
        ++ "[MData " ++ concatMap show ps ++ "]\n"
        ++ concatMap show body ++ "]\n"

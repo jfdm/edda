@@ -7,14 +7,18 @@ sourcedir = src
 modules = Edda.Model
         , Edda.Model.Show
 
-        , Edda.Reader
+        , Edda.Reader.Common
         , Edda.Reader.Utils
         , Edda.Reader.Org
+
+        , Edda.Writer.Common
+        , Edda.Writer.Org
 
         , Edda.Utils
         , Edda.Squash
         , Edda.Walk
         , Edda.Refine
+
         , Edda
         , Main
 

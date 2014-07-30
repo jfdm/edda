@@ -35,8 +35,8 @@ instance Queryable (Inline Prime) (Inline Prime) where
 
   query f (Ref l)       = f $ Ref l
   query f (Cite ty l)   = f $ Cite ty l
-  query f (Hyper l xs)  = f (Hyper l xs) <+> (query f xs)
-  query f (FNote l xs)  = f (FNote l xs) <+> (query f xs)
+  query f (Hyper l xs)  = f (Hyper l xs) -- Maybe <+> (query f xs)
+  query f (FNote l xs)  = f (FNote l xs) -- Maybe <+> (query f xs)
   query f (MiscPunc c)  = f $ MiscPunc c
 
   query f Space      = f $ Space
@@ -123,8 +123,8 @@ instance Queryable (Block Prime) (Inline Prime) where
 
   query f (Ref l)      = neutral
   query f (Cite ty l)  = neutral
-  query f (Hyper l xs) = query f xs
-  query f (FNote l xs) = query f xs
+  query f (Hyper l xs) = neutral -- maybes query f xs
+  query f (FNote l xs) = neutral -- maybes qeuery f xs
   query f (MiscPunc c) = neutral
 
   query f Space      = neutral

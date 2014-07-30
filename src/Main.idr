@@ -4,16 +4,19 @@ import System
 
 import Effects
 import Effect.File
+import Effect.Exception
 import Effect.StdIO
 
 import Edda
 
-eddaMain : String -> {[STDIO, FILE_IO ()]} Eff ()
+eddaMain : String -> {[STDIO, FILE_IO (), EXCEPTION String]} Eff ()
 eddaMain fname = do
     d <- readOrg fname
     case d of
       Left err  => putStrLn $ err
-      Right res => putStrLn $ show res
+      Right res => do
+        putStrLn $ show res
+        writeOrg "foobar.org" res
 
 main : IO ()
 main = do

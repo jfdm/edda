@@ -42,8 +42,8 @@ data Inline : Step -> Type where
 
   Ref   : String  -> Inline Prime
   Cite  : CiteSty -> String -> Inline Prime
-  Hyper : String  -> List (Inline Prime) -> Inline Prime
-  FNote : String  -> List (Inline Prime) -> Inline Prime
+  Hyper : String  -> Maybe (List (Inline Prime)) -> Inline Prime
+  FNote : String  -> Maybe (List (Inline Prime)) -> Inline Prime
 
   Space      : Inline Prime
   Newline    : Inline Prime
@@ -112,7 +112,7 @@ data Block : Step -> Type where
             -> Block Star
 
   ListBlock : ListTy
-            -> List (Block Star)
+            -> List (List (Inline Star))
             -> Block Star
 -- Starry Prime Constructors
   Empty : (s : Step) -> Block s
@@ -135,10 +135,10 @@ data Block : Step -> Type where
         -> Tabular
         -> Block s
 
-  DList : (s : Step) -> List (List (Inline s), List (Block s)) -> Block s
+  DList : (s : Step) -> List (List (Inline s), List (Inline s)) -> Block s
 -- Prime Constructors
-  OList : List (Block Prime)  -> Block Prime
-  BList : List (Block Prime)  -> Block Prime
+  OList : List (List (Inline Prime)) -> Block Prime
+  BList : List (List (Inline Prime)) -> Block Prime
 
   Comment : String -> Block Prime
   Equation : (label : Maybe String) -> String -> Block Prime
@@ -172,7 +172,7 @@ data Block : Step -> Type where
 
 data Edda : Step -> Type where
   MkEdda : (s : Step) -> (ps : Maybe Attributes) -> List (Block s) -> Edda s
-  MkEddaStar : (ps : Maybe Attributes) -> List (Block Star) -> Edda Star
+  MkEddaRaw : (ps : Maybe Attributes) -> List (Block Star) -> Edda Star
   MkEddaDoc : (ps : Maybe Attributes) -> List (Block Prime) -> Edda Prime
 
 EddaDoc : Type

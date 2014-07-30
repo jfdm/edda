@@ -45,8 +45,8 @@ instance Walkable (Inline s) (Inline s) where
 
   walk f (Ref uri)        = f $ Ref uri
   walk f (Cite ty uri)    = f $ Cite ty uri
-  walk f (Hyper uri desc) = f $ Hyper uri (walk f desc)
-  walk f (FNote uri desc) = f $ FNote uri (walk f desc)
+  walk f (Hyper uri desc) = f $ Hyper uri desc -- (walk f desc)
+  walk f (FNote uri desc) = f $ FNote uri desc -- (walk f desc)
   walk f (MiscPunc c)     = f $ MiscPunc c
 
   walk f Space      = f $ Space
@@ -143,8 +143,8 @@ instance Walkable (Block s) (Inline s) where
 
   walk f (Ref l)      = Ref l
   walk f (Cite ty l)  = Cite ty l
-  walk f (Hyper l xs) = Hyper l (walk f xs)
-  walk f (FNote l xs) = FNote l (walk f xs)
+  walk f (Hyper l xs) = Hyper l xs -- maybe (walk f xs)
+  walk f (FNote l xs) = FNote l xs -- maybe (walk f xs)
   walk f (MiscPunc c) = MiscPunc c
 
   walk f Space      = Space
@@ -220,14 +220,14 @@ instance Walkable (Block s) (Block s) where
 instance Walkable (Block s) (Edda s) where
   walk {s} f (MkEdda s as xs) = MkEdda s as (walk f xs)
   walk f (MkEddaDoc ps xs)    = MkEddaDoc ps (walk f xs)
-  walk f (MkEddaStar ps xs) = MkEddaStar ps (walk f xs)
+  walk f (MkEddaRaw ps xs)    = MkEddaRaw ps (walk f xs)
 
 instance Walkable (Inline s) (Edda s) where
   walk {s} f (MkEdda s as xs) = MkEdda s as (walk f xs)
   walk f (MkEddaDoc ps xs)    = MkEddaDoc ps (walk f xs)
-  walk f (MkEddaStar ps xs) = MkEddaStar ps (walk f xs)
+  walk f (MkEddaRaw ps xs)    = MkEddaRaw ps (walk f xs)
 
 instance Walkable (Edda s) (Edda s) where
   walk {s} f (MkEdda s as xs) = f $ MkEdda s as xs
   walk f (MkEddaDoc ps xs)    = f $ MkEddaDoc ps xs
-  walk f (MkEddaStar ps xs) = f $ MkEddaStar ps xs
+  walk f (MkEddaRaw ps xs)    = f $ MkEddaRaw ps xs

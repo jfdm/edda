@@ -30,5 +30,5 @@ readEddaFile p f = do
         close
         case parse p src of
           Left err  => pure $ Left err
-          Right res => pure $ Right $ refineEdda res
+          Right res => pure $ Right (refineEdda res)
       False => pure $ Left "Error"

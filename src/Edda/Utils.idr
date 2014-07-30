@@ -15,3 +15,8 @@ getSrcLang : Maybe Attributes -> Maybe String
 getSrcLang as = case getAttr "src_lang" as of
     Just (k,v) => Just v
     Nothing    => Nothing
+
+getValue : String -> Maybe Attributes -> Maybe String
+getValue key as = case getAttr key as of
+    Just (k,v) => Just v
+    Nothing    => Nothing

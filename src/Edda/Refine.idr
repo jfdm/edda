@@ -14,9 +14,9 @@ mutual
   refineInline : Inline Star -> (Inline Prime)
   refineInline (Link ty url desc) = case ty of
       RefTy     => Ref url
-      ExposedTy => Hyper url [Text url]
-      HyperTy   => Hyper url $ fromMaybe [Text "Missing"] $ refineMaybeInlines desc
-      FnoteTy   => FNote  url $ fromMaybe [Text "Missing"] $ refineMaybeInlines desc
+      ExposedTy => Hyper url Nothing
+      HyperTy   => Hyper url $ refineMaybeInlines desc
+      FnoteTy   => FNote url $ refineMaybeInlines desc
       CiteTy    => Cite ParenSty url -- <= TODO
   refineInline (Mark ty txt) = case ty of
       BoldTy   => Bold   $ refineInlines txt
@@ -57,7 +57,7 @@ mutual
   refineBlock (Figure Star l c as img) = Figure Prime l (refineInlines c)
                                                           as
                                                           (refineInline img)
-  refineBlock (DList Star kvs) = DList Prime $ map (\(k, vs) => (refineInlines k, (map refineBlock vs))) kvs
+  refineBlock (DList Star kvs) = DList Prime $ map (\(k, vs) => (refineInlines k, refineInlines vs)) kvs
 
   refineBlock (TextBlock ty l c as t) = case ty of
     ParaTy        => Para (refineInlines t)
@@ -83,8 +83,8 @@ mutual
     EquationTy => Equation l s
 
   refineBlock (ListBlock ty bs) = case ty of
-    NumberTy => OList $ map refineBlock bs
-    BulletTy => BList $ map refineBlock bs
+    NumberTy => OList $ map refineInlines bs
+    BulletTy => BList $ map refineInlines bs
 
   covering
   refineBlocks : List (Block Star) -> List (Block Prime)
@@ -95,4 +95,4 @@ public
 covering
 refineEdda : EddaRaw -> EddaDoc
 refineEdda (MkEdda Star ps body) = MkEddaDoc ps (refineBlocks body)
-refineEdda (MkEddaStar ps body)  = MkEddaDoc ps (refineBlocks body)
+refineEdda (MkEddaRaw ps body)  = MkEddaDoc ps (refineBlocks body)

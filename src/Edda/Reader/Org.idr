@@ -239,11 +239,11 @@ olMarker = marker '.' <|> marker ')'
       pure ()
 
 -- @TODO Add coninuations
-listItem : Parser () -> Parser (Block Star)
+listItem : Parser () -> Parser (List (Inline Star))
 listItem mark = do
     mark
     line <- manyTill inline eol
-    pure $ TextBlock ParaTy Nothing Nothing Nothing line
+    pure $ line
 
 olist : Parser (Block Star)
 olist = do
@@ -266,13 +266,12 @@ dlist = do
     marker : Parser (List (Inline Star))
     marker = ulMarker $> space $> manyTill inline (space $> colon $> colon)
 
-    defItem : Parser (List (Inline Star), List (Block Star))
+    defItem : Parser (List (Inline Star), List (Inline Star))
     defItem = do
         key <- marker
         space
         values <- manyTill inline eol
-        pure (key, [TextBlock ParaTy Nothing Nothing Nothing values])
-
+        pure (key, values)
 
 list : Parser (Block Star)
 list = dlist <|> blist <|> olist
@@ -289,7 +288,7 @@ parseOrg = do
   lpara  <- many paraLast -- Dirty Hack
   let ps = the Attributes [title, author, date]
   let txt' = intersperse (Empty Star) txt
-  pure $ MkEddaStar (Just ps) (txt' ++ [Empty Star] ++ lpara)
+  pure $ MkEddaRaw (Just ps) (txt' ++ [Empty Star] ++ lpara)
  <?> "Raw Org Mode"
 
 -- -------------------------------------------------------------------- [ Read ]
