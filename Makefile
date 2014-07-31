@@ -1,28 +1,28 @@
 ##  Makefile
 
 IDRIS := idris
-PKG   := edda
+LIB   := edda
+BIN   := eddabin
 OPTS  :=
 
 .PHONY: clean build
 
-exe:
-	${IDRIS} ${OPTS} --build eddabin.ipkg
+exe: install
+	${IDRIS} ${OPTS} --build ${BIN}.ipkg
 
-install: build
-	${IDRIS} ${OPTS} --install ${PKG}.ipkg
+install: lib
+	${IDRIS} ${OPTS} --install ${LIB}.ipkg
 
-build: src/**/*.idr
-	${IDRIS} ${OPTS} --build ${PKG}.ipkg
-
-clean_build: clean build
+lib:
+	${IDRIS} ${OPTS} --build ${LIB}.ipkg
 
 clean:
-	${IDRIS} --clean ${PKG}.ipkg
+	${IDRIS} --clean ${LIB}.ipkg
+	${IDRIS} --clean ${BIN}.ipkg
 	find . -name "*~" -delete
 
-check: clean
-	${IDRIS} --checkpkg ${PKG}.ipkg
+check: clobber
+	${IDRIS} --checkpkg ${LIB}.ipkg
 
 clobber : clean
 	rm eddabin
@@ -32,4 +32,4 @@ test :
 	(cd tests; bash runtests.sh)
 
 doc:
-	${IDRIS} --mkdoc ${PKG}.ipkg
+	${IDRIS} --mkdoc ${LIB}.ipkg

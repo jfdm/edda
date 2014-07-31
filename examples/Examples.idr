@@ -1,22 +1,27 @@
 module Examples
 
-import Edda.Model
-import Edda.Utils
+-- Walk
+toCaps : Inline Prime -> Inline Prime
+toCaps (Text str) = Text $ toUpper str
+toCaps (Sans str) = Sans $ toUpper str
+toCaps (Scap str) = Scap $ toUpper str
+toCaps (Mono str) = Mono $ toUpper str
+toCaps x             = x
 
-mdata : Maybe Properties
-mdata = Just [(Title, "I am a title"), (Author, "Anne Other")]
+modHeader : Block Prime -> Block Prime
+modHeader (Header Prime n l xs) = if n <= 3
+                                    then Para Prime (map toCaps xs)
+                                    else Header Prime n l xs
+modHeader x = x
 
-text : Inline
-text = Serif "I am a sentence."
+modHeaders : EddaDoc -> EddaDoc
+modHeaders = walk modHeader
 
-text1 : Inline
-text1 = Serif "I am a second sentence."
+-- Query
 
-para : Block
-para = Plain [text, text1]
+extractURL : Inline Prime -> List String
+extractURL (Hyper uri _) = [uri]
+extractURL _            = Nil
 
-sect : Block
-sect = MkSection (Just "sect1") (Just [Serif "Introduction"]) [para]
-
-myFirstEdda : Edda
-myFirstEdda = MkEdda mdata [sect, para]
+getURLs : EddaDoc -> List String
+getURLs = query extractURL
