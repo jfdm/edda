@@ -9,7 +9,7 @@ import Edda.Utils
 import Edda.Reader.Common
 import Edda.Reader.Utils
 
-%access public
+%access private
 -- --------------------------------------------------------------------- [ Org ]
 
 rsvp : List Char
@@ -292,5 +292,6 @@ parseOrg = do
  <?> "Raw Org Mode"
 
 -- -------------------------------------------------------------------- [ Read ]
+public
 readOrg : String -> {[FILE_IO ()]} Eff (Either String EddaDoc)
 readOrg = readEddaFile parseOrg

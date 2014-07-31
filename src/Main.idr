@@ -2,14 +2,9 @@ module Main
 
 import System
 
-import Effects
-import Effect.File
-import Effect.Exception
-import Effect.StdIO
-
 import Edda
 
-eddaMain : String -> {[STDIO, FILE_IO (), EXCEPTION String]} Eff ()
+eddaMain : String -> {EddaEffs} Eff ()
 eddaMain fname = do
     d <- readOrg fname
     case d of

@@ -1,5 +1,6 @@
 module Edda
 
+import Edda.Effs
 import Edda.Model
 import Edda.Model.Show
 

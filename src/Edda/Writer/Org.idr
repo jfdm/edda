@@ -10,8 +10,6 @@ import Edda.Writer.Common
 
 %access private
 
-%logging 0
-
 -- ------------------------------------------------------------ [ Misc Writing ]
 writeRawTag : String -> String -> {[FILE_IO (OpenFile Write)]} Eff ()
 writeRawTag key value = do
