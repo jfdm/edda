@@ -92,7 +92,9 @@ mutual
   writeInline (FNote l d) = case d of
     Nothing => writeParens '[' ']' (Left ("fn" ++ ":" ++ l ++ ":"))
     Just x  => writeParens '[' ']' (Right ([Text ("fn:" ++ l ++ ":")] ++ x))
-  writeInline (Cite ty uri) = writeString "Citations @TODO"
+  writeInline (Cite ty uri) = case ty of
+    ParenSty => writeString ("[[citep:" ++ uri ++ "]]")
+    TextSty  => writeString ("[[citet:" ++ uri ++ "]]")
   writeInline (MiscPunc c) = writeString (cast c)
   writeInline Space      = writeString " "
   writeInline Newline    = writeString "\n"
@@ -238,7 +240,6 @@ writeBlocks : List (Block Prime) -> {[FILE_IO (OpenFile Write)]} Eff ()
 writeBlocks = writeManyThings (writeBlock)
 
 -- -------------------------------------------------------- [ Write Attributes ]
--- @TODO fix repetition and order of properties
 writeProps : Maybe Attributes -> {[FILE_IO (OpenFile Write)]} Eff ()
 writeProps Nothing = pure ()
 writeProps (Just ps) = do

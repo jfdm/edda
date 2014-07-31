@@ -9,6 +9,9 @@ import Edda.Squash
 %default total
 
 -- ---------------------------------------------------------- [ Refine Inlines ]
+-- @TODO Refine quotes
+-- @TODO Refine Parens
+
 mutual
   covering
   refineInline : Inline Star -> (Inline Prime)
@@ -46,8 +49,6 @@ mutual
   refineMaybeInlines (Just is) = Just $ refineInlines is
 
 -- ----------------------------------------------------------- [ Refine Blocks ]
--- @TODO Refine quotes
--- @TODO Refine Parens
 mutual
   covering
   refineBlock : Block Star -> Block Prime

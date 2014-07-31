@@ -134,13 +134,13 @@ label = do
   <?> "Label"
 
 -- ------------------------------------------------------------------ [ Blocks ]
--- @TODO Add equations
 
 getOrgBlockType : String -> Either VerbBlockTy TextBlockTy
 getOrgBlockType str = case str of
     "COMMENT"     => Left CommentTy
     "SRC"         => Left ListingTy
     "EXAMPLE"     => Left LiteralTy
+    "EQUATION"    => Left EquationTy
     "QUOTE"       => Right QuotationTy
     "VERSE"       => Right QuotationTy
     "THEOREM"     => Right TheoremTy
