@@ -97,7 +97,7 @@ instance Walkable (Inline s) (Block s) where
   walk f (Comment ss)           = Comment ss
   walk f (Equation l s)         = Equation l s
   walk f (Literal l c ss)       = Literal l c ss   -- caption
-  walk f (Listing l c ty as s)  = Listing l c ty as s -- caption
+  walk f (Listing l c ty ops as s)  = Listing l c ty ops as s -- caption
 
   walk f (Para xs) = Para $ walk f xs
   walk f (Quotation l xs)    = Quotation l (walk f xs)
@@ -198,7 +198,7 @@ instance Walkable (Block s) (Block s) where
   walk f (Comment ss)           = f $ Comment ss
   walk f (Equation l s)         = f $ Equation l s
   walk f (Literal l c ss)       = f $ Literal l c ss   -- caption
-  walk f (Listing l c ty as s)  = f $ Listing l c ty as s -- caption
+  walk f (Listing l c ty ops as s)  = f $ Listing l c ty ops as s -- caption
 
   walk f (Para xs)           = f $ Para $ walk f xs
   walk f (Quotation l xs)    = f $ Quotation l (walk f xs)

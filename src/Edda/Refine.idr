@@ -79,8 +79,8 @@ mutual
   refineBlock (VerbBlock ty l c as s) = case ty of
     CommentTy  => Comment s
     ListingTy  => case as of
-      Nothing  => Listing l (refineMaybeInlines c) Nothing Nothing s
-      Just ops => Listing l (refineMaybeInlines c) (lookupSrcLang ops) (Just ops) s
+      Nothing  => Listing l (refineMaybeInlines c) Nothing Nothing Nothing s
+      Just ops => Listing l (refineMaybeInlines c) (lookupSrcLang ops) (lookupSrcOpts ops) (Just (nubAttribute "src_lang" $ nubAttribute "src_opts" ops)) s
     LiteralTy  => Literal l (refineMaybeInlines c) s
     EquationTy => Equation l s
 

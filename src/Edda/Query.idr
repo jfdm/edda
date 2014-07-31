@@ -84,7 +84,7 @@ instance Queryable (Inline Prime) (Block Prime) where
   query f (Comment ss)          = neutral
   query f (Equation l s)        = neutral
   query f (Literal l c ss)      = neutral -- caption
-  query f (Listing l c ty as s) = neutral -- caption
+  query f (Listing l c ty ops as s) = neutral -- caption
 
   query f (Para xs)        = query f xs
   query f (Quotation l xs) = query f xs
@@ -173,7 +173,7 @@ instance Queryable (Block Prime) (Block Prime) where
   query f (Comment ss)          = f (Comment ss)
   query f (Equation l s)        = f (Equation l s)
   query f (Literal l c ss)      = f (Literal l c ss)      -- caption
-  query f (Listing l c ty as s) = f (Listing l c ty as s) -- caption
+  query f (Listing l c ty ops as s) = f (Listing l c ty ops as s) -- caption
 
   query f (Para xs)        = f (Para xs) <+> query f xs
   query f (Quotation l xs) = f (Quotation l xs) <+> (query f xs)

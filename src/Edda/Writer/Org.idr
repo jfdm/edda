@@ -25,7 +25,10 @@ writeThing c (S k) = do
     writeThing c k
 
 writeAttrs : List (String, String) -> {[FILE_IO (OpenFile Write)]} Eff ()
-writeAttrs as = writeRawTag "ATTR" $ unwords $ map (\(k,v) => k ++ ":" ++ v) as
+writeAttrs Nil = pure ()
+writeAttrs as  = do
+    writeRawTag "ATTR" $ unwords $ map (\(k,v) => k ++ ":" ++ v) as
+    writeLine ""
 
 -- ----------------------------------------------------------- [ Write Inlines ]
 mutual
@@ -200,15 +203,15 @@ writeBlock (BList bs) = do
 writeBlock (Para txt) = do
     writeInlines txt
     writeLine "\n"
-writeBlock (Listing l c lang as src) = do
+writeBlock (Listing l c lang langopts as src) = do
     writeMaybe (\x => writeTag "CAPTION" x) c
     writeMaybe (\x => writeRawTag "NAME" x) l
     writeMaybe (writeAttrs) as
     writeString "#+BEGIN_SRC"
     writeString " "
-    writeString (fromMaybe "idris" lang)
+    writeString (fromMaybe "" lang)
     writeString " "
-    writeMaybe (\x => writeString (fromMaybe "" (lookupValue "src_opts" x))) as
+    writeLine (fromMaybe "" langopts)
     writeString src
     writeLine "#+END_SRC"
     writeString "\n"
@@ -241,8 +244,9 @@ writeProps Nothing = pure ()
 writeProps (Just ps) = do
     writeRawTag "TITLE" title
     writeRawTag "AUTHOR" author
-    writeRawTag "date" date
-    --map (\(k,v) => writeRawTag k v) ps
+    writeRawTag "DATE" date
+    let ps' = nubAttribute "TITLE" $ nubAttribute "AUTHOR" $ nubAttribute "DATE" ps
+    writeManyThings (\(k,v) => writeRawTag k v) ps'
     writeString "\n"
   where
     title = fromMaybe "title missing" (lookupValue "TITLE" ps)

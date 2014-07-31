@@ -149,7 +149,8 @@ data Block : Step -> Type where
   Listing : (label : Maybe String)
           -> (caption : Maybe (List (Inline Prime)))
           -> (lang : Maybe String)
-          -> (opts : Maybe Attributes)
+          -> (langopts : Maybe String)
+          -> (as : Maybe Attributes)
           -> (src : String)
          -> Block Prime
 

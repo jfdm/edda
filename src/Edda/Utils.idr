@@ -16,3 +16,17 @@ lookupType = lookupValue "type"
 
 lookupSrcLang : Attributes -> Maybe String
 lookupSrcLang = lookupValue "src_lang"
+
+lookupSrcOpts : Attributes -> Maybe String
+lookupSrcOpts = lookupValue "src_opts"
+
+
+nubAttribute : String -> Attributes -> Attributes
+nubAttribute key as = doNub key as
+  where
+    doNub : String -> Attributes -> Attributes
+    doNub _   Nil     = Nil
+    doNub key (x::xs) with (x)
+      | (k,v) = case key == k of
+                  True => doNub key xs
+                  False => x :: doNub key xs

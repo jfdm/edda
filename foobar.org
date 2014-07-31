@@ -1,6 +1,6 @@
 #+TITLE: I am a Title
 #+AUTHOR: Joe Blogs
-#+date: 2014-07-10
+#+DATE: 2014-07-10
 
 
 * Introduction
@@ -59,7 +59,6 @@ culpa qui officia deserunt mollit anim id est laborum.
 
 Idris data types are declared using a similar syntax to Haskell data types. For example, natural numbers, an option type and lists are declared in the standard library:
 
-#+ATTR: src_lang:idris src_opts:
 #+BEGIN_SRC idris 
   data Nat     = Z       | S Nat
   data Maybe a = Nothing | Just a
@@ -68,7 +67,6 @@ Idris data types are declared using a similar syntax to Haskell data types. For 
 
 Functions are implemented by pattern matching. For example, addition on natural numbers can be defined as follows, again taken from the standard library:
 
-#+ATTR: src_lang:idris src_opts:
 #+BEGIN_SRC idris 
 (+) : Nat -> Nat -> Nat
 Z     + y = y
@@ -79,7 +77,6 @@ Like Haskell, functions such as (+) above may be overloaded using type classes.
 
 Vectors are lists which carry their size in the type. They are declared as follows in the standard library, using a syntax similar to that for Generalised Algebraic Data Types (GADTs) in Haskell:
 
-#+ATTR: src_lang:idris src_opts:
 #+BEGIN_SRC idris 
 infixr 5 ::
 
@@ -90,7 +87,6 @@ data Vect : Nat -> Type -> Type where
 
 We can define functions by pattern matching. The type of a function over Vect will describe what happens to the lengths of the vectors involved. For example, app appends two Vects, returning a vector which is the sum of the lengths of the inputs:
 
-#+ATTR: src_lang:idris src_opts:
 #+BEGIN_SRC idris 
 app : Vect n a -> Vect m a -> Vect (n + m) a
 app Nil       ys = ys
@@ -140,6 +136,12 @@ My favorite scenes are (in this order):
 But in the end, no individual scenes matter but the film as a whole.
 Important actors in this film are:
 
-- Elijah Wood :: He plays Frodo- Sean Austin :: He plays Sam, Frodo's friend. I still remember him very well from his role as Mikey Walsh in The Goonies.
+- Elijah Wood :: He plays Frodo
+- Sean Austin :: He plays Sam, Frodo's friend. I still remember him very well from his role as Mikey Walsh in The Goonies.
+
+| Table | Cunts |
+|-------+-------|
+| Table | |
+
 My favorite scenes are (in this order):
 
