@@ -27,20 +27,6 @@ writeThing c (S k) = do
 writeAttrs : List (String, String) -> {[FILE_IO (OpenFile Write)]} Eff ()
 writeAttrs as = writeRawTag "ATTR" $ unwords $ map (\(k,v) => k ++ ":" ++ v) as
 
-writeManyThings : (a -> {[FILE_IO (OpenFile Write)]} Eff ())
-            -> List a
-            -> {[FILE_IO (OpenFile Write)]} Eff ()
-writeManyThings _          Nil = pure ()
-writeManyThings writeOnce (x::xs) = do
-    writeOnce x
-    writeManyThings (writeOnce) xs
-
-writeMaybe : (a -> {[FILE_IO (OpenFile Write)]} Eff ())
-           -> Maybe a
-           -> {[FILE_IO (OpenFile Write)]} Eff ()
-writeMaybe _ Nothing  = pure ()
-writeMaybe f (Just x) = f x
-
 -- ----------------------------------------------------------- [ Write Inlines ]
 mutual
   writeTag : String -> List (Inline Prime) -> {[FILE_IO (OpenFile Write)]} Eff ()
