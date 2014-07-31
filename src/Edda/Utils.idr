@@ -2,21 +2,17 @@ module Edda.Utils
 
 import Edda.Model
 
-getAttr : String -> Maybe Attributes -> Maybe Attribute
-getAttr _ Nothing = Nothing
-getAttr key (Just as) = find (\(k,v) => k == key) as
 
-getType : Maybe Attributes -> Maybe String
-getType as = case getAttr "type" as of
+lookupAttribute : String -> Attributes -> Maybe Attribute
+lookupAttribute key as = find (\(k,v) => k == key) as
+
+lookupValue : String -> Attributes -> Maybe String
+lookupValue key as = case lookupAttribute key as of
     Just (k,v) => Just v
     Nothing    => Nothing
 
-getSrcLang : Maybe Attributes -> Maybe String
-getSrcLang as = case getAttr "src_lang" as of
-    Just (k,v) => Just v
-    Nothing    => Nothing
+lookupType : Attributes -> Maybe String
+lookupType = lookupValue "type"
 
-getValue : String -> Maybe Attributes -> Maybe String
-getValue key as = case getAttr key as of
-    Just (k,v) => Just v
-    Nothing    => Nothing
+lookupSrcLang : Attributes -> Maybe String
+lookupSrcLang = lookupValue "src_lang"

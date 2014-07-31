@@ -162,11 +162,13 @@ writeDefItem (k, vs) = do
     writeInlines k
     writeString " :: "
     writeInlines vs
+    writeString "\n"
 
 writeItem : String -> List (Inline Prime) -> {[FILE_IO (OpenFile Write)]} Eff ()
 writeItem mark b = do
     writeString mark
     writeInlines b
+    writeString "\n"
 
 writeBlock : Block Prime -> {[FILE_IO (OpenFile Write)]} Eff ()
 writeBlock (Empty Prime) = writeString ""
@@ -182,8 +184,8 @@ writeBlock (Figure Prime l c as fig) = do
     writeInline fig
     writeString "\n\n"
 writeBlock (Table Prime l c tbl) = do
-    writeTag "CAPTION" c
-    writeRawTag "NAME" l
+    writeMaybe (\x => writeTag "CAPTION" x) c
+    writeMaybe (\x => writeRawTag "NAME" x) l
     writeString "|Table|@TODO|"
     writeString "\n\n"
 writeBlock (DList Prime kvs) = do
@@ -206,7 +208,7 @@ writeBlock (Listing l c lang as src) = do
     writeString " "
     writeString (fromMaybe "idris" lang)
     writeString " "
-    writeLine (fromMaybe "" (getValue "src_opts" as)) -- when using getAttr instead of getValue shit happens
+    writeMaybe (\x => writeString (fromMaybe "" (lookupValue "src_opts" x))) as
     writeString src
     writeLine "#+END_SRC"
     writeString "\n"
@@ -243,9 +245,9 @@ writeProps (Just ps) = do
     --map (\(k,v) => writeRawTag k v) ps
     writeString "\n"
   where
-    title = fromMaybe "title missing" (getValue "TITLE" (Just ps))
-    author = fromMaybe "author missing" (getValue "AUTHOR" (Just ps))
-    date = fromMaybe "date missing" (getValue "DATE" (Just ps))
+    title = fromMaybe "title missing" (lookupValue "TITLE" ps)
+    author = fromMaybe "author missing" (lookupValue "AUTHOR" ps)
+    date = fromMaybe "date missing" (lookupValue "DATE" ps)
 
 -- --------------------------------------------------------------- [ Write Org ]
 doWrite' : Maybe Attributes -> List (Block Prime) -> {[FILE_IO (OpenFile Write)]} Eff ()

@@ -24,6 +24,9 @@ lexL p = lexemeL p
 lex : Monad m => ParserT m String a -> ParserT m String a
 lex p = lexeme p
 
+brackets' : Monad m => ParserT m String a -> ParserT m String a
+brackets' p = between (char '[') (char ']') p
+
 literallyBetween : Char -> Parser String
 literallyBetween c = map pack $ between (char c) (char c) (some (satisfy (/= c)))
 

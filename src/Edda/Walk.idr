@@ -88,7 +88,7 @@ instance Walkable (Inline s) (Block s) where
   walk {s} f (Empty s)             = Empty s
   walk {s} f (Header s d l t)      = Header s d l (walk f t)
   walk {s} f (Figure s l c as fig) = Figure s l (walk f c) as (walk f fig)
-  walk {s} f (Table s l c tbl)     = Table s l c tbl                        -- caption
+  walk {s} f (Table s l c tbl)     = Table s l c tbl                 -- caption
   walk {s} f (DList s kvs)         = DList s (walk f kvs)
 
   walk f (OList xs)  = OList (walk f xs)
@@ -189,7 +189,7 @@ instance Walkable (Block s) (Block s) where
   walk {s} f (Empty s)             = f $ Empty s
   walk {s} f (Header s d l t)      = f $ Header s d l (walk f t)
   walk {s} f (Figure s l c as fig) = f $ Figure s l (walk f c) as (walk f fig)
-  walk {s} f (Table s l c tbl)     = f $ Table s l c tbl                        -- caption
+  walk {s} f (Table s l c tbl)     = f $ Table s l c tbl                        -- caption -- table
   walk {s} f (DList s kvs)         = f $ DList s (walk f kvs)
 
   walk f (OList xs)  = f $ OList (walk f xs)

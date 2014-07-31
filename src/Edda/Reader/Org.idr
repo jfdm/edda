@@ -64,19 +64,19 @@ uline = markup UlineTy '_' <?> "Uline"
 
 expLink : Parser (Inline Star)
 expLink = do
-    txt <- brackets $ brackets url
+    txt <- brackets' $ brackets' url
     pure $ Link ExposedTy txt Nothing
   <?> "Exposed Link"
 
 hyper : Parser (Inline Star)
 hyper = do
-    (uri, desc) <- brackets internal
+    (uri, desc) <- brackets' internal
     pure $ Link HyperTy uri (Just desc)
   where
     internal : Parser (String, List (Inline Star))
     internal = do
-      u <- brackets url
-      d <- brackets $ some text
+      u <- brackets' url
+      d <- brackets' $ some text
       pure (u, intersperse (Punc ' ' ) d)
 
 link : Parser (Inline Star)
@@ -84,7 +84,7 @@ link = hyper <|> expLink <?> "Link"
 
 fnote : Parser (Inline Star)
 fnote = do
-   (l,d) <- brackets doFnote
+   (l,d) <- brackets' doFnote
    pure $ Link FnoteTy (fromMaybe "" l) d
  where
    doFnote : Parser (Maybe String, Maybe (List (Inline Star)))

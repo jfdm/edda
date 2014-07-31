@@ -130,8 +130,8 @@ data Block : Step -> Type where
          -> Block s
 
   Table : (s : Step)
-        -> (label : String)
-        -> (caption : List (Inline s))
+        -> (label : Maybe String)
+        -> (caption : Maybe (List (Inline s)))
         -> Tabular
         -> Block s
 

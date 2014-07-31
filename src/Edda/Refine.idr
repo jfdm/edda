@@ -53,7 +53,7 @@ mutual
   refineBlock : Block Star -> Block Prime
   refineBlock (Empty Star)             = Empty Prime
   refineBlock (Header Star d l t)      = Header Prime d l (refineInlines t)
-  refineBlock (Table Star l c tbl)     = Table Prime l (refineInlines c) tbl
+  refineBlock (Table Star l c tbl)     = Table Prime l (refineMaybeInlines c) tbl
   refineBlock (Figure Star l c as img) = Figure Prime l (refineInlines c)
                                                           as
                                                           (refineInline img)
@@ -78,7 +78,9 @@ mutual
 
   refineBlock (VerbBlock ty l c as s) = case ty of
     CommentTy  => Comment s
-    ListingTy  => Listing l (refineMaybeInlines c) (getSrcLang as) as s
+    ListingTy  => case as of
+      Nothing  => Listing l (refineMaybeInlines c) Nothing Nothing s
+      Just ops => Listing l (refineMaybeInlines c) (lookupSrcLang ops) (Just ops) s
     LiteralTy  => Literal l (refineMaybeInlines c) s
     EquationTy => Equation l s
 
