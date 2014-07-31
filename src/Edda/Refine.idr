@@ -20,7 +20,7 @@ mutual
       ExposedTy => Hyper url Nothing
       HyperTy   => Hyper url $ refineMaybeInlines desc
       FnoteTy   => FNote url $ refineMaybeInlines desc
-      CiteTy    => Cite ParenSty url -- <= TODO
+      CiteTy    => Cite ParenSty url -- <= @TODO
   refineInline (Mark ty txt) = case ty of
       BoldTy   => Bold   $ refineInlines txt
       EmphTy   => Emph   $ refineInlines txt
@@ -81,7 +81,10 @@ mutual
     CommentTy  => Comment s
     ListingTy  => case as of
       Nothing  => Listing l (refineMaybeInlines c) Nothing Nothing Nothing s
-      Just ops => Listing l (refineMaybeInlines c) (lookupSrcLang ops) (lookupSrcOpts ops) (Just (nubAttribute "src_lang" $ nubAttribute "src_opts" ops)) s
+      Just ops => Listing l (refineMaybeInlines c)
+                            (lookupSrcLang ops)
+                            (lookupSrcOpts ops)
+                            (Just (nubAttribute "src_lang" $ nubAttribute "src_opts" ops)) s
     LiteralTy  => Literal l (refineMaybeInlines c) s
     EquationTy => Equation l s
 

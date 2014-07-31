@@ -13,10 +13,10 @@ class Walkable a z where
   walk : (a -> a) -> z -> z
 
 instance Walkable a b => Walkable a (List b) where
-  walk  f xs = map (walk f) xs
+  walk f xs = map (walk f) xs
 
 instance (Walkable a b, Walkable a c) => Walkable a (b,c) where
-  walk  f (x,y) = (walk f x, walk f y)
+  walk f (x,y) = (walk f x, walk f y)
 
 instance Walkable (Inline s) (Inline s) where
   walk f (Punc c)       = f $ Punc c
