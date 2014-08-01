@@ -105,8 +105,8 @@ culpa qui officia deserunt mollit anim id est laborum.
 
 * Conclusion
 
-#+CAPTION: Shit
-#+NAME: fig:Shit
+#+CAPTION: Figure
+#+NAME: fig:fig
 [[asasasasas]]
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
@@ -139,9 +139,9 @@ Important actors in this film are:
 - Elijah Wood :: He plays Frodo
 - Sean Austin :: He plays Sam, Frodo's friend.  I still remember him very well from his role as Mikey Walsh in The Goonies.
 
-| Table | Cunts |
+| Table | Table |
 |-------+-------|
-| Table |       |
+| Table | Table |
 
 
 
