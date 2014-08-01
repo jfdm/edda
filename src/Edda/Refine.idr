@@ -101,4 +101,3 @@ public
 covering
 refineEdda : EddaRaw -> EddaDoc
 refineEdda (MkEdda Star ps body) = MkEddaDoc ps (refineBlocks body)
-refineEdda (MkEddaRaw ps body)  = MkEddaDoc ps (refineBlocks body)

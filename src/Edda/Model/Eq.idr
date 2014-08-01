@@ -2,26 +2,54 @@ module Edda.Model.Eq
 
 import Edda.Model
 
+instance Eq Step where
+    (==) Star  Star  = True
+    (==) Prime Prime = True
+    (==) _     _     = False
+
 instance Eq FontTy where
-    (==) x x = True
+    (==) SerifTy SerifTy = True
+    (==) SansTy  SansTy  = True
+    (==) ScapTy  ScapTy  = True
+    (==) MonoTy  MonoTy  = True
+    (==) _       _       = False
 
 instance Eq QuoteTy where
-    (==) x x = True
+    (==) SQuote SQuote = True
+    (==) DQuote DQuote = True
+    (==) _      _      = False
 
 instance Eq CiteSty where
-    (==) x x = True
+    (==) ParenSty ParenSty = True
+    (==) TextSty  TextSty  = True
+    (==) _        _        = False
 
 instance Eq ParenTy where
-    (==) x x = True
+    (==) Parents  Parents  = True
+    (==) Brackets Brackets = True
+    (==) Braces   Braces   = True
+    (==) _        _        = False
 
 instance Eq LinkTy where
-    (==) x x = True
+    (==) HyperTy   HyperTy   = True
+    (==) ExposedTy ExposedTy = True
+    (==) FnoteTy   FnoteTy   = True
+    (==) RefTy     RefTy     = True
+    (==) CiteTy    CiteTy    = True
+    (==) _         _         = False
 
 instance Eq MarkupTy where
-    (==) x x = True
+    (==) BoldTy   BoldTy   = True
+    (==) EmphTy   EmphTy   = True
+    (==) StrikeTy StrikeTy = True
+    (==) UlineTy  UlineTy  = True
+    (==) _        _        = False
 
 instance Eq RawTy where
-    (==) x x = True
+    (==) VerbTy VerbTy = True
+    (==) CodeTy CodeTy = True
+    (==) MathTy MathTy = True
+    (==) _      _      = False
 
 mutual
   %assert_total -- @ TODO check if okay to do this?
@@ -92,18 +120,48 @@ mutual
   instance Eq (Inline s) where
       (==) = inlineEq
 
+instance Eq TAlign where
+    (==) AlignLeft   AlignLeft   = True
+    (==) AlignRight  AlignRight  = True
+    (==) AlignCenter AlignCenter = True
+    (==) AlignPar    AlignPar    = True
+    (==) _           _           = False
 
 instance Eq VerbBlockTy where
-  (==) x x = True
+    (==) CommentTy  CommentTy  = True
+    (==) ListingTy  ListingTy  = True
+    (==) LiteralTy  LiteralTy  = True
+    (==) EquationTy EquationTy = True
+    (==) _          _          = False
 
 instance Eq TextBlockTy where
-  (==) x x = True
+    (==) ParaTy         ParaTy        = True
+    (==) TheoremTy      TheoremTy     = True
+    (==) CorollaryTy    CorollaryTy   = True
+    (==) LemmaTy        LemmaTy       = True
+    (==) PropositionTy  PropositionTy = True
+    (==) ProofTy        ProofTy       = True
+    (==) DefinitionTy   DefinitionTy  = True
+
+    (==) ExerciseTy     ExerciseTy    = True
+    (==) NoteTy         NoteTy        = True
+    (==) ProblemTy      ProblemTy     = True
+    (==) QuestionTy     QuestionTy    = True
+    (==) RemarkTy       RemarkTy      = True
+
+    (==) SolutionTy     SolutionTy    = True
+    (==) ExampleTy      ExampleTy     = True
+    (==) QuotationTy    QuotationTy   = True
+    (==) _              _             = False
 
 instance Eq ListTy where
-  (==) x x = True
+  (==) BulletTy BulletTy = True
+  (==) NumberTy NumberTy = True
+  (==) _        _        = False
 
-instance Eq Tabular where
-  (==) x x = True
+instance Eq Tabular where -- @TODO Make deep
+  (==) (MkTabular xa xc) (MkTabular ya yc) = True
+  (==) _                 _                 = False
 
 mutual
   blockEq : Block s -> Block s -> Bool
@@ -147,3 +205,10 @@ mutual
 
   instance Eq (Block s) where
       (==) = blockEq
+
+
+eddaEq : Edda s -> Edda s -> Bool
+eddaEq {s} (MkEdda s x xs) (MkEdda s y ys) = x == y && xs == ys
+
+instance Eq (Edda s) where
+    (==) = eddaEq

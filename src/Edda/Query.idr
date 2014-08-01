@@ -194,12 +194,9 @@ instance Queryable (Block Prime) (Block Prime) where
 
 instance Queryable (Block Prime) (Edda Prime) where
   query f (MkEdda Prime as xs) = query f xs
-  query f (MkEddaDoc ps xs)    = query f xs
 
 instance Queryable (Inline Prime) (Edda Prime) where
   query f (MkEdda Prime as xs) = query f xs
-  query f (MkEddaDoc ps xs)    = query f xs
 
 instance Queryable (Edda Prime) (Edda Prime) where
   query f (MkEdda Prime as xs) = f $ MkEdda Prime as xs
-  query f (MkEddaDoc ps xs)    = f $ MkEddaDoc ps xs

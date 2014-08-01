@@ -2,7 +2,7 @@ module Edda.Walk
 
 import Edda.Model
 
---%default total
+-- %default total
 
 -- @TODO walk attributes
 -- @TODO walk maybe
@@ -219,15 +219,12 @@ instance Walkable (Block s) (Block s) where
 
 instance Walkable (Block s) (Edda s) where
   walk {s} f (MkEdda s as xs) = MkEdda s as (walk f xs)
-  walk f (MkEddaDoc ps xs)    = MkEddaDoc ps (walk f xs)
-  walk f (MkEddaRaw ps xs)    = MkEddaRaw ps (walk f xs)
 
 instance Walkable (Inline s) (Edda s) where
   walk {s} f (MkEdda s as xs) = MkEdda s as (walk f xs)
-  walk f (MkEddaDoc ps xs)    = MkEddaDoc ps (walk f xs)
-  walk f (MkEddaRaw ps xs)    = MkEddaRaw ps (walk f xs)
 
-instance Walkable (Edda s) (Edda s) where
-  walk {s} f (MkEdda s as xs) = f $ MkEdda s as xs
-  walk f (MkEddaDoc ps xs)    = f $ MkEddaDoc ps xs
-  walk f (MkEddaRaw ps xs)    = f $ MkEddaRaw ps xs
+instance Walkable (Edda Star) (Edda Star) where
+  walk f (MkEdda Star as xs) = f $ (MkEdda Star as xs)
+
+instance Walkable (Edda Prime) (Edda Prime) where
+  walk f (MkEdda Prime as xs) = f $ (MkEdda Prime as xs)

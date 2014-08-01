@@ -220,16 +220,14 @@ instance Show (Block x) where
   show (Solution l c txt)    = "[Question "    ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
   show (Example l c txt)     = "[Example "     ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
 
-instance Show (Edda ty) where
-  show (MkEdda step ps body) = "[Edda "
-       ++ show step ++ "\n"
+instance Show (Edda Star) where
+  show (MkEdda Star ps body) = "[Edda "
+       ++ show Star ++ "\n"
        ++ "[Mdata " ++ concatMap show ps ++ "]\n"
        ++ concatMap show body ++ "]\n"
 
-  show (MkEddaDoc ps body) = "[EddaDoc "
+instance Show (Edda Prime) where
+  show (MkEdda Prime ps body) = "[Edda "
+       ++ show Prime ++ "\n"
        ++ "[Mdata " ++ concatMap show ps ++ "]\n"
-       ++ concatMap show body ++ "]\n"
-
-  show (MkEddaRaw ps body) = "[EddaStar"
-       ++ "[MData " ++ concatMap show ps ++ "]\n"
        ++ concatMap show body ++ "]\n"

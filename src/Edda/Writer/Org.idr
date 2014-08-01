@@ -263,7 +263,6 @@ doWrite' ps body = do
 covering
 doWrite : EddaDoc -> {[FILE_IO (OpenFile Write)]} Eff ()
 doWrite (MkEdda Prime ps body) = doWrite' ps body
-doWrite (MkEddaDoc ps body)    = doWrite' ps body
 
 public
 writeOrg : String -> EddaDoc -> {[FILE_IO (), EXCEPTION String]} Eff ()

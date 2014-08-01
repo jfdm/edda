@@ -173,8 +173,12 @@ data Block : Step -> Type where
 
 data Edda : Step -> Type where
   MkEdda : (s : Step) -> (ps : Maybe Attributes) -> List (Block s) -> Edda s
-  MkEddaRaw : (ps : Maybe Attributes) -> List (Block Star) -> Edda Star
-  MkEddaDoc : (ps : Maybe Attributes) -> List (Block Prime) -> Edda Prime
+
+MkEddaRaw : Maybe Attributes -> List (Block Star) -> Edda Star
+MkEddaRaw = MkEdda Star
+
+MkEddaDoc : Maybe Attributes -> List (Block Prime) -> Edda Prime
+MkEddaDoc = MkEdda Prime
 
 EddaDoc : Type
 EddaDoc = Edda Prime
