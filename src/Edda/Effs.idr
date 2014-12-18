@@ -1,9 +1,9 @@
 module Edda.Effs
 
-import Effects
-import Effect.File
-import Effect.Exception
-import Effect.StdIO
+import public Effects
+import public Effect.File
+import public Effect.Exception
+import public Effect.StdIO
 
 
 EddaEffs : List EFFECT

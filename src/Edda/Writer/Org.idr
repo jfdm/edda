@@ -1,7 +1,8 @@
 module Edda.Writer
 
-import Effects
-import Effect.File
+import public Effects
+import public Effect.File
+import public Effect.Exception
 
 import Edda.Model
 import Edda.Utils

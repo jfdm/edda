@@ -4,8 +4,11 @@ import System
 
 import Edda
 
+import Edda.Reader.Org
+import Edda.Writer.Org
+
 eddaMain : String -> {EddaEffs} Eff ()
-eddaMain fname = do
+eddaMain fname = with Effects do
     d <- readOrg fname
     case d of
       Left err  => putStrLn $ err
