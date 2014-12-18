@@ -180,9 +180,10 @@ writeBlock : Block Prime -> {[FILE_IO (OpenFile Write)]} Eff ()
 writeBlock (Empty Prime) = writeString ""
 writeBlock (Header Prime lvl label title) = do
     writeThing '*' lvl
-    writeString " "
     writeInlines title
-    writeString "\n\n"
+    writeString "\n"
+    writeString $ fromMaybe "" label
+    writeString "\n"
 writeBlock (Figure Prime l c as fig) = do
     writeTag "CAPTION" c
     writeRawTag "NAME" l

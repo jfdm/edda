@@ -4,6 +4,7 @@
 
 
 * Introduction
+<<sec:intro>>
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
@@ -143,5 +144,5 @@ Important actors in this film are:
 |-------+-------|
 | Table | Table |
 
-My favorite scenes are (in this order):
+My favorite scenes are (in this order): "Bo"
 

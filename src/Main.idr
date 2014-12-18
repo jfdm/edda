@@ -14,7 +14,7 @@ eddaMain fname = with Effects do
       Left err  => putStrLn $ err
       Right res => do
         putStrLn $ show res
-        writeOrg "foobar.org" res
+--        writeOrg "foobar.org" res
 
 main : IO ()
 main = do

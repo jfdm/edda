@@ -119,7 +119,7 @@ data Block : Step -> Type where
 
   Header : (s : Step)
          -> (lvl : Nat)
-         -> (label : String)
+         -> (label : Maybe String)
          -> (title : List (Inline s)) -> Block s
 
   Figure : (s : Step)

@@ -11,7 +11,7 @@ import Edda.Utils
 import Edda.Reader.Common
 import Edda.Reader.Utils
 
-%access private
+%access public
 -- --------------------------------------------------------------------- [ Org ]
 
 rsvp : List Char
@@ -135,6 +135,10 @@ label = do
     pure v
   <?> "Label"
 
+target : Parser String
+target = angles $ angles url
+  <?> "Target"
+
 -- ------------------------------------------------------------------ [ Blocks ]
 
 getOrgBlockType : String -> Either VerbBlockTy TextBlockTy
@@ -222,9 +226,11 @@ header : Parser (Block Star)
 header = char '*' >! do
     depth <- opt (many $ char '*')
     space
-    title <- manyTill (inline) (eol $> space)
+    title <- manyTill (inline) (eol)
+    l <- opt target
+    space
     let d = length (fromMaybe [] depth) + 1
-    pure (Header Star d "" title)
+    pure (Header Star d l title)
 
 
 ulMarker : Parser ()
@@ -285,7 +291,7 @@ parseOrg : Parser (Edda Star)
 parseOrg = do
   title  <- attribute "TITLE"
   author <- attribute "AUTHOR"
-  date   <- attribute "DATE"
+  date   <- attribute "DATE" <$ space
   txt    <- many orgBlock
   lpara  <- many paraLast -- Dirty Hack
   let ps = the Attributes [title, author, date]
