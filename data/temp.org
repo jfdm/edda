@@ -1,0 +1,147 @@
+#+TITLE: I am a Title
+#+AUTHOR: Joe Blogs
+#+DATE: 2014-07-10
+
+* Introduction
+<<sec:intro>>
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum. asasas *bold*
+/italic/ ~code~ +strike-through+ =verbatim= $math$ Hello 'Bye bye'.
+[[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [fn:label:description] [[http://www.cs.st-andrews.ac.uk]]
+[[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]] [fn:label:description] bo
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in ulpa qui officia deserunt mollit anim id est laborum. [[sec:intro]]
+
+** Contribution
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+#+BEGIN_VERSE
+/uh/ uhuhuhuh
+#+END_VERSE
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+* Example
+<<sec:intro:con>>
+
+Idris data types are declared using a similar syntax to Haskell data types. For example, natural numbers, an option type and lists are declared in the standard library:
+
+#+BEGIN_SRC idris
+  data Nat     = Z       | S Nat
+  data Maybe a = Nothing | Just a
+  data List a  = Nil     | (::) a (List a)
+#+END_SRC
+
+Functions are implemented by pattern matching. For example, addition on natural numbers can be defined as follows, again taken from the standard library:
+
+#+BEGIN_SRC idris
+(+) : Nat -> Nat -> Nat
+Z     + y = y
+(S k) + y = S (k + y)
+#+END_SRC
+
+Like Haskell, functions such as (+) above may be overloaded using type classes.
+
+Vectors are lists which carry their size in the type. They are declared as follows in the standard library, using a syntax similar to that for Generalised Algebraic Data Types (GADTs) in Haskell:
+
+#+BEGIN_SRC idris
+infixr 5 ::
+
+data Vect : Nat -> Type -> Type where
+    Nil  : Vect Z a
+    (::) : a -> Vect k a -> Vect (S k) a
+#+END_SRC
+
+We can define functions by pattern matching. The type of a function over Vect will describe what happens to the lengths of the vectors involved. For example, app appends two Vects, returning a vector which is the sum of the lengths of the inputs:
+
+#+BEGIN_SRC idris
+app : Vect n a -> Vect m a -> Vect (n + m) a
+app Nil       ys = ys
+app (x :: xs) ys = x :: app xs ys
+#+END_SRC
+
+* Discussion
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+* Conclusion
+
+#+CAPTION: Figure
+#+NAME: fig:fig
+[[asasasasas]]
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est paborum.
+
+[[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [fn:label:description] [[http://www.cs.st-andrews.ac.uk]]
+[[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]] [fn:label:description]
+*as* *I am test* *sdsd* *asas *
+culpa qui officia deserunt mollit anim id est laborum. asasas *bold*
+/italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.
+I am more text in this paragraph
+--- ...
+
+
+* Lord of the Rings
+My favorite scenes are (in this order):
+
+1. The attack of the Rohirrim.
+2. Eowyn's fight with the witch king this was already my favorite scene in the book. I really like Miranda Otto.
+3. Peter Jackson being shot by Legola. on DVD only, he makes a really funny face when it happens.
+
+But in the end, no individual scenes matter but the film as a whole.
+Important actors in this film are:
+
+- Elijah Wood :: He plays Frodo
+- Sean Austin :: He plays Sam, Frodo's friend.  I still remember him very well from his role as Mikey Walsh in The Goonies.
+
+| Table | Table |
+|-------+-------|
+| Table | Table |
+
+
+
+My favorite scenes are (in this order): "Bo"
