@@ -52,6 +52,7 @@ mutual
 mutual
   covering
   refineBlock : Block Star -> Block Prime
+  refineBlock (HRule Star)             = HRule Prime
   refineBlock (Empty Star)             = Empty Prime
   refineBlock (Header Star d l t)      = Header Prime d l (refineInlines t)
   refineBlock (Table Star l c tbl)     = Table Prime l (refineMaybeInlines c) tbl

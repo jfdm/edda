@@ -34,6 +34,7 @@ squash2 squaFunc xs = runPureInit [length xs] (doSquash2 squaFunc xs)
 
 -- --------------------------------------------------------- [ Block Reduction ]
 squashRBPair : Block s -> Block s -> Maybe (Block s)
+squashRBPair {s} (HRule s)  (HRule s) = Just $ HRule s
 squashRBPair (Para xs) (Para ys)      = Just $ Para (xs ++ ys)
 squashRBPair {s} (Empty s)  (Empty s) = Just $ Empty s
 squashRBPair _              _         = Nothing

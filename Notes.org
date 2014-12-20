@@ -1,15 +1,15 @@
 #+TITLE: Notes on Org Mode Restrictions
 #+AUTHOR: Jan de Muijnck-Hughes
-#+DATE: 2014-07-16
+#+DATE: [2014-12-20]
 
 * Strictness
 + Document Metadata
++ HRules are only five dashes.
 + Figures must have label and caption
 + Blocks may have label, may have caption
 + Greater Blocks are atomic i.e. CENTER, QUOTE.
 + All text markup is atomic.
 * Identified during reifnement
-+ Heading Labels are not recognised. Maybe during refinement.
 + Footnotes
 * Caveats
 + VERSE and CENTER are treated like QUOTE

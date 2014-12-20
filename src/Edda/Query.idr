@@ -72,6 +72,7 @@ instance Queryable (Inline Prime) (Inline Prime) where
 
 -- @TODO Captions
 instance Queryable (Inline Prime) (Block Prime) where
+  query f (HRule Prime)             = neutral
   query f (Empty Prime)             = neutral
   query f (Header Prime d l t)      = query f t
   query f (Figure Prime l c as fig) = query f c <+> query f fig
@@ -161,6 +162,7 @@ instance Queryable (Block Prime) (Inline Prime) where
 
 -- @TODO Query Table
 instance Queryable (Block Prime) (Block Prime) where
+  query f (HRule Prime)               = f (HRule Prime)
   query f (Empty Prime)               = f (Empty Prime)
   query f (Header Prime d l t)        = f (Header Prime d l t) <+> (query f t)
   query f (Figure Prime l c as fig)   = f (Figure Prime l c as fig) <+> (query f fig) -- caption

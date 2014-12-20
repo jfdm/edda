@@ -115,6 +115,7 @@ data Block : Step -> Type where
             -> List (List (Inline Star))
             -> Block Star
 -- Starry Prime Constructors
+  HRule : (s : Step) -> Block s
   Empty : (s : Step) -> Block s
 
   Header : (s : Step)

@@ -161,6 +161,7 @@ instance Show (Block x) where
        ++ show is ++ "]\n"
 
 -- Starry Prime
+  show (HRule s) = "[HRule" ++ show s ++ "]\n"
   show (Empty s) = "[Empty " ++ show s ++ "]\n"
   show (Header s d l t) = "[Heading "
        ++ show s ++ " "

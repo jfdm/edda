@@ -222,6 +222,12 @@ paraLast = do
     pure $ TextBlock ParaTy Nothing Nothing Nothing txt
   <?> "Filthy hack for last para"
 
+
+hrule : Parser (Block Star)
+hrule = do
+    token "-----"
+    pure (HRule Star)
+
 header : Parser (Block Star)
 header = char '*' >! do
     depth <- opt (many $ char '*')
@@ -285,7 +291,7 @@ list : Parser (Block Star)
 list = dlist <|> blist <|> olist
 
 orgBlock : Parser (Block Star)
-orgBlock = header <|> block <|> list <|> figure <|> para
+orgBlock = header <|> block <|> list <|> figure <|> hrule <|> para
 
 parseOrg : Parser (Edda Star)
 parseOrg = do

@@ -85,6 +85,7 @@ instance Walkable (Inline s) (Block s) where
   walk f (TextBlock ty l c as xs) = TextBlock ty l c as (walk f xs)  -- caption
   walk f (VerbBlock ty l c as v)  = VerbBlock ty l c as v            -- caption
 
+  walk {s} f (HRule s)             = HRule s
   walk {s} f (Empty s)             = Empty s
   walk {s} f (Header s d l t)      = Header s d l (walk f t)
   walk {s} f (Figure s l c as fig) = Figure s l (walk f c) as (walk f fig)
@@ -186,6 +187,7 @@ instance Walkable (Block s) (Block s) where
   walk f (TextBlock ty l c as xs) = f $ TextBlock ty l c as (walk f xs)  -- caption
   walk f (VerbBlock ty l c as v)  = f $ VerbBlock ty l c as v            -- caption
 
+  walk {s} f (HRule s)             = f $ HRule s
   walk {s} f (Empty s)             = f $ Empty s
   walk {s} f (Header s d l t)      = f $ Header s d l (walk f t)
   walk {s} f (Figure s l c as fig) = f $ Figure s l (walk f c) as (walk f fig)

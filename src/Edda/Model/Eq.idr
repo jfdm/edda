@@ -169,6 +169,7 @@ mutual
   blockEq (TextBlock xty xl xc xas xs) (TextBlock yty yl yc yas ys) = xty == yty && xl == yl && xc == yc && xas == yas && xs == ys
   blockEq (VerbBlock xty xl xc xas x)  (VerbBlock yty yl yc yas y)  = xty == yty && xl == yl && xc == yc && xas == yas && x == y
 
+  blockEq {s} (HRule s)              (HRule s)              = True
   blockEq {s} (Empty s)              (Empty s)              = True
   blockEq {s} (Header s x xl xt)     (Header s y yl yt)     = x == y && xl == yl && xt == yt
   blockEq {s} (Figure s xl xc xas x) (Figure s yl yc yas y) = xl == yl && xc == yc && xas == yas && x == y
