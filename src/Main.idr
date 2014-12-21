@@ -5,6 +5,7 @@ import System
 import Edda
 
 import Edda.Reader.CommonMark
+import Edda.Writer.Org
 
 eddaMain : String -> {EddaEffs} Eff ()
 eddaMain fname = with Effects do
@@ -13,7 +14,7 @@ eddaMain fname = with Effects do
       Left err  => putStrLn $ err
       Right res => do
         putStrLn $ show res
---        writeOrg "foobar.org" res
+        writeOrg "foobar.org" res
 
 main : IO ()
 main = do

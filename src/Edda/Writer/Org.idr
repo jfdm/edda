@@ -181,6 +181,7 @@ writeBlock (HRule Prime) = writeString "-----"
 writeBlock (Empty Prime) = writeString ""
 writeBlock (Header Prime lvl label title) = do
     writeThing '*' lvl
+    writeString " "
     writeInlines title
     writeString "\n"
     writeString $ fromMaybe "" label

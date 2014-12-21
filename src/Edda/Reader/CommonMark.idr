@@ -111,7 +111,7 @@ indentedcode = identcode "\t" <|> identcode "    " <?> "Indented Code Block"
   where
     identcode : String -> Parser (Block Star)
     identcode m = do
-      ss <- many $ (string m $!> manyTill (anyChar) eol)
+      ss <- some $ (string m $!> manyTill (anyChar) eol)
       eol
       let src = concatMap (\x => pack (x ++ ['\n'])) ss
       pure $ VerbBlock LiteralTy Nothing Nothing Nothing src
@@ -168,10 +168,16 @@ header = char '#' >! do
     pure (Header Star d Nothing title)
   <?> "Header"
 
+empty : Parser (Block Star)
+empty = do
+  eol
+  eol
+  pure $ Empty Star
+
 block : Parser (Block Star)
 block = header
     <|> blockquote <|> indentedcode <|> fencedcode
-    <|> list <|> figure <|> hrule <|> para
+    <|> list <|> figure <|> hrule <|> para <|> empty
     <?> "Block"
 
 parseCommonMark : Parser (Edda Star)
