@@ -81,9 +81,7 @@ $ git merge upstream/master
 
 The remaining steps are the same for both new and existing contributors:
 
-1. Create, and checkout onto, a topic branch on which to base you work.
-  * This is typically the master branch.
-  * For your own sanity, please avoid working on the `master` branch.
+1. Create, and checkout onto, a topic branch on which to base you work. This is typically the master branch. For your own sanity, please avoid working on the `master` branch.
 
 ```
 $ git branch fix/master/my_contrib master
@@ -91,11 +89,9 @@ $ git checkout fix/master/my_contrib
 ```
 
 1. Make commits of logical units.
-1. Check for unnecessary whitespace with
+1. Check for unnecessary whitespace with: `git diff --check`
 
-```
-$ git diff --check
-```
+1. Make sure your commit messages are along the lines of:
 
     Short (50 chars or less) summary of changes
 
@@ -113,7 +109,6 @@ $ git diff --check
     - Typically a hyphen or asterisk is used for the bullet, preceded by a
       single space, with blank lines in between, but conventions vary here
 
-1. Make sure your commit messages are along the lines of:
 1. Make sure you have added any necessary tests for your changes.
 1. Run all the tests to assure nothing else was accidentally broken.
 
