@@ -4,12 +4,11 @@ import System
 
 import Edda
 
-import Edda.Reader.Org
-import Edda.Writer.Org
+import Edda.Reader.CommonMark
 
 eddaMain : String -> {EddaEffs} Eff ()
 eddaMain fname = with Effects do
-    d <- readOrg fname
+    d <- readCommonMark fname
     case d of
       Left err  => putStrLn $ err
       Right res => do

@@ -6,10 +6,11 @@ sourcedir = src
 
 modules = Edda.Model
         , Edda.Model.Show
-	, Edda.Model.Eq
+        , Edda.Model.Eq
 
         , Edda.Reader.Common
         , Edda.Reader.Utils
+        , Edda.Reader.CommonMark
         , Edda.Reader.Org
 
         , Edda.Writer.Common

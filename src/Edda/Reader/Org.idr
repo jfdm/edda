@@ -12,30 +12,8 @@ import Edda.Reader.Common
 import Edda.Reader.Utils
 
 %access public
+
 -- --------------------------------------------------------------------- [ Org ]
-
-rsvp : List Char
-rsvp = ['+', '=', '*', '/', '~', '_']
-
-text : Parser (Inline Star)
-text = map (Font SerifTy) word <?> "Raw Word"
-
-punc : Parser (Inline Star)
-punc = map Punc punctuation <?> "Raw Punctuation"
-
-borderPunc : Parser (Char)
-borderPunc = do
-    c <- punctuation
-    case c of
-      ','  => satisfy (const False)
-      '\'' => satisfy (const False)
-      '\"' => satisfy (const False)
-      x    => if x `elem` rsvp
-                then satisfy (const False)
-                else pure x
-
-mText : Parser (Inline Star)
-mText = text <|> map Punc borderPunc <?> "Texted used in markup"
 
 code : Parser (Inline Star)
 code = map (Raw CodeTy) (literallyBetween '~') <?> "Code"
@@ -163,22 +141,6 @@ getOrgBlockType str = case str of
     "SOLUTION"    => Right SolutionTy
     otherwise     => Left LiteralTy
 
-dealWithSrcAttrs : Maybe String
-              -> Maybe Attributes
-              -> Maybe Attributes
-dealWithSrcAttrs Nothing         Nothing   = Nothing
-dealWithSrcAttrs Nothing         (Just as) = Just as
-dealWithSrcAttrs (Just srcattrs) as        = Just $ srcLang ++ srcOpts ++ fromMaybe [] as
-  where
-    foo : (String, String)
-    foo = break (== ' ') srcattrs
-
-    srcLang : Attributes
-    srcLang = [("src_lang", fst foo)]
-    srcOpts : Attributes
-    srcOpts = [("src_opts", trim $ snd foo)]
-
-
 block : Parser (Block Star)
 block = do
     cap  <- opt caption
@@ -222,7 +184,6 @@ paraLast = do
     pure $ TextBlock ParaTy Nothing Nothing Nothing txt
   <?> "Filthy hack for last para"
 
-
 hrule : Parser (Block Star)
 hrule = do
     token "-----"
@@ -237,7 +198,6 @@ header = char '*' >! do
     space
     let d = length (fromMaybe [] depth) + 1
     pure (Header Star d l title)
-
 
 ulMarker : Parser ()
 ulMarker = char '+' <|> char '-' <?> "UList Marker"

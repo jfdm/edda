@@ -11,7 +11,36 @@ import Effect.StdIO
 import Edda.Model
 import Edda.Refine
 
-%access private
+import Edda.Reader.Utils
+
+%access public
+
+-- ----------------------------------------------------------------- [ Parsers ]
+
+punc : Parser (Inline Star)
+punc = map Punc punctuation <?> "Raw Punctuation"
+
+text : Parser (Inline Star)
+text = map (Font SerifTy) word <?> "Raw Word"
+
+rsvp : List Char
+rsvp = ['+', '=', '*', '/', '~', '_']
+
+borderPunc : Parser (Char)
+borderPunc = do
+    c <- punctuation
+    case c of
+      ','  => satisfy (const False)
+      '\'' => satisfy (const False)
+      '\"' => satisfy (const False)
+      x    => if x `elem` rsvp
+                then satisfy (const False)
+                else pure x
+
+mText : Parser (Inline Star)
+mText = text <|> map Punc borderPunc <?> "Texted used in markup"
+
+-- ------------------------------------------------------------------ [ Reader ]
 
 readFile : { [FILE_IO (OpenFile Read)] } Eff String
 readFile = readAcc ""
@@ -32,3 +61,4 @@ readEddaFile p f = do
           Left err  => pure $ Left err
           Right res => pure $ Right (refineEdda res)
       False => pure $ Left "Error"
+-- --------------------------------------------------------------------- [ EOF ]

@@ -1,21 +1,25 @@
-#+TITLE: Notes on Org Mode Restrictions
+#+TITLE: Notes on Reader Restrictions
 #+AUTHOR: Jan de Muijnck-Hughes
 #+DATE: [2014-12-20]
 
-* Strictness
+* Common
+** No outlines...
+
+* Org Mode
+** Strictness
 + Document Metadata
 + HRules are only five dashes.
 + Figures must have label and caption
 + Blocks may have label, may have caption
 + Greater Blocks are atomic i.e. CENTER, QUOTE.
 + All text markup is atomic.
-* Identified during reifnement
+** Identified during reifnement
 + Footnotes
-* Caveats
+** Caveats
 + VERSE and CENTER are treated like QUOTE
 + Footnotes are anonymous or labeled.
 + Lists items must be on a single line
-* Missing
+** Missing
 + Markup associated with outling.
 + Tables
 + Lists.
@@ -23,9 +27,9 @@
 + Property blocks
 + Properties aside from Name and Caption and ATTR
 
-* Block Types
-** ASCII Document
-*** Paragraphs
+** Block Types
+*** ASCII Document
+**** Paragraphs
 + Literal
 + Paragraph
 + Source
@@ -34,7 +38,7 @@
 + Important
 + Warning
 + Caution
-*** Blocks
+**** Blocks
 + Listing
 + Source
 + SideBar
@@ -43,19 +47,41 @@
 + Raw
 + Literal
 + Quote
-** Org Mode
+*** Org Mode
 + Example (Literal)
 + Source (Sourcerce)
 + Quote
 + Verse
-** Edda
-*** Verbatim Blocks
+*** Edda
+**** Verbatim Blocks
 + Literal
 + Source
 + Comment
-*** Text Blocks
+**** Text Blocks
 + Paragraph
 + Quote
 + Verse
 + Note
 + Misc
+* Common Mark
+** Strictness
++ All text markup is atomic.
++ ATX Headers Only and with no hashes left of the title.
++ Fenced Code Blocks are delineated either with three =`= or =~=
++ Block quotes are notindented
++ Block Quotes cannot contain other blocks
++ Lists are compact, and only one level deep.
++ Links are simple description url pairings.
++ Images are simple
++ no titles in links
+** Caveats
++ Images are treated as blocks.
++ Enities are not supported
++ Lists items must be on a single line
+** Missing
++ Backslash escapes
++ [[http://spec.commonmark.org/0.13/#link-reference-definitions][Link reference definitions]]
++ HTML Blocks
++ Complex Lists
++ Hardline breaks
++ Complex Block Quotes
