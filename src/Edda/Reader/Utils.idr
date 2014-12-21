@@ -30,6 +30,13 @@ lex p = lexeme p
 brackets' : Monad m => ParserT m String a -> ParserT m String a
 brackets' p = between (char '[') (char ']') p
 
+parens' : Monad m => ParserT m String a -> ParserT m String a
+parens' p = between (char '(') (char ')') p
+
+angles' : Monad m => ParserT m String a -> ParserT m String a
+angles' p = between (char '<') (char '>') p
+
+
 literallyBetween : Char -> Parser String
 literallyBetween c = map pack $ between (char c) (char c) (some (satisfy (/= c)))
 

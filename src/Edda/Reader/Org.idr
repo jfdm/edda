@@ -56,7 +56,7 @@ hyper = do
     internal : Parser (String, List (Inline Star))
     internal = do
       u <- brackets' url
-      d <- brackets' $ some text
+      d <- brackets' $ some (text <$ space)
       pure (u, intersperse (Punc ' ' ) d)
 
 link : Parser (Inline Star)

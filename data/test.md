@@ -97,24 +97,23 @@ $ git checkout fix/master/my_contrib
 $ git diff --check
 ```
 
+    Short (50 chars or less) summary of changes
+
+    More detailed explanatory text, if necessary.  Wrap it to about 72
+    characters or so.  In some contexts, the first line is treated as the
+    subject of an email and the rest of the text as the body.  The blank
+    line separating the summary from the body is critical (unless you omit
+    the body entirely); tools like rebase can get confused if you run the
+    two together.
+
+    Further paragraphs come after blank lines.
+
+    - Bullet points are okay, too
+
+    - Typically a hyphen or asterisk is used for the bullet, preceded by a
+      single space, with blank lines in between, but conventions vary here
+
 1. Make sure your commit messages are along the lines of:
-
-        Short (50 chars or less) summary of changes
-
-        More detailed explanatory text, if necessary.  Wrap it to about 72
-        characters or so.  In some contexts, the first line is treated as the
-        subject of an email and the rest of the text as the body.  The blank
-        line separating the summary from the body is critical (unless you omit
-        the body entirely); tools like rebase can get confused if you run the
-        two together.
-
-        Further paragraphs come after blank lines.
-
-        - Bullet points are okay, too
-
-        - Typically a hyphen or asterisk is used for the bullet, preceded by a
-          single space, with blank lines in between, but conventions vary here
-
 1. Make sure you have added any necessary tests for your changes.
 1. Run all the tests to assure nothing else was accidentally broken.
 

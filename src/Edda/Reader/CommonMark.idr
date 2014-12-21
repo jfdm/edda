@@ -34,14 +34,14 @@ emph = markup EmphTy "*" <|> markup EmphTy "_" <?> "Emph"
 
 expLink : Parser (Inline Star)
 expLink = do
-  txt <- angles url
+  txt <- angles' url
   pure $ Link ExposedTy txt Nothing
 
 hyper : Parser (Inline Star)
 hyper = do
-  d <- brackets' $ some text
+  d <- brackets' $ some (text <$ space)
+  uri  <- parens' $ url
   let desc = intersperse (Punc ' ') d
-  uri  <- parens $ url
   pure $ Link HyperTy uri (Just desc)
 
 link : Parser (Inline Star)
@@ -61,7 +61,7 @@ figure = do
     char '!'
     d <- brackets' $ some text
     let desc = intersperse (Punc ' ') d
-    uri <- parens url
+    uri <- parens' url
     let img = Link ExposedTy uri Nothing
     eol
     eol
@@ -85,7 +85,8 @@ olMarker = marker '.' <|> marker ')'
 -- @TODO Add coninuations
 listItem : Parser () -> Parser (List (Inline Star))
 listItem mark = do
-    mark <$ space
+    mark
+    char ' '
     line <- manyTill inline eol
     pure $ line
 
@@ -110,7 +111,7 @@ indentedcode = identcode "\t" <|> identcode "    " <?> "Indented Code Block"
   where
     identcode : String -> Parser (Block Star)
     identcode m = do
-      ss <- some $ (string m $!> manyTill (anyChar) eol)
+      ss <- many $ (string m $!> manyTill (anyChar) eol)
       eol
       let src = concatMap (\x => pack (x ++ ['\n'])) ss
       pure $ VerbBlock LiteralTy Nothing Nothing Nothing src
@@ -177,7 +178,8 @@ parseCommonMark : Parser (Edda Star)
 parseCommonMark = do
     txt <- some (block)
     lpara <- many paraLast
-    pure $ MkEddaRaw Nothing (txt ++ [Empty Star] ++ lpara)
+    let txt' = intersperse (Empty Star) txt
+    pure $ MkEddaRaw Nothing (txt' ++ [Empty Star] ++ lpara)
   <?> "Raw Common Mark"
 
 -- -------------------------------------------------------------------- [ Read ]
