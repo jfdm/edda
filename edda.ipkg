@@ -2,8 +2,6 @@ package edda
 
 opts = "-p lightyear -p effects"
 
-sourcedir = src
-
 modules = Edda.Model
         , Edda.Model.Show
         , Edda.Model.Eq

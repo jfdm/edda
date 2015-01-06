@@ -2,13 +2,9 @@
 
 IDRIS := idris
 LIB   := edda
-BIN   := eddabin
 OPTS  :=
 
 .PHONY: clean build
-
-exe: install
-	${IDRIS} ${OPTS} --build ${BIN}.ipkg
 
 install: lib
 	${IDRIS} ${OPTS} --install ${LIB}.ipkg
@@ -28,9 +24,10 @@ clobber : clean
 	rm eddabin
 	find . -name "*.ibc" -delete
 
-test :
-	echo "Not yet, tests are old and broken."
-	#(cd tests; bash runtests.sh)
+test: install
+	$(MAKE) -C test build
+	(cd test; ./a.out)
+	$(MAKE) -C test clean
 
 doc:
 	${IDRIS} --mkdoc ${LIB}.ipkg

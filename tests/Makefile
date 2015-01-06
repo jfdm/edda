@@ -1,19 +1,16 @@
 ##  Makefile
 
 IDRIS := idris
-PKG   := test
+BIN   := test
+EXE   := a.out
 OPTS  :=
 
 .PHONY: clean build
 
 build:
-	${IDRIS} ${OPTS} --build ${PKG}.ipkg
+	${IDRIS} ${OPTS} --build ${BIN}.ipkg
 
 clean:
-	${IDRIS} --clean ${PKG}.ipkg
+	${IDRIS} --clean ${BIN}.ipkg
 	find . -name "*~" -delete
-
-clean_build: clean build
-
-check: clean
-	${IDRIS} --checkpkg ${PKG}.ipkg
+	rm -rf a.out

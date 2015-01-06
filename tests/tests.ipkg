@@ -1,9 +1,0 @@
-package tests
-
-opts = "-p lightyear -p edda"
-
-sourcedir = src
-
-executable = eddatests
-
-modules = Test.Data, Test.Utils, Test.Runner, Test.OrgReader, Main

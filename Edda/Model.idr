@@ -1,5 +1,7 @@
 module Edda.Model
 
+import Data.Vect
+
 data Step = Star | Prime
 
 data FontTy   = SerifTy | SansTy | ScapTy | MonoTy
