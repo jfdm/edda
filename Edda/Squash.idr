@@ -8,7 +8,7 @@ import Edda.Model
 %access private
 %default total
 
--- ------------------------------------------------------- [ Generic Reduction ]
+-- ----------------------------------------------------------- [ Double Squash ]
 scanSquash2 : (a -> a -> Maybe a) -> List a -> List a
 scanSquash2 _     Nil          = Nil
 scanSquash2 squaFunc (x::xs) with (xs)
@@ -28,52 +28,43 @@ doSquash2 squaFunc bs = do
       put $ length newBS
       doSquash2 squaFunc newBS
 
+public
 covering
-squash2 : (a -> a -> Maybe a) -> List a -> List a
-squash2 squaFunc xs = runPureInit [length xs] (doSquash2 squaFunc xs)
+squash2By : (a -> a -> Maybe a) -> List a -> List a
+squash2By squaFunc xs = runPureInit [length xs] (doSquash2 squaFunc xs)
 
--- --------------------------------------------------------- [ Block Reduction ]
-squashRBPair : Block s -> Block s -> Maybe (Block s)
-squashRBPair {s} (HRule s)  (HRule s) = Just $ HRule s
-squashRBPair (Para xs) (Para ys)      = Just $ Para (xs ++ ys)
-squashRBPair {s} (Empty s)  (Empty s) = Just $ Empty s
-squashRBPair _              _         = Nothing
+squashEddaPair : Edda s ty -> Edda s ty -> Maybe (Edda s ty)
+squashEddaPair {s} (HRule s)  (HRule s) = Just $ HRule s
+squashEddaPair (Para xs) (Para ys)      = Just $ Para (xs ++ ys)
+squashEddaPair {s} (Empty s)  (Empty s) = Just $ Empty s
+squashEddaPair Space          Space     = Just Space
+squashEddaPair Hyphen         Hyphen    = Just EnDash
+squashEddaPair _              _         = Nothing
 
 public
 covering
-squash2Blocks : List (Block s) -> List (Block s)
-squash2Blocks = squash2 (squashRBPair)
+squash2 : List (Edda s ty) -> List (Edda s ty)
+squash2 = squash2By (squashEddaPair)
 
-
--- -------------------------------------------------------- [ Inline Reduction ]
-squashIPair : Inline s -> Inline s -> Maybe (Inline s)
-squashIPair Space  Space  = Just Space
-squashIPair Hyphen Hyphen = Just EnDash
-squashIPair _      _      = Nothing
-
-public
-covering
-squash2Inlines : List (Inline s) -> List (Inline s)
-squash2Inlines = squash2 (squashIPair)
 
 -- --------------------------------------------------- [ Triple Punc Squashing ]
 public
 covering
-squash3 : (a -> a -> a -> Maybe a) -> List a -> List a
-squash3 _        Nil     = Nil
-squash3 squaFunc (x::xs) with (xs)
+squash3By : (a -> a -> a -> Maybe a) -> List a -> List a
+squash3By _        Nil     = Nil
+squash3By squaFunc (x::xs) with (xs)
   | (y::z::zs) = case squaFunc x y z of
-                  Just yes => yes :: squash3 squaFunc zs
-                  Nothing  => x :: squash3 squaFunc xs
+                  Just yes => yes :: squash3By squaFunc zs
+                  Nothing  => x :: squash3By squaFunc xs
   | (y::ys)    = x :: xs
   | Nil        = x :: xs
 
-squashITriples : Inline s -> Inline s -> Inline s -> Maybe (Inline s)
-squashITriples Period Period Period = Just Ellipsis
-squashITriples Hyphen Hyphen Hyphen = Just EmDash
-squashITriples _      _      _      = Nothing
+squashEddaTriples : Edda s ty -> Edda s ty -> Edda s ty -> Maybe (Edda s ty)
+squashEddaTriples Period Period Period = Just Ellipsis
+squashEddaTriples Hyphen Hyphen Hyphen = Just EmDash
+squashEddaTriples _      _      _      = Nothing
 
 public
 covering
-squash3Inlines : List (Inline s) -> List (Inline s)
-squash3Inlines = squash3 (squashITriples)
+squash3 : List (Edda s ty) -> List (Edda s ty)
+squash3 = squash3By (squashEddaTriples)

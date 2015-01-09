@@ -78,18 +78,17 @@ punctuation = satisfy (\x => not $ isAlphaNum x) <?> "Punctuation"
 -- -------------------------------------------------------------- [ Misc Stuff ]
 
 dealWithSrcAttrs : Maybe String
-              -> Maybe Attributes
-              -> Maybe Attributes
-dealWithSrcAttrs Nothing         Nothing   = Nothing
-dealWithSrcAttrs Nothing         (Just as) = Just as
-dealWithSrcAttrs (Just srcattrs) as        = Just $ srcLang ++ srcOpts ++ fromMaybe [] as
+              -> (List (String, String))
+              -> (List (String, String))
+dealWithSrcAttrs Nothing         as = as
+dealWithSrcAttrs (Just srcattrs) as = srcLang ++ srcOpts ++ as
   where
     foo : (String, String)
     foo = break (== ' ') srcattrs
 
-    srcLang : Attributes
+    srcLang : (List (String, String))
     srcLang = [("src_lang", fst foo)]
-    srcOpts : Attributes
+    srcOpts : (List (String, String))
     srcOpts = [("src_opts", trim $ snd foo)]
 
 convertOpts : Maybe (List Char) -> Maybe String
@@ -97,7 +96,7 @@ convertOpts b = case b of
                   Just x => Just (pack x)
                   Nothing => Nothing
 
-convertAttrs : Maybe Attribute -> Maybe Attributes
+convertAttrs : Maybe (String, String) -> Maybe (List (String, String))
 convertAttrs Nothing  = Nothing
 convertAttrs (Just x) = Just [x]
 

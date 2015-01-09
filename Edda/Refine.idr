@@ -1,6 +1,5 @@
 module Edda.Refine
 
-import Edda.Refine.Utils
 import Edda.Model
 import Edda.Utils
 import Edda.Squash
@@ -12,14 +11,46 @@ import Edda.Squash
 -- @TODO Refine quotes
 -- @TODO Refine Parens
 
+treatPunc : Char -> Maybe (Edda PRIME INLINE)
+treatPunc c = case c of
+    ' '   => Just Space
+    '\n'  => Just Newline
+    '\t'  => Just Tab
+    '<'   => Just LAngle
+    '>'   => Just RAngle
+    ':'   => Just Colon
+    ';'   => Just Semi
+    '/'   => Just FSlash
+    '\\'  => Just BSlash
+    '\''  => Just Apostrophe
+    '-'   => Just Hyphen
+    ','   => Just Comma
+    '+'   => Just Plus
+    '!'   => Just Bang
+    '.'   => Just Period
+    '?'   => Just QMark
+    '#'   => Just Hash
+    '='   => Just Equals
+    '$'   => Just Dollar
+    '|'   => Just Pipe
+
+    '{' => Just LBrace
+    '}' => Just RBrace
+    '(' => Just LParen
+    ')' => Just RParen
+    '[' => Just LBrack
+    ']' => Just RBrack
+    '"' => Just SMark
+    otherwise => Nothing
+
 mutual
   covering
-  refineInline : Inline Star -> (Inline Prime)
+  refineInline : Edda STAR INLINE -> Edda PRIME INLINE
   refineInline (Link ty url desc) = case ty of
       RefTy     => Ref url
-      ExposedTy => Hyper url Nothing
-      HyperTy   => Hyper url $ refineMaybeInlines desc
-      FnoteTy   => FNote url $ refineMaybeInlines desc
+      ExposedTy => Hyper url Nil
+      HyperTy   => Hyper url $ refineInlines desc
+      FnoteTy   => FNote url $ refineInlines desc
       CiteTy    => Cite ParenSty url -- <= @TODO
   refineInline (Mark ty txt) = case ty of
       BoldTy   => Bold   $ refineInlines txt
@@ -40,53 +71,47 @@ mutual
       MathTy => Math v
 
   covering
-  refineInlines : List (Inline Star) -> List (Inline Prime)
-  refineInlines is = squash2Inlines $ squash3Inlines $ map refineInline is
-
-  covering
-  refineMaybeInlines : Maybe (List (Inline Star)) -> Maybe (List (Inline Prime))
-  refineMaybeInlines Nothing = Nothing
-  refineMaybeInlines (Just is) = Just $ refineInlines is
+  refineInlines : List (Edda STAR INLINE) -> List (Edda PRIME INLINE)
+  refineInlines Nil = Nil
+  refineInlines is = squash2 $ squash3 $ map refineInline is
 
 -- ----------------------------------------------------------- [ Refine Blocks ]
 mutual
   covering
-  refineBlock : Block Star -> Block Prime
-  refineBlock (HRule Star)             = HRule Prime
-  refineBlock (Empty Star)             = Empty Prime
-  refineBlock (Header Star d l t)      = Header Prime d l (refineInlines t)
-  refineBlock (Table Star l c tbl)     = Table Prime l (refineMaybeInlines c) tbl
-  refineBlock (Figure Star l c as img) = Figure Prime l (refineInlines c)
-                                                          as
-                                                          (refineInline img)
-  refineBlock (DList Star kvs) = DList Prime $ map (\(k, vs) => (refineInlines k, refineInlines vs)) kvs
+  refineBlock : Edda STAR BLOCK -> Edda PRIME BLOCK
+  refineBlock (HRule STAR)             = HRule PRIME
+  refineBlock (Empty STAR)             = Empty PRIME
+  refineBlock (Section STAR d l t xs)  = Section PRIME d l (refineInlines t) (refineBlocks xs)
+  refineBlock (Figure STAR l c as img) = Figure PRIME l (refineInlines c)
+                                                         as
+                                                         (refineInline img)
+  refineBlock (DList STAR kvs) = DList PRIME $ map (\(k, vs) => (refineInlines k, refineInlines vs)) kvs
 
   refineBlock (TextBlock ty l c as t) = case ty of
     ParaTy        => Para (refineInlines t)
-    QuotationTy   => Quotation l (refineInlines t)
-    TheoremTy     => Theorem l (refineMaybeInlines c) (refineInlines t)
-    CorollaryTy   => Corollary l (refineMaybeInlines c) (refineInlines t)
-    LemmaTy       => Lemma l (refineMaybeInlines c) (refineInlines t)
-    PropositionTy => Proposition l (refineMaybeInlines c) (refineInlines t)
-    ProofTy       => Proof l (refineMaybeInlines c) (refineInlines t)
-    DefinitionTy  => Definition l (refineMaybeInlines c) (refineInlines t)
-    ExerciseTy    => Exercise l (refineMaybeInlines c) (refineInlines t)
-    NoteTy        => Note l (refineMaybeInlines c) (refineInlines t)
-    ProblemTy     => Problem l (refineMaybeInlines c) (refineInlines t)
-    QuestionTy    => Question l (refineMaybeInlines c) (refineInlines t)
-    RemarkTy      => Remark l (refineMaybeInlines c) (refineInlines t)
-    SolutionTy    => Solution l (refineMaybeInlines c) (refineInlines t)
-    ExampleTy     => Example l (refineMaybeInlines c) (refineInlines t)
+    QuotationTy   => Quotation   l (refineInlines t)
+    TheoremTy     => Theorem     l (refineInlines c) (refineInlines t)
+    CorollaryTy   => Corollary   l (refineInlines c) (refineInlines t)
+    LemmaTy       => Lemma       l (refineInlines c) (refineInlines t)
+    PropositionTy => Proposition l (refineInlines c) (refineInlines t)
+    ProofTy       => Proof       l (refineInlines c) (refineInlines t)
+    DefinitionTy  => Definition  l (refineInlines c) (refineInlines t)
+    ExerciseTy    => Exercise    l (refineInlines c) (refineInlines t)
+    NoteTy        => Note        l (refineInlines c) (refineInlines t)
+    ProblemTy     => Problem     l (refineInlines c) (refineInlines t)
+    QuestionTy    => Question    l (refineInlines c) (refineInlines t)
+    RemarkTy      => Remark      l (refineInlines c) (refineInlines t)
+    SolutionTy    => Solution    l (refineInlines c) (refineInlines t)
+    ExampleTy     => Example     l (refineInlines c) (refineInlines t)
 
   refineBlock (VerbBlock ty l c as s) = case ty of
     CommentTy  => Comment s
-    ListingTy  => case as of
-      Nothing  => Listing l (refineMaybeInlines c) Nothing Nothing Nothing s
-      Just ops => Listing l (refineMaybeInlines c)
-                            (lookupSrcLang ops)
-                            (lookupSrcOpts ops)
-                            (Just (nubAttribute "src_lang" $ nubAttribute "src_opts" ops)) s
-    LiteralTy  => Literal l (refineMaybeInlines c) s
+    ListingTy  => Listing l (refineInlines c)
+                            (lookupSrcLang as)
+                            (lookupSrcOpts as)
+                            ((nubAttribute "src_lang" $ nubAttribute "src_opts" as))
+                            s
+    LiteralTy  => Literal l (refineInlines c) s
     EquationTy => Equation l s
 
   refineBlock (ListBlock ty bs) = case ty of
@@ -94,11 +119,12 @@ mutual
     BulletTy => BList $ map refineInlines bs
 
   covering
-  refineBlocks : List (Block Star) -> List (Block Prime)
-  refineBlocks bs = squash2Blocks $ map refineBlock bs
+  refineBlocks : List (Edda STAR BLOCK) -> List (Edda PRIME BLOCK)
+  refineBlocks Nil = Nil
+  refineBlocks bs = squash2 $ map refineBlock bs
 
 -- -------------------------------------------------------------- [ Refine Doc ]
 public
 covering
-refineEdda : EddaRaw -> EddaDoc
-refineEdda (MkEdda Star ps body) = MkEddaDoc ps (refineBlocks body)
+refineEdda : Edda STAR MODEL -> Edda PRIME MODEL
+refineEdda (EddaRaw ps body) = MkEdda ps (refineBlocks body)

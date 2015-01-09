@@ -1,8 +1,6 @@
 module Edda.Model
 
-import Data.Vect
-
-data Step = Star | Prime
+data Step = STAR | PRIME
 
 data FontTy   = SerifTy | SansTy | ScapTy | MonoTy
 data QuoteTy  = SQuote | DQuote
@@ -12,82 +10,6 @@ data LinkTy   = HyperTy | ExposedTy | FnoteTy | RefTy | CiteTy
 data MarkupTy = BoldTy | EmphTy | StrikeTy | UlineTy
 data RawTy    = VerbTy | CodeTy | MathTy
 
-Attribute : Type
-Attribute = (String, String)
-
-Attributes : Type
-Attributes = List (String, String)
-
-data Inline : Step -> Type where
-  Font : FontTy   -> String -> Inline Star
-  Punc : Char     -> Inline Star
-  Link : LinkTy   -> String -> Maybe (List (Inline Star)) -> Inline Star
-  Mark : MarkupTy -> List (Inline Star) -> Inline Star
-  Raw  : RawTy    -> String -> Inline Star
-
-  Text : String -> Inline Prime
-  Sans : String -> Inline Prime
-  Scap : String -> Inline Prime
-  Mono : String -> Inline Prime
-
-  Verb : String -> Inline Prime
-  Code : String -> Inline Prime
-  Math : String -> Inline Prime
-
-  Emph   : List (Inline Prime) -> Inline Prime
-  Bold   : List (Inline Prime) -> Inline Prime
-  Strike : List (Inline Prime) -> Inline Prime
-  Uline  : List (Inline Prime) -> Inline Prime
-
-  Quote  : QuoteTy -> List (Inline Prime) -> Inline Prime
-  Parens : ParenTy -> List (Inline Prime) -> Inline Prime
-
-  Ref   : String  -> Inline Prime
-  Cite  : CiteSty -> String -> Inline Prime
-  Hyper : String  -> Maybe (List (Inline Prime)) -> Inline Prime
-  FNote : String  -> Maybe (List (Inline Prime)) -> Inline Prime
-
-  Space      : Inline Prime
-  Newline    : Inline Prime
-  Tab        : Inline Prime
-  LAngle     : Inline Prime
-  RAngle     : Inline Prime
-  Colon      : Inline Prime
-  Semi       : Inline Prime
-  FSlash     : Inline Prime
-  BSlash     : Inline Prime
-  Apostrophe : Inline Prime
-  SMark      : Inline Prime
-  Hyphen     : Inline Prime
-  Comma      : Inline Prime
-  Plus       : Inline Prime
-  Bang       : Inline Prime
-  Period     : Inline Prime
-  QMark      : Inline Prime
-  Hash       : Inline Prime
-  Equals     : Inline Prime
-  Dollar     : Inline Prime
-  Pipe       : Inline Prime
-  Ellipsis   : Inline Prime
-  EmDash     : Inline Prime
-  EnDash     : Inline Prime
-
-  LBrace     : Inline Prime
-  RBrace     : Inline Prime
-  LParen     : Inline Prime
-  RParen     : Inline Prime
-  LBrack     : Inline Prime
-  RBrack     : Inline Prime
-
-  MiscPunc   : Char -> Inline Prime
-
-data TAlign = AlignLeft | AlignRight | AlignCenter | AlignPar
-
-data Tabular : Type where
-  MkTabular : Vect n TAlign
-            -> Vect m (Vect n (List String))
-            -> Tabular
-
 data TextBlockTy = ParaTy | TheoremTy | CorollaryTy | LemmaTy | PropositionTy | ProofTy | DefinitionTy
                | ExerciseTy | NoteTy | ProblemTy | QuestionTy | RemarkTy
                | SolutionTy | ExampleTy | QuotationTy
@@ -96,95 +18,134 @@ data VerbBlockTy = CommentTy | ListingTy | LiteralTy | EquationTy
 
 data ListTy = BulletTy | NumberTy
 
--- @TODO Make blocks multi block
-data Block : Step -> Type where
--- Star Constructors
+||| Add different block types but that will require adding predicated lists
+data EddaTy = INLINE | BLOCK | MODEL
+
+||| Support Tables
+
+data Edda : Step -> EddaTy -> Type where
+-- ------------------------------------------------------------------ [ Inline ]
+-- --------------------------------------------------------------------- [ Raw ]
+  Font : FontTy   -> String -> Edda STAR INLINE
+  Punc : Char     -> Edda STAR INLINE
+  Link : LinkTy   -> String -> List (Edda STAR INLINE) -> Edda STAR INLINE
+  Mark : MarkupTy -> List (Edda STAR INLINE) -> Edda STAR INLINE
+  Raw  : RawTy    -> String -> Edda STAR INLINE
+-- --------------------------------------------------------------- [ Processed ]
+  Text : String -> Edda PRIME INLINE
+  Sans : String -> Edda PRIME INLINE
+  Scap : String -> Edda PRIME INLINE
+  Mono : String -> Edda PRIME INLINE
+
+  Verb : String -> Edda PRIME INLINE
+  Code : String -> Edda PRIME INLINE
+  Math : String -> Edda PRIME INLINE
+
+  Emph   : List (Edda PRIME INLINE) -> Edda PRIME INLINE
+  Bold   : List (Edda PRIME INLINE) -> Edda PRIME INLINE
+  Strike : List (Edda PRIME INLINE) -> Edda PRIME INLINE
+  Uline  : List (Edda PRIME INLINE) -> Edda PRIME INLINE
+
+  Quote  : QuoteTy -> List (Edda PRIME INLINE) -> Edda PRIME INLINE
+  Parens : ParenTy -> List (Edda PRIME INLINE) -> Edda PRIME INLINE
+
+  Ref   : String  -> Edda PRIME INLINE
+  Cite  : CiteSty -> String -> Edda PRIME INLINE
+  Hyper : String  -> List (Edda PRIME INLINE) -> Edda PRIME INLINE
+  FNote : String  -> List (Edda PRIME INLINE) -> Edda PRIME INLINE
+
+  Space      : Edda PRIME INLINE
+  Newline    : Edda PRIME INLINE
+  Tab        : Edda PRIME INLINE
+  LAngle     : Edda PRIME INLINE
+  RAngle     : Edda PRIME INLINE
+  Colon      : Edda PRIME INLINE
+  Semi       : Edda PRIME INLINE
+  FSlash     : Edda PRIME INLINE
+  BSlash     : Edda PRIME INLINE
+  Apostrophe : Edda PRIME INLINE
+  SMark      : Edda PRIME INLINE
+  Hyphen     : Edda PRIME INLINE
+  Comma      : Edda PRIME INLINE
+  Plus       : Edda PRIME INLINE
+  Bang       : Edda PRIME INLINE
+  Period     : Edda PRIME INLINE
+  QMark      : Edda PRIME INLINE
+  Hash       : Edda PRIME INLINE
+  Equals     : Edda PRIME INLINE
+  Dollar     : Edda PRIME INLINE
+  Pipe       : Edda PRIME INLINE
+  Ellipsis   : Edda PRIME INLINE
+  EmDash     : Edda PRIME INLINE
+  EnDash     : Edda PRIME INLINE
+
+  LBrace     : Edda PRIME INLINE
+  RBrace     : Edda PRIME INLINE
+  LParen     : Edda PRIME INLINE
+  RParen     : Edda PRIME INLINE
+  LBrack     : Edda PRIME INLINE
+  RBrack     : Edda PRIME INLINE
+
+  MiscPunc   : Char -> Edda PRIME INLINE
+-- ------------------------------------------------------------------ [ Blocks ]
+-- --------------------------------------------------------------------- [ Raw ]
   TextBlock : TextBlockTy
-          -> (label : Maybe String)
-          -> (caption : Maybe (List (Inline Star)))
-          -> Maybe Attributes
-          -> List (Inline Star)
-          -> Block Star
-
+            -> Maybe String
+            -> List (Edda STAR INLINE)
+            -> List (String, String)
+            -> List (Edda STAR INLINE)
+            -> Edda STAR BLOCK
   VerbBlock : VerbBlockTy
-            -> (label : Maybe String)
-            -> (caption : Maybe (List (Inline Star)))
-            -> Maybe Attributes
+            -> Maybe String
+            -> List (Edda STAR INLINE)
+            -> List (String, String)
             -> String
-            -> Block Star
+            -> Edda STAR BLOCK
+  ListBlock : ListTy -> List (List (Edda STAR INLINE)) -> Edda STAR BLOCK
+-- ------------------------------------------------------------------- [ Mixed ]
+  HRule : (s : Step) -> Edda s BLOCK
+  Empty : (s : Step) -> Edda s BLOCK
 
-  ListBlock : ListTy
-            -> List (List (Inline Star))
-            -> Block Star
--- Starry Prime Constructors
-  HRule : (s : Step) -> Block s
-  Empty : (s : Step) -> Block s
+  Figure : (s : Step) -> String -> List (Edda s INLINE) -> List (String, String) -> Edda s INLINE -> Edda s BLOCK
+  DList  : (s : Step) -> List (List (Edda s INLINE), List (Edda s INLINE)) -> Edda s BLOCK
 
-  Header : (s : Step)
-         -> (lvl : Nat)
-         -> (label : Maybe String)
-         -> (title : List (Inline s)) -> Block s
+  Section : (s : Step) -> Nat -> Maybe String -> List (Edda s INLINE) -> List (Edda s BLOCK) -> Edda s BLOCK
 
-  Figure : (s : Step)
-         -> (label : String)
-         -> (caption : List (Inline s))
-         -> Maybe Attributes
-         -> Inline s
-         -> Block s
+-- --------------------------------------------------------------- [ Processed ]
 
-  Table : (s : Step)
-        -> (label : Maybe String)
-        -> (caption : Maybe (List (Inline s)))
-        -> Tabular
-        -> Block s
+  OList : List (List (Edda PRIME INLINE)) -> Edda PRIME BLOCK
+  BList : List (List (Edda PRIME INLINE)) -> Edda PRIME BLOCK
 
-  DList : (s : Step) -> List (List (Inline s), List (Inline s)) -> Block s
--- Prime Constructors
-  OList : List (List (Inline Prime)) -> Block Prime
-  BList : List (List (Inline Prime)) -> Block Prime
+  Comment : String -> Edda PRIME BLOCK
+  Equation : Maybe String -> String -> Edda PRIME BLOCK
+  Literal  : Maybe String -> List (Edda PRIME INLINE) -> String -> Edda PRIME BLOCK
+  Listing : Maybe String
+          -> (List (Edda PRIME INLINE))
+          -> (Maybe String)
+          -> (Maybe String)
+          -> List (String, String)
+          -> String
+          -> Edda PRIME BLOCK
 
-  Comment : String -> Block Prime
-  Equation : (label : Maybe String) -> String -> Block Prime
-  Literal : (label : Maybe String)
-          -> (caption : Maybe (List (Inline Prime)))
-          -> (src : String)
-          -> Block Prime
-  Listing : (label : Maybe String)
-          -> (caption : Maybe (List (Inline Prime)))
-          -> (lang : Maybe String)
-          -> (langopts : Maybe String)
-          -> (as : Maybe Attributes)
-          -> (src : String)
-         -> Block Prime
+  Para : List (Edda PRIME INLINE) -> Edda PRIME BLOCK
 
-  Para        : List (Inline Prime)    -> Block Prime
-  Quotation   : (label : Maybe String) -> List (Inline Prime)-> Block Prime
+  Quotation   : Maybe String -> List (Edda PRIME INLINE)-> Edda PRIME BLOCK
 
-  Theorem     : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Corollary   : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Lemma       : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Proposition : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Proof       : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Definition  : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Exercise    : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Note        : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Remark      : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Problem     : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Question    : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Solution    : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
-  Example     : (label : Maybe String) -> (caption : Maybe (List (Inline Prime))) -> List (Inline Prime) -> Block Prime
+  Theorem     : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Corollary   : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Lemma       : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Proposition : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Proof       : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Definition  : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Exercise    : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Note        : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Remark      : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Problem     : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Question    : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Solution    : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
+  Example     : Maybe String -> List (Edda PRIME INLINE) -> List (Edda PRIME INLINE) -> Edda PRIME BLOCK
 
-data Edda : Step -> Type where
-  MkEdda : (s : Step) -> (ps : Maybe Attributes) -> List (Block s) -> Edda s
 
-MkEddaRaw : Maybe Attributes -> List (Block Star) -> Edda Star
-MkEddaRaw = MkEdda Star
-
-MkEddaDoc : Maybe Attributes -> List (Block Prime) -> Edda Prime
-MkEddaDoc = MkEdda Prime
-
-EddaDoc : Type
-EddaDoc = Edda Prime
-
-EddaRaw : Type
-EddaRaw = Edda Star
+-- --------------------------------------------------------------- [ Documents ]
+  EddaRaw : List (String, String) -> List (Edda STAR BLOCK) -> Edda STAR MODEL
+  MkEdda  : List (String, String) -> List (Edda PRIME BLOCK) -> Edda PRIME MODEL

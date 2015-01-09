@@ -1,7 +1,6 @@
 module Edda.Reader.Common
 
-import Lightyear.Core
-import Lightyear.Combinators
+import Lightyear
 import Lightyear.Strings
 
 import Effects
@@ -17,10 +16,10 @@ import Edda.Reader.Utils
 
 -- ----------------------------------------------------------------- [ Parsers ]
 
-punc : Parser (Inline Star)
+punc : Parser (Edda STAR INLINE)
 punc = map Punc punctuation <?> "Raw Punctuation"
 
-text : Parser (Inline Star)
+text : Parser (Edda STAR INLINE)
 text = map (Font SerifTy) word <?> "Raw Word"
 
 rsvp : List Char
@@ -37,7 +36,7 @@ borderPunc = do
                 then satisfy (const False)
                 else pure x
 
-mText : Parser (Inline Star)
+mText : Parser (Edda STAR INLINE)
 mText = text <|> map Punc borderPunc <?> "Texted used in markup"
 
 -- ------------------------------------------------------------------ [ Reader ]
@@ -51,7 +50,7 @@ readFile = readAcc ""
                      else pure acc
 
 public
-readEddaFile : Parser EddaRaw -> String -> { [FILE_IO ()] } Eff (Either String EddaDoc)
+readEddaFile : Parser (Edda STAR MODEL) -> String -> { [FILE_IO ()] } Eff (Either String (Edda PRIME MODEL))
 readEddaFile p f = do
     case !(open f Read) of
       True => do

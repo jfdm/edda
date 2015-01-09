@@ -3,8 +3,8 @@ module Edda.Model.Show
 import Edda.Model
 
 instance Show Step where
-  show Simple = "Simple"
-  show Prime  = "Prime"
+  show SIMPLE = "Simple"
+  show PRIME  = "Prime"
 
 instance Show QuoteTy where
   show SQuote = "SQuote"
@@ -43,7 +43,35 @@ instance Show RawTy where
   show CodeTy = "Code"
   show MathTy = "Math"
 
-instance Show (Inline ty) where
+instance Show TextBlockTy where
+  show ParaTy        = "PARAGRAPH"
+  show TheoremTy     = "THEOREM"
+  show CorollaryTy   = "COROLLARY"
+  show LemmaTy       = "LEMMA"
+  show PropositionTy = "PROPOSITION"
+  show ProofTy       = "PROOF"
+  show DefinitionTy  = "DEFINITION"
+  show ExampleTy     = "EXAMPLE"
+  show ExerciseTy    = "EXERCISE"
+  show NoteTy        = "NOTE"
+  show ProblemTy     = "PROBLEM"
+  show QuestionTy    = "QUESTION"
+  show RemarkTy      = "REMARK"
+  show SolutionTy    = "SOLUTION"
+  show QuotationTy   = "QUOTATION"
+
+instance Show VerbBlockTy where
+  show CommentTy  = "COMMENT"
+  show ListingTy  = "LISTING"
+  show LiteralTy  = "LITERTAL"
+  show EquationTy = "EQUATION"
+
+instance Show ListTy where
+  show BulletTy = "Bullet"
+  show NumberTy = "Number"
+
+instance Show (Edda s ty) where
+-- ------------------------------------------------------------------ [ Inline ]
   show (Punc c)      = "{Punc " ++ show c  ++ "}"
   show (Font ty t)   = "{Font "   ++ show ty ++ " " ++ show t ++ "}"
   show (Raw ty t)    = "{Raw "    ++ show ty ++ " " ++ show t ++ "}"
@@ -102,46 +130,8 @@ instance Show (Inline ty) where
   show Equals     = "{Equals}"
   show Pipe       = "{Pipe}"
   show (MiscPunc c) = "{Punc " ++ show c ++"}"
-
-instance Show TAlign where
-  show AlignLeft = "l"
-  show AlignRight = "r"
-  show AlignCenter = "c"
-  show AlignPar = "p"
-
-instance Show TextBlockTy where
-  show ParaTy        = "PARAGRAPH"
-  show TheoremTy     = "THEOREM"
-  show CorollaryTy   = "COROLLARY"
-  show LemmaTy       = "LEMMA"
-  show PropositionTy = "PROPOSITION"
-  show ProofTy       = "PROOF"
-  show DefinitionTy  = "DEFINITION"
-  show ExampleTy     = "EXAMPLE"
-  show ExerciseTy    = "EXERCISE"
-  show NoteTy        = "NOTE"
-  show ProblemTy     = "PROBLEM"
-  show QuestionTy    = "QUESTION"
-  show RemarkTy      = "REMARK"
-  show SolutionTy    = "SOLUTION"
-  show QuotationTy   = "QUOTATION"
-
-instance Show VerbBlockTy where
-  show CommentTy  = "COMMENT"
-  show ListingTy  = "LISTING"
-  show LiteralTy  = "LITERTAL"
-  show EquationTy = "EQUATION"
-
-instance Show ListTy where
-  show BulletTy = "Bullet"
-  show NumberTy = "Number"
-
--- incomplete
-instance Show Tabular where
-  show tbl = ""
-
-instance Show (Block x) where
--- Star
+-- ------------------------------------------------------------------ [ BLocks ]
+  -- Star
   show (TextBlock ty lab cap as txt) = "[TextBlock "
        ++ show ty  ++ " "
        ++ show lab ++ " "
@@ -163,22 +153,18 @@ instance Show (Block x) where
 -- Starry Prime
   show (HRule s) = "[HRule" ++ show s ++ "]\n"
   show (Empty s) = "[Empty " ++ show s ++ "]\n"
-  show (Header s d l t) = "[Heading "
+  show (Section s d l t cs) = "[Heading "
        ++ show s ++ " "
        ++ show d ++ " "
        ++ show l ++ " "
-       ++ show t ++ "]\n"
+       ++ show t ++ " "
+       ++ show cs ++ "]\n"
   show (Figure s l c as img) = "[FigBlock "
        ++ show s ++ " "
        ++ show l ++ " "
        ++ show c ++ " "
        ++ show as ++ " "
        ++ show img ++ "]\n"
-  show (Table s l c tbl) = "[TblBlock "
-       ++ show s ++ " "
-       ++ show l ++ " "
-       ++ show c ++ " "
-       ++ show tbl ++ "]\n"
   show (DList s ds) = "[DList "
        ++ show s ++ " "
        ++ concatMap (\(k,vs) => show k ++ " " ++ show vs) ds ++ "]\n"
@@ -220,15 +206,3 @@ instance Show (Block x) where
   show (Problem l c txt)     = "[Problem "     ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
   show (Solution l c txt)    = "[Question "    ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
   show (Example l c txt)     = "[Example "     ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-
-instance Show (Edda Star) where
-  show (MkEdda Star ps body) = "[Edda "
-       ++ show Star ++ "\n"
-       ++ "[Mdata " ++ concatMap show ps ++ "]\n"
-       ++ concatMap show body ++ "]\n"
-
-instance Show (Edda Prime) where
-  show (MkEdda Prime ps body) = "[Edda "
-       ++ show Prime ++ "\n"
-       ++ "[Mdata " ++ concatMap show ps ++ "]\n"
-       ++ concatMap show body ++ "]\n"
