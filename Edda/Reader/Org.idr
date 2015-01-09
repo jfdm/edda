@@ -92,6 +92,9 @@ attribute key = do
     pure (key, pack ps)
   <?> "Raw Attribute"
 
+property : Parser (String, String)
+property = attribute "PROPERTY" <?> "Property"
+
 inlineKeyWord : String -> Parser (String, List (Inline Star))
 inlineKeyWord key = do
     string "#+" $> string key
@@ -117,6 +120,26 @@ target : Parser String
 target = angles $ angles url
   <?> "Target"
 
+-- ----------------------------------------------------------------- [ Drawers ]
+
+propEntry : Parser (String, String)
+propEntry = do
+    colon
+    key <- word
+    colon
+    space
+    value <- manyTill (anyChar) eol
+    pure (key, pack value)
+  <?> "Property Entry"
+
+drawer : Parser $ List (String, String)
+drawer = do
+    string ":PROPERTIES:"
+    eol
+    ps <- some propEntry
+    token ":END:"
+    pure ps
+  <?> "Property Drawer"
 -- ------------------------------------------------------------------ [ Blocks ]
 
 getOrgBlockType : String -> Either VerbBlockTy TextBlockTy
