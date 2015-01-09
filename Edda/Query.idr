@@ -15,7 +15,7 @@ instance Queryable a b => Queryable a (List b) where
 instance (Queryable a b, Queryable a c) => Queryable a (b,c) where
   query f (x,y) = (query f x) <+> (query f y)
 
-instance Queryable (Inline Prime) (Inline Prime) where
+instance Queryable (Edda PRIME INLINE) (Edda PRIME INLINE) where
   query f (Text t) = f $ (Text t)
   query f (Sans t) = f $ (Sans t)
   query f (Scap t) = f $ (Scap t)
@@ -71,13 +71,12 @@ instance Queryable (Inline Prime) (Inline Prime) where
   query f Pipe       = f $ Pipe
 
 -- @TODO Captions
-instance Queryable (Inline Prime) (Block Prime) where
-  query f (HRule Prime)             = neutral
-  query f (Empty Prime)             = neutral
-  query f (Header Prime d l t)      = query f t
-  query f (Figure Prime l c as fig) = query f c <+> query f fig
-  query f (Table Prime l c tbl)     = neutral    -- caption and table
-  query f (DList Prime kvs)         = query f kvs
+instance Queryable (Edda PRIME INLINE) (Edda PRIME BLOCK) where
+  query f (HRule PRIME)             = neutral
+  query f (Empty PRIME)             = neutral
+  query f (Section PRIME d l t ds)  = query f t <+> query f ds
+  query f (Figure PRIME l c as fig) = query f c <+> query f fig
+  query f (DList PRIME kvs)         = query f kvs
 
   query f (OList xs)  = query f xs
   query f (BList xs)  = query f xs
@@ -104,7 +103,7 @@ instance Queryable (Inline Prime) (Block Prime) where
   query f (Solution l c xs)    = query f xs -- caption
   query f (Example l c xs)     = query f xs -- caption
 
-instance Queryable (Block Prime) (Inline Prime) where
+instance Queryable (Edda PRIME BLOCK) (Edda PRIME INLINE) where
   query f (Text t) = neutral
   query f (Sans t) = neutral
   query f (Scap t) = neutral
@@ -161,13 +160,12 @@ instance Queryable (Block Prime) (Inline Prime) where
   query f Pipe       = neutral
 
 -- @TODO Query Table
-instance Queryable (Block Prime) (Block Prime) where
-  query f (HRule Prime)               = f (HRule Prime)
-  query f (Empty Prime)               = f (Empty Prime)
-  query f (Header Prime d l t)        = f (Header Prime d l t) <+> (query f t)
-  query f (Figure Prime l c as fig)   = f (Figure Prime l c as fig) <+> (query f fig) -- caption
-  query f (Table Prime l c tbl)       = f (Table Prime l c tbl) -- caption
-  query f (DList Prime kvs)           = f (DList Prime kvs) <+> (query f kvs)
+instance Queryable (Edda PRIME BLOCK) (Edda PRIME BLOCK) where
+  query f (HRule PRIME)               = f (HRule PRIME)
+  query f (Empty PRIME)               = f (Empty PRIME)
+  query f (Section PRIME d l t ds)    = f (Section PRIME d l t ds) <+> (query f t) <+> (query f ds)
+  query f (Figure PRIME l c as fig)   = f (Figure PRIME l c as fig) <+> (query f fig) -- caption
+  query f (DList PRIME kvs)           = f (DList PRIME kvs) <+> (query f kvs)
 
   query f (OList xs)  = f (OList xs) <+> (query f xs)
   query f (BList xs)  = f (BList xs) <+> (query f xs)
@@ -194,11 +192,11 @@ instance Queryable (Block Prime) (Block Prime) where
   query f (Solution l c xs)    = f (Solution l c xs) <+> (query f xs) -- caption
   query f (Example l c xs)     = f (Example l c xs) <+> (query f xs) -- caption
 
-instance Queryable (Block Prime) (Edda Prime) where
-  query f (MkEdda Prime as xs) = query f xs
+instance Queryable (Edda PRIME BLOCK) (Edda PRIME MODEL) where
+  query f (MkEdda as xs) = query f xs
 
-instance Queryable (Inline Prime) (Edda Prime) where
-  query f (MkEdda Prime as xs) = query f xs
+instance Queryable (Edda PRIME INLINE) (Edda PRIME MODEL) where
+  query f (MkEdda as xs) = query f xs
 
-instance Queryable (Edda Prime) (Edda Prime) where
-  query f (MkEdda Prime as xs) = f $ MkEdda Prime as xs
+instance Queryable (Edda PRIME MODEL) (Edda PRIME MODEL) where
+  query f (MkEdda as xs) = f $ MkEdda as xs

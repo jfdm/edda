@@ -15,15 +15,24 @@ writeManyThings writeOnce (x::xs) = do
     writeOnce x
     writeManyThings (writeOnce) xs
 
+
+writeList : (a -> {[FILE_IO (OpenFile Write)]} Eff ())
+          -> List a
+          -> {[FILE_IO (OpenFile Write)]} Eff ()
+writeList f Nil = pure ()
+writeList f (x::xs) = do
+    f x
+    writeList f xs
+
 writeMaybe : (a -> {[FILE_IO (OpenFile Write)]} Eff ())
            -> Maybe a
            -> {[FILE_IO (OpenFile Write)]} Eff ()
 writeMaybe _ Nothing  = pure ()
 writeMaybe f (Just x) = f x
 
-writeEddaFile : (EddaDoc -> {[FILE_IO (OpenFile Write)]} Eff ())
+writeEddaFile : (Edda PRIME MODEL -> {[FILE_IO (OpenFile Write)]} Eff ())
               -> String
-              -> EddaDoc -> {[FILE_IO (), EXCEPTION String]} Eff ()
+              -> Edda PRIME MODEL -> {[FILE_IO (), EXCEPTION String]} Eff ()
 writeEddaFile write fname doc = case !(open fname Write) of
     True => do
       write doc

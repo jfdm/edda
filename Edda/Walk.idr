@@ -18,7 +18,7 @@ instance Walkable a b => Walkable a (List b) where
 instance (Walkable a b, Walkable a c) => Walkable a (b,c) where
   walk f (x,y) = (walk f x, walk f y)
 
-instance Walkable (Inline s) (Inline s) where
+instance Walkable (Edda s INLINE) (Edda s INLINE) where
   walk f (Punc c)       = f $ Punc c
   walk f (Raw ty  t)    = f $ Raw ty t
 
@@ -80,16 +80,15 @@ instance Walkable (Inline s) (Inline s) where
   walk f Equals     = f $ Equals
   walk f Pipe       = f $ Pipe
 
-instance Walkable (Inline s) (Block s) where
+instance Walkable (Edda s INLINE) (Edda s BLOCK) where
   walk f (ListBlock ty is)        = ListBlock ty (walk f is)
   walk f (TextBlock ty l c as xs) = TextBlock ty l c as (walk f xs)  -- caption
   walk f (VerbBlock ty l c as v)  = VerbBlock ty l c as v            -- caption
 
   walk {s} f (HRule s)             = HRule s
   walk {s} f (Empty s)             = Empty s
-  walk {s} f (Header s d l t)      = Header s d l (walk f t)
+  walk {s} f (Section s d l t ds)  = Section s d l (walk f t) (walk f ds)
   walk {s} f (Figure s l c as fig) = Figure s l (walk f c) as (walk f fig)
-  walk {s} f (Table s l c tbl)     = Table s l c tbl                 -- caption
   walk {s} f (DList s kvs)         = DList s (walk f kvs)
 
   walk f (OList xs)  = OList (walk f xs)
@@ -117,7 +116,7 @@ instance Walkable (Inline s) (Block s) where
   walk f (Solution l c xs)    = Solution l c (walk f xs) -- caption
   walk f (Example l c xs)     = Example l c (walk f xs) -- caption
 
-instance Walkable (Block s) (Inline s) where
+instance Walkable (Edda s BLOCK) (Edda s INLINE) where
   walk f (Punc c)       = Punc c
   walk f (Raw ty  t)    = Raw ty t
 
@@ -181,7 +180,7 @@ instance Walkable (Block s) (Inline s) where
   walk f Pipe       = Pipe
 
 
-instance Walkable (Block s) (Block s) where
+instance Walkable (Edda s BLOCK) (Edda s BLOCK) where
 
   walk f (ListBlock ty is)        = f $ ListBlock ty (walk f is)
   walk f (TextBlock ty l c as xs) = f $ TextBlock ty l c as (walk f xs)  -- caption
@@ -189,9 +188,8 @@ instance Walkable (Block s) (Block s) where
 
   walk {s} f (HRule s)             = f $ HRule s
   walk {s} f (Empty s)             = f $ Empty s
-  walk {s} f (Header s d l t)      = f $ Header s d l (walk f t)
+  walk {s} f (Section s d l t ds)  = f $ Section s d l (walk f t) (walk f ds)
   walk {s} f (Figure s l c as fig) = f $ Figure s l (walk f c) as (walk f fig)
-  walk {s} f (Table s l c tbl)     = f $ Table s l c tbl                        -- caption -- table
   walk {s} f (DList s kvs)         = f $ DList s (walk f kvs)
 
   walk f (OList xs)  = f $ OList (walk f xs)
@@ -219,14 +217,20 @@ instance Walkable (Block s) (Block s) where
   walk f (Solution l c xs)    = f $ Solution l c (walk f xs) -- caption
   walk f (Example l c xs)     = f $ Example l c (walk f xs) -- caption
 
-instance Walkable (Block s) (Edda s) where
-  walk {s} f (MkEdda s as xs) = MkEdda s as (walk f xs)
+instance Walkable (Edda PRIME BLOCK) (Edda PRIME MODEL) where
+  walk f (MkEdda as xs) = MkEdda as (walk f xs)
 
-instance Walkable (Inline s) (Edda s) where
-  walk {s} f (MkEdda s as xs) = MkEdda s as (walk f xs)
+instance Walkable (Edda STAR BLOCK) (Edda STAR MODEL) where
+  walk f (EddaRaw as xs) = EddaRaw as (walk f xs)
 
-instance Walkable (Edda Star) (Edda Star) where
-  walk f (MkEdda Star as xs) = f $ (MkEdda Star as xs)
+instance Walkable (Edda PRIME INLINE) (Edda PRIME MODEL) where
+  walk f (MkEdda as xs) = MkEdda as (walk f xs)
 
-instance Walkable (Edda Prime) (Edda Prime) where
-  walk f (MkEdda Prime as xs) = f $ (MkEdda Prime as xs)
+instance Walkable (Edda STAR INLINE) (Edda STAR MODEL) where
+  walk f (EddaRaw as xs) = EddaRaw as (walk f xs)
+
+instance Walkable (Edda STAR MODEL) (Edda STAR MODEL) where
+  walk f (EddaRaw as xs) = f $ (EddaRaw as xs)
+
+instance Walkable (Edda PRIME MODEL) (Edda PRIME MODEL) where
+  walk f (MkEdda as xs) = f $ (MkEdda as xs)

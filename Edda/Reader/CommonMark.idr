@@ -1,5 +1,7 @@
 module Edda.Reader.CommonMark
 
+-- TODO Make recursive parsing.
+
 import public Control.Monad.Identity
 import public Lightyear.Core
 import public Lightyear.Combinators
@@ -164,33 +166,26 @@ empty = do
   eol
   pure $ Empty STAR
 
-mutual
-  block : Nat -> Parser (Edda STAR BLOCK)
-  block lvl = header lvl
-      <|> blockquote <|> indentedcode <|> fencedcode
-      <|> list <|> figure <|> hrule <|> para <|> empty
-      <?> "Block"
+header : Parser (Edda STAR BLOCK)
+header = char '#' >! do
+    depth <- opt (many $ char '#')
+    space
+    title <- manyTill (inline) (eol)
+    eol
+    let d = length (fromMaybe Nil depth) + 1
+    pure (Section STAR d Nothing title Nil)
+  <?> "Header"
 
-  header : Nat -> Parser (Edda STAR BLOCK)
-  header lvl = do
-      char '#'
-      depth <- opt (many $ char '#')
-      let d = length (fromMaybe Nil depth) + 1
-      if not (d <= lvl)
-        then fail "a"
-        else do
-           space
-           title <- manyTill (inline) (eol)
-           eol
-           ds <- some (block (S lvl))
-           pure (Section STAR d Nothing title ds)
-    <?> "Header"
-
+block : Parser (Edda STAR BLOCK)
+block = header
+    <|> blockquote <|> indentedcode <|> fencedcode
+    <|> list <|> figure <|> hrule <|> para <|> empty
+    <?> "Block"
 
 
 parseCommonMark : Parser (Edda STAR MODEL)
 parseCommonMark = do
-    txt <- some $ header Z
+    txt <- some block
     let txt' = intersperse (Empty STAR) txt
     pure $ EddaRaw Nil (txt' ++ [Empty STAR])
   <?> "Raw Common Mark"

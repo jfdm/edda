@@ -19,6 +19,5 @@ modules = Edda.Model
         , Edda.Walk
         , Edda.Query
         , Edda.Refine
-        , Edda.Refine.Utils
         , Edda.Effs
         , Edda

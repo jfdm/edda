@@ -96,8 +96,8 @@ convertOpts b = case b of
                   Just x => Just (pack x)
                   Nothing => Nothing
 
-convertAttrs : Maybe (String, String) -> Maybe (List (String, String))
-convertAttrs Nothing  = Nothing
-convertAttrs (Just x) = Just [x]
+convertAttrs : Maybe (String, String) -> List (String, String)
+convertAttrs Nothing  = Nil
+convertAttrs (Just x) = [x]
 
 -- --------------------------------------------------------------------- [ EOF ]
