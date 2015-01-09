@@ -253,6 +253,7 @@ blist = do
     is <- some (listItem ulMarker)
     eol
     pure $ ListBlock BulletTy is
+  <?> "Bulleted lists"
 
 dlist : Parser (Edda STAR BLOCK)
 dlist = do
@@ -262,6 +263,7 @@ dlist = do
   where
     marker : Parser (List (Edda STAR INLINE))
     marker = ulMarker $> space $> manyTill inline (space $> colon $> colon)
+        <?> "Desc Marker"
 
     defItem : Parser (List (Edda STAR INLINE), List (Edda STAR INLINE))
     defItem = do
@@ -269,12 +271,13 @@ dlist = do
         space
         values <- manyTill inline eol
         pure (key, values)
+      <?> "Desc Lists"
 
 list : Parser (Edda STAR BLOCK)
-list = dlist <|> blist <|> olist
+list = dlist <|> blist <|> olist <?> "Lists"
 
 orgBlock : Parser (Edda STAR BLOCK)
-orgBlock = header <|> block <|> list <|> figure <|> hrule <|> para
+orgBlock = header <|> block <|> list <|> figure <|> hrule <|> para <?> "Org Blocks"
 
 parseOrg : Parser (Edda STAR MODEL)
 parseOrg = do

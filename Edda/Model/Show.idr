@@ -3,8 +3,8 @@ module Edda.Model.Show
 import Edda.Model
 
 instance Show Step where
-  show SIMPLE = "Simple"
-  show PRIME  = "Prime"
+  show STAR   = "STAR"
+  show PRIME  = "PRIME"
 
 instance Show QuoteTy where
   show SQuote = "SQuote"
@@ -69,6 +69,11 @@ instance Show VerbBlockTy where
 instance Show ListTy where
   show BulletTy = "Bullet"
   show NumberTy = "Number"
+
+instance Show EddaTy where
+  show INLINE = "INLINE"
+  show BLOCK  = "BLOCK"
+  show MODEL  = "MODEL"
 
 instance Show (Edda s ty) where
 -- ------------------------------------------------------------------ [ Inline ]
@@ -206,3 +211,13 @@ instance Show (Edda s ty) where
   show (Problem l c txt)     = "[Problem "     ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
   show (Solution l c txt)    = "[Question "    ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
   show (Example l c txt)     = "[Example "     ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
+
+  show (EddaRaw ps body) = "[Edda "
+       ++ show STAR ++ "\n"
+       ++ "[Mdata " ++ concatMap show ps ++ "]\n"
+       ++ concatMap show body ++ "]\n"
+
+  show (MkEdda ps body) = "[Edda "
+       ++ show PRIME ++ "\n"
+       ++ "[Mdata " ++ concatMap show ps ++ "]\n"
+       ++ concatMap show body ++ "]\n"
