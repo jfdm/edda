@@ -4,7 +4,7 @@ IDRIS := idris
 LIB   := edda
 OPTS  :=
 
-.PHONY: clean build
+.PHONY: doc test clobber check clean lib install
 
 install: lib
 	${IDRIS} ${OPTS} --install ${LIB}.ipkg

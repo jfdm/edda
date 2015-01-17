@@ -6,62 +6,69 @@ import Effect.StdIO
 
 import Edda.Model
 
+class Queryable a b where
+  query : Monoid res => (a -> res) -> b -> res
 
+instance Queryable a b => Queryable a (List b) where
+  query f xs = foldr (<+>) neutral $ map (query f) xs
 
-query : Monoid res => (Edda PRIME ty -> res) -> (Edda PRIME ty) -> res
-query f (Text t) = f $ (Text t)
-query f (Sans t) = f $ (Sans t)
-query f (Scap t) = f $ (Scap t)
-query f (Mono t) = f $ (Mono t)
+instance (Queryable a b, Queryable a c) => Queryable a (b,c) where
+  query f (x,y) = (query f x) <+> (query f y)
 
-query f (Verb v) = f $ (Verb v)
-query f (Code v) = f $ (Code v)
-query f (Math v) = f $ (Math v)
+instance Queryable (Edda PRIME INLINE) (Edda PRIME INLINE) where
+  query f (Text t) = f $ (Text t)
+  query f (Sans t) = f $ (Sans t)
+  query f (Scap t) = f $ (Scap t)
+  query f (Mono t) = f $ (Mono t)
 
-query f (Emph xs)   = (f (Emph xs)) <+> (query f xs)
-query f (Bold xs)   = f (Bold xs) <+> (query f xs)
-query f (Strike xs) = f (Strike xs) <+> (query f xs)
-query f (Uline xs)  = f (Uline xs) <+> (query f xs)
+  query f (Verb v) = f $ (Verb v)
+  query f (Code v) = f $ (Code v)
+  query f (Math v) = f $ (Math v)
 
-query f (Quote ty xs)  = f (Quote ty xs) <+> (query f xs)
-query f (Parens ty xs) = f (Parens ty xs) <+> (query f xs)
+  query f (Emph xs)   = (f (Emph xs)) <+> (query f xs)
+  query f (Bold xs)   = f (Bold xs) <+> (query f xs)
+  query f (Strike xs) = f (Strike xs) <+> (query f xs)
+  query f (Uline xs)  = f (Uline xs) <+> (query f xs)
 
-query f (Ref l)       = f $ Ref l
-query f (Cite ty l)   = f $ Cite ty l
-query f (Hyper l xs)  = f (Hyper l xs) -- Maybe <+> (query f xs)
-query f (FNote l xs)  = f (FNote l xs) -- Maybe <+> (query f xs)
-query f (MiscPunc c)  = f $ MiscPunc c
+  query f (Quote ty xs)  = f (Quote ty xs) <+> (query f xs)
+  query f (Parens ty xs) = f (Parens ty xs) <+> (query f xs)
 
-query f Space      = f $ Space
-query f Newline    = f $ Newline
-query f Tab        = f $ Tab
-query f LBrace     = f $ LBrace
-query f RBrace     = f $ RBrace
-query f LParen     = f $ LParen
-query f RParen     = f $ RParen
-query f LBrack     = f $ LBrack
-query f RBrack     = f $ RBrack
-query f LAngle     = f $ LAngle
-query f RAngle     = f $ RAngle
-query f Dollar     = f $ Dollar
-query f Colon      = f $ Colon
-query f Semi       = f $ Semi
-query f EnDash     = f $ EnDash
-query f EmDash     = f $ EmDash
-query f FSlash     = f $ FSlash
-query f BSlash     = f $ BSlash
-query f Apostrophe = f $ Apostrophe
-query f SMark      = f $ SMark
-query f Comma      = f $ Comma
-query f Plus       = f $ Plus
-query f Ellipsis   = f $ Ellipsis
-query f Hyphen     = f $ Hyphen
-query f Bang       = f $ Bang
-query f Period     = f $ Period
-query f QMark      = f $ QMark
-query f Hash       = f $ Hash
-query f Equals     = f $ Equals
-query f Pipe       = f $ Pipe
+  query f (Ref l)       = f $ Ref l
+  query f (Cite ty l)   = f $ Cite ty l
+  query f (Hyper l xs)  = f (Hyper l xs) -- Maybe <+> (query f xs)
+  query f (FNote l xs)  = f (FNote l xs) -- Maybe <+> (query f xs)
+  query f (MiscPunc c)  = f $ MiscPunc c
+
+  query f Space      = f $ Space
+  query f Newline    = f $ Newline
+  query f Tab        = f $ Tab
+  query f LBrace     = f $ LBrace
+  query f RBrace     = f $ RBrace
+  query f LParen     = f $ LParen
+  query f RParen     = f $ RParen
+  query f LBrack     = f $ LBrack
+  query f RBrack     = f $ RBrack
+  query f LAngle     = f $ LAngle
+  query f RAngle     = f $ RAngle
+  query f Dollar     = f $ Dollar
+  query f Colon      = f $ Colon
+  query f Semi       = f $ Semi
+  query f EnDash     = f $ EnDash
+  query f EmDash     = f $ EmDash
+  query f FSlash     = f $ FSlash
+  query f BSlash     = f $ BSlash
+  query f Apostrophe = f $ Apostrophe
+  query f SMark      = f $ SMark
+  query f Comma      = f $ Comma
+  query f Plus       = f $ Plus
+  query f Ellipsis   = f $ Ellipsis
+  query f Hyphen     = f $ Hyphen
+  query f Bang       = f $ Bang
+  query f Period     = f $ Period
+  query f QMark      = f $ QMark
+  query f Hash       = f $ Hash
+  query f Equals     = f $ Equals
+  query f Pipe       = f $ Pipe
 
 -- @TODO Captions
 instance Queryable (Edda PRIME INLINE) (Edda PRIME BLOCK) where
