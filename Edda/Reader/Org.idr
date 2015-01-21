@@ -275,7 +275,7 @@ header = char '*' >! do
     l <- opt target
     space
     as <- opt drawer
-    pure (Section STAR d l title (fromMaybe Nil as) Nil)
+    pure $ Section STAR d l title (fromMaybe Nil as)
 
 orgBlock : Parser (Edda STAR BLOCK)
 orgBlock = header <|> block <|> list <|> figure <|> hrule <|> para <?> "Org Blocks"

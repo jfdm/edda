@@ -106,15 +106,22 @@ data Edda : Step -> EddaTy -> Type where
   HRule : (s : Step) -> Edda s BLOCK
   Empty : (s : Step) -> Edda s BLOCK
 
-  Figure : (s : Step) -> String -> List (Edda s INLINE) -> List (String, String) -> Edda s INLINE -> Edda s BLOCK
-  DList  : (s : Step) -> List (List (Edda s INLINE), List (Edda s INLINE)) -> Edda s BLOCK
+  Figure : (s : Step)
+         -> String
+         -> List (Edda s INLINE)
+         -> List (String, String)
+         -> Edda s INLINE
+         -> Edda s BLOCK
+  DList : (s : Step)
+        -> List (List (Edda s INLINE), List (Edda s INLINE))
+        -> Edda s BLOCK
 
   Section : (s : Step)
           -> Nat
           -> Maybe String
           -> List (Edda s INLINE)
           -> List (String, String)
-          -> List (Edda s BLOCK) -> Edda s BLOCK
+          -> Edda s BLOCK
 
 -- --------------------------------------------------------------- [ Processed ]
 
@@ -123,7 +130,10 @@ data Edda : Step -> EddaTy -> Type where
 
   Comment : String -> Edda PRIME BLOCK
   Equation : Maybe String -> String -> Edda PRIME BLOCK
-  Literal  : Maybe String -> List (Edda PRIME INLINE) -> String -> Edda PRIME BLOCK
+  Literal : Maybe String
+          -> List (Edda PRIME INLINE)
+          -> String
+          -> Edda PRIME BLOCK
   Listing : Maybe String
           -> (List (Edda PRIME INLINE))
           -> (Maybe String)

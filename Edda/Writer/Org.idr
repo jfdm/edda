@@ -185,14 +185,13 @@ mutual
   writeBlock : Edda PRIME BLOCK -> {[FILE_IO (OpenFile Write)]} Eff ()
   writeBlock (HRule PRIME) = writeString "-----"
   writeBlock (Empty PRIME) = writeString ""
-  writeBlock (Section PRIME lvl label title as ds) = do
+  writeBlock (Section PRIME lvl label title as) = do
       writeThing '*' lvl
       writeString " "
       writeInlines title
       writeString "\n"
       writeString $ fromMaybe "" label
       writeString "\n"
-      writeBlocks ds
   writeBlock (Figure PRIME l c as fig) = do
       writeTag "CAPTION" c
       writeRawTag "NAME" l

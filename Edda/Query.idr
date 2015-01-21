@@ -72,11 +72,11 @@ instance Queryable (Edda PRIME INLINE) (Edda PRIME INLINE) where
 
 -- @TODO Captions
 instance Queryable (Edda PRIME INLINE) (Edda PRIME BLOCK) where
-  query f (HRule PRIME)               = neutral
-  query f (Empty PRIME)               = neutral
-  query f (Section PRIME d l t as ds) = query f t <+> query f ds
-  query f (Figure PRIME l c as fig)   = query f c <+> query f fig
-  query f (DList PRIME kvs)           = query f kvs
+  query f (HRule PRIME)             = neutral
+  query f (Empty PRIME)             = neutral
+  query f (Section PRIME d l t as)  = query f t
+  query f (Figure PRIME l c as fig) = query f c <+> query f fig
+  query f (DList PRIME kvs)         = query f kvs
 
   query f (OList xs)  = query f xs
   query f (BList xs)  = query f xs
@@ -161,9 +161,9 @@ instance Queryable (Edda PRIME BLOCK) (Edda PRIME INLINE) where
 
 -- @TODO Query Table
 instance Queryable (Edda PRIME BLOCK) (Edda PRIME BLOCK) where
-  query f (HRule PRIME)               = f (HRule PRIME)
-  query f (Empty PRIME)               = f (Empty PRIME)
-  query f (Section PRIME d l t as ds) = f (Section PRIME d l t as ds) <+> (query f t) <+> (query f ds)
+  query f (HRule PRIME)            = f (HRule PRIME)
+  query f (Empty PRIME)            = f (Empty PRIME)
+  query f (Section PRIME d l t as) = f (Section PRIME d l t as) <+> (query f t)
   query f (Figure PRIME l c as fig)   = f (Figure PRIME l c as fig) <+> (query f fig) -- caption
   query f (DList PRIME kvs)           = f (DList PRIME kvs) <+> (query f kvs)
 

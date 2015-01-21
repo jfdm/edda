@@ -159,9 +159,9 @@ mutual
   eqEdda (TextBlock xty xl xc xas xs)  (TextBlock yty yl yc yas ys) = xty == yty && xl == yl && xc == yc && xas == yas && xs == ys
   eqEdda (VerbBlock xty xl xc xas x)   (VerbBlock yty yl yc yas y)  = xty == yty && xl == yl && xc == yc && xas == yas && x == y
 
-  eqEdda {s} (HRule s)                 (HRule s)                 = True
-  eqEdda {s} (Empty s)                 (Empty s)                 = True
-  eqEdda {s} (Section s x xl xt xa xs) (Section s y yl yt ya ys) = x == y && xl == yl && xt == yt && xs == ys
+  eqEdda {s} (HRule s)              (HRule s)                 = True
+  eqEdda {s} (Empty s)              (Empty s)                 = True
+  eqEdda {s} (Section s x xl xt xa) (Section s y yl yt ya) = x == y && xl == yl && xt == yt && xa == ya
   eqEdda {s} (Figure s xl xc xas x) (Figure s yl yc yas y) = xl == yl && xc == yc && xas == yas && x == y
   eqEdda {s} (DList s xs)           (DList s ys)           = xs == ys
 
