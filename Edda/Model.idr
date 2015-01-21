@@ -109,7 +109,12 @@ data Edda : Step -> EddaTy -> Type where
   Figure : (s : Step) -> String -> List (Edda s INLINE) -> List (String, String) -> Edda s INLINE -> Edda s BLOCK
   DList  : (s : Step) -> List (List (Edda s INLINE), List (Edda s INLINE)) -> Edda s BLOCK
 
-  Section : (s : Step) -> Nat -> Maybe String -> List (Edda s INLINE) -> List (Edda s BLOCK) -> Edda s BLOCK
+  Section : (s : Step)
+          -> Nat
+          -> Maybe String
+          -> List (Edda s INLINE)
+          -> List (String, String)
+          -> List (Edda s BLOCK) -> Edda s BLOCK
 
 -- --------------------------------------------------------------- [ Processed ]
 

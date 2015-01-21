@@ -158,11 +158,12 @@ instance Show (Edda s ty) where
 -- Starry Prime
   show (HRule s) = "[HRule" ++ show s ++ "]\n"
   show (Empty s) = "[Empty " ++ show s ++ "]\n"
-  show (Section s d l t cs) = "[Heading "
+  show (Section s d l t a cs) = "[Heading "
        ++ show s ++ " "
        ++ show d ++ " "
        ++ show l ++ " "
        ++ show t ++ " "
+       ++ show a ++ " "
        ++ show cs ++ "]\n"
   show (Figure s l c as img) = "[FigBlock "
        ++ show s ++ " "

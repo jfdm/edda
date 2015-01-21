@@ -173,7 +173,7 @@ header = char '#' >! do
     title <- manyTill (inline) (eol)
     eol
     let d = length (fromMaybe Nil depth) + 1
-    pure (Section STAR d Nothing title Nil)
+    pure (Section STAR d Nothing title Nil Nil)
   <?> "Header"
 
 block : Parser (Edda STAR BLOCK)

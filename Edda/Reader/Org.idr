@@ -212,16 +212,6 @@ hrule = do
     token "-----"
     pure (HRule STAR)
 
-header : Parser (Edda STAR BLOCK)
-header = char '*' >! do
-    depth <- opt (many $ char '*')
-    space
-    title <- manyTill (inline) (eol)
-    l <- opt target
-    space
-    let d = length (fromMaybe [] depth) + 1
-    pure (Section STAR d l title Nil)
-
 ulMarker : Parser ()
 ulMarker = char '+' <|> char '-' <?> "UList Marker"
 
@@ -275,6 +265,16 @@ dlist = do
 
 list : Parser (Edda STAR BLOCK)
 list = dlist <|> blist <|> olist <?> "Lists"
+
+header : Parser (Edda STAR BLOCK)
+header = char '*' >! do
+    depth <- opt (many $ char '*')
+    let d = length (fromMaybe [] depth) + 1
+    space
+    title <- manyTill (inline) (eol)
+    l <- opt target
+    space
+    pure (Section STAR d l title Nil Nil)
 
 orgBlock : Parser (Edda STAR BLOCK)
 orgBlock = header <|> block <|> list <|> figure <|> hrule <|> para <?> "Org Blocks"
