@@ -185,7 +185,7 @@ mutual
   writeBlock : Edda PRIME BLOCK -> {[FILE_IO (OpenFile Write)]} Eff ()
   writeBlock (HRule PRIME) = writeString "-----"
   writeBlock (Empty PRIME) = writeString ""
-  writeBlock (Section PRIME lvl label title ds) = do
+  writeBlock (Section PRIME lvl label title as ds) = do
       writeThing '*' lvl
       writeString " "
       writeInlines title

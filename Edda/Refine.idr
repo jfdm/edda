@@ -81,7 +81,7 @@ mutual
   refineBlock : Edda STAR BLOCK -> Edda PRIME BLOCK
   refineBlock (HRule STAR)             = HRule PRIME
   refineBlock (Empty STAR)             = Empty PRIME
-  refineBlock (Section STAR d l t xs)  = Section PRIME d l (refineInlines t) (refineBlocks xs)
+  refineBlock (Section STAR d l t as xs)  = Section PRIME d l (refineInlines t) as (refineBlocks xs)
   refineBlock (Figure STAR l c as img) = Figure PRIME l (refineInlines c)
                                                          as
                                                          (refineInline img)

@@ -85,9 +85,9 @@ instance Walkable (Edda s INLINE) (Edda s BLOCK) where
   walk f (TextBlock ty l c as xs) = TextBlock ty l c as (walk f xs)  -- caption
   walk f (VerbBlock ty l c as v)  = VerbBlock ty l c as v            -- caption
 
-  walk {s} f (HRule s)             = HRule s
-  walk {s} f (Empty s)             = Empty s
-  walk {s} f (Section s d l t ds)  = Section s d l (walk f t) (walk f ds)
+  walk {s} f (HRule s)               = HRule s
+  walk {s} f (Empty s)               = Empty s
+  walk {s} f (Section s d l t as ds) = Section s d l (walk f t) as (walk f ds)
   walk {s} f (Figure s l c as fig) = Figure s l (walk f c) as (walk f fig)
   walk {s} f (DList s kvs)         = DList s (walk f kvs)
 
@@ -186,9 +186,9 @@ instance Walkable (Edda s BLOCK) (Edda s BLOCK) where
   walk f (TextBlock ty l c as xs) = f $ TextBlock ty l c as (walk f xs)  -- caption
   walk f (VerbBlock ty l c as v)  = f $ VerbBlock ty l c as v            -- caption
 
-  walk {s} f (HRule s)             = f $ HRule s
-  walk {s} f (Empty s)             = f $ Empty s
-  walk {s} f (Section s d l t ds)  = f $ Section s d l (walk f t) (walk f ds)
+  walk {s} f (HRule s)               = f $ HRule s
+  walk {s} f (Empty s)               = f $ Empty s
+  walk {s} f (Section s d l t as ds) = f $ Section s d l (walk f t) as (walk f ds)
   walk {s} f (Figure s l c as fig) = f $ Figure s l (walk f c) as (walk f fig)
   walk {s} f (DList s kvs)         = f $ DList s (walk f kvs)
 
