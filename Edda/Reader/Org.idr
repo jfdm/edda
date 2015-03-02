@@ -56,7 +56,7 @@ hyper = do
     internal : Parser (String, List (Edda STAR INLINE))
     internal = do
       u <- brackets' url
-      d <- brackets' $ some (text <$ space)
+      d <- brackets' $ some (text <* space)
       pure (u, intersperse (Punc ' ' ) d)
 
 link : Parser (Edda STAR INLINE)
@@ -86,7 +86,7 @@ inline = text
 -- -------------------------------------------------------------- [ Properties ]
 attribute : String -> Parser (String, String)
 attribute key = do
-    string "#+" $> string key
+    string "#+" *> string key
     colon
     ps <- manyTill (anyChar) eol
     pure (key, pack ps)
@@ -97,7 +97,7 @@ property = attribute "PROPERTY" <?> "Property"
 
 inlineKeyWord : String -> Parser (String, List (Edda STAR INLINE))
 inlineKeyWord key = do
-    string "#+" $> string key
+    string "#+" *> string key
     colon
     space
     ps <- manyTill (inline) eol
@@ -173,13 +173,13 @@ block = do
     ty <- word
     case getOrgBlockType ty of
       Left x => do
-        srcopts <- opt $ char ' ' $> manyTill (anyChar) eol
+        srcopts <- opt $ char ' ' *> manyTill (anyChar) eol
         let as = dealWithSrcAttrs (convertOpts srcopts) (convertAttrs attr)
 
-        txt <- manyTill anyChar (string "#+END_" $> token ty)
+        txt <- manyTill anyChar (string "#+END_" *> token ty)
         pure $ VerbBlock x lab (fromMaybe Nil cap) as (pack txt)
       Right y => do
-        txt <- manyTill inline (string "#+END_" $> token ty)
+        txt <- manyTill inline (string "#+END_" *> token ty)
         pure $ TextBlock y lab (fromMaybe Nil cap) (convertAttrs attr) txt
 
    <?> "Blocks"
@@ -196,14 +196,14 @@ figure = do
 
 para : Parser (Edda STAR BLOCK)
 para = do
-    txt <- manyTill inline (eol $> eol)
+    txt <- manyTill inline (eol *> eol)
     space
     pure $ TextBlock ParaTy Nothing Nil Nil txt
   <?> "Paragraphs"
 
 paraLast : Parser (Edda STAR BLOCK)
 paraLast = do
-    txt <- manyTill inline (eol $> space)
+    txt <- manyTill inline (eol *> space)
     pure $ TextBlock ParaTy Nothing Nil Nil txt
   <?> "Filthy hack for last para"
 
@@ -247,12 +247,12 @@ blist = do
 
 dlist : Parser (Edda STAR BLOCK)
 dlist = do
-    is <- some defItem <$ eol
+    is <- some defItem <* eol
     pure $ DList STAR is
   <?> "Description Lists"
   where
     marker : Parser (List (Edda STAR INLINE))
-    marker = ulMarker $> space $> manyTill inline (space $> colon $> colon)
+    marker = ulMarker *> space *> manyTill inline (space *> colon *> colon)
         <?> "Desc Marker"
 
     defItem : Parser (List (Edda STAR INLINE), List (Edda STAR INLINE))
@@ -284,7 +284,7 @@ parseOrg : Parser (Edda STAR MODEL)
 parseOrg = do
   title  <- attribute "TITLE"
   author <- attribute "AUTHOR"
-  date   <- attribute "DATE" <$ space
+  date   <- attribute "DATE" <* space
   txt    <- many orgBlock
   lpara  <- many paraLast -- Dirty Hack
   let ps = the (List (String, String)) [title, author, date]

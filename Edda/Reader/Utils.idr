@@ -19,7 +19,7 @@ manyTill p end = scan
            do { x <- p; xs <- scan; return (x::xs)}
 
 lexemeL : Monad m => ParserT m String a -> ParserT m String a
-lexemeL p = space $> p
+lexemeL p = space *> p
 
 lexL : Monad m => ParserT m String a -> ParserT m String a
 lexL p = lexemeL p

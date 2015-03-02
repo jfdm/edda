@@ -41,7 +41,7 @@ expLink = do
 
 hyper : Parser (Edda STAR INLINE)
 hyper = do
-  d <- brackets' $ some (text <$ space)
+  d <- brackets' $ some (text <* space)
   uri  <- parens' $ url
   let desc = intersperse (Punc ' ') d
   pure $ Link HyperTy uri (desc)
@@ -113,7 +113,7 @@ indentedcode = identcode "\t" <|> identcode "    " <?> "Indented Code Block"
   where
     identcode : String -> Parser (Edda STAR BLOCK)
     identcode m = do
-      ss <- some $ (string m $!> manyTill (anyChar) eol)
+      ss <- some $ (string m *!> manyTill (anyChar) eol)
       eol
       let src = concatMap (\x => pack (x ++ ['\n'])) ss
       pure $ VerbBlock LiteralTy Nothing Nil Nil src
@@ -125,7 +125,7 @@ fencedcode = fencedcode' "```" <|> fencedcode' "~~~" <?> "Fenced Code Block"
     fencedcode' : String -> Parser (Edda STAR BLOCK)
     fencedcode' m = do
         string m
-        srcopts <- opt $ char ' ' $> manyTill (anyChar) eol
+        srcopts <- opt $ char ' ' *> manyTill (anyChar) eol
         let as = dealWithSrcAttrs (convertOpts srcopts) Nil
         src <- manyTill anyChar (string m)
         eol
@@ -134,7 +134,7 @@ fencedcode = fencedcode' "```" <|> fencedcode' "~~~" <?> "Fenced Code Block"
 
 blockquote : Parser (Edda STAR BLOCK)
 blockquote = do
-    txt <- some $ (token ">" $!> manyTill inline eol)
+    txt <- some $ (token ">" *!> manyTill inline eol)
     eol
     let p = concat txt
     pure $ TextBlock QuotationTy Nothing Nil Nil p
@@ -142,13 +142,13 @@ blockquote = do
 -- ------------------------------------------------------------------- [ Paras ]
 para : Parser (Edda STAR BLOCK)
 para = do
-    txt <- manyTill (inline) (eol $> eol)
+    txt <- manyTill (inline) (eol *> eol)
     pure $ TextBlock ParaTy Nothing Nil Nil txt
   <?> "Paragraphs"
 
 paraLast : Parser (Edda STAR BLOCK)
 paraLast = do
-    txt <- manyTill inline (eol $> space)
+    txt <- manyTill inline (eol *> space)
     pure $ TextBlock ParaTy Nothing Nil Nil txt
   <?> "Filthy hack for last para"
 
