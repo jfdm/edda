@@ -18,7 +18,6 @@ import Edda.Reader.Common
 
 -- ------------------------------------------------------------------ [ Inline ]
 
-
 code : Parser (Edda STAR INLINE)
 code = map (Raw CodeTy) (literallyBetween '`') <?> "Code"
 
@@ -72,7 +71,7 @@ figure = do
 
 -- ------------------------------------------------------------------- [ Lists ]
 ulMarker : Parser ()
-ulMarker = char '+' <|> char '-' <|> char '*' <?> "UList Marker"
+ulMarker = char' '+' <|> char' '-' <|> char' '*' <?> "UList Marker"
 
 olMarker : Parser ()
 olMarker = marker '.' <|> marker ')'
@@ -115,7 +114,7 @@ indentedcode = identcode "\t" <|> identcode "    " <?> "Indented Code Block"
     identcode m = do
       ss <- some $ (string m *!> manyTill (anyChar) eol)
       eol
-      let src = concatMap (\x => pack (x ++ ['\n'])) ss
+      let src = concatMap (\x => pack (List.(++) x ['\n'])) ss
       pure $ VerbBlock LiteralTy Nothing Nil Nil src
      <?> "Indented Code"
 

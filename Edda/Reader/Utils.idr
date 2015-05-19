@@ -43,7 +43,10 @@ literallyBetween c = map pack $ between (char c) (char c) (some (satisfy (/= c))
 -- ---------------------------------------------------------- [ String Parsers ]
 
 eol : Parser ()
-eol = char '\n'
+eol = char '\n' *> return ()
+
+char' : Char -> Parser ()
+char' c = char c *> return ()
 
 anyChar : Parser Char
 anyChar = satisfy (const True)

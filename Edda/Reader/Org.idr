@@ -213,7 +213,7 @@ hrule = do
     pure (HRule STAR)
 
 ulMarker : Parser ()
-ulMarker = char '+' <|> char '-' <?> "UList Marker"
+ulMarker = char' '+' <|> char' '-' <?> "UList Marker"
 
 olMarker : Parser ()
 olMarker = marker '.' <|> marker ')'

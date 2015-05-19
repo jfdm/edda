@@ -12,20 +12,20 @@ import Edda.Writer.Common
 %access private
 
 -- ------------------------------------------------------------ [ Misc Writing ]
-writeRawTag : String -> String -> {[FILE_IO (OpenFile Write)]} Eff ()
+writeRawTag : String -> String -> Eff () [FILE_IO (OpenFile Write)]
 writeRawTag key value = do
     writeString "#+"
     writeString key
     writeString ": "
     writeLine value
 
-writeThing : Char -> Nat -> {[FILE_IO (OpenFile Write)]} Eff ()
+writeThing : Char -> Nat -> Eff () [FILE_IO (OpenFile Write)]
 writeThing c Z = pure ()
 writeThing c (S k) = do
     writeString (cast c)
     writeThing c k
 
-writeAttrs : List (String, String) -> {[FILE_IO (OpenFile Write)]} Eff ()
+writeAttrs : List (String, String) -> Eff () [FILE_IO (OpenFile Write)]
 writeAttrs Nil = pure ()
 writeAttrs as  = do
     writeRawTag "ATTR" $ unwords $ map (\(k,v) => k ++ ":" ++ v) as
@@ -35,7 +35,7 @@ writeAttrs as  = do
 mutual
   writeTag : String
            -> List (Edda PRIME INLINE)
-           -> {[FILE_IO (OpenFile Write)]} Eff ()
+           -> Eff () [FILE_IO (OpenFile Write)]
   writeTag _   Nil   = pure ()
   writeTag key value = do
      writeString "#+"
@@ -45,21 +45,24 @@ mutual
      writeString "\n"
 
   writeParens : Char -> Char -> Either String (List (Edda PRIME INLINE))
-              -> {[FILE_IO (OpenFile Write)]} Eff ()
-  writeParens l r txt = do
+              -> Eff () [FILE_IO (OpenFile Write)]
+  writeParens l r (Left str) = do
       writeString (cast l)
-      case txt of
-        Left str  => writeString str
-        Right txt => writeInlines txt
+      writeString str
+      writeString (cast r)
+  writeParens l r (Right ts ) = do
+      writeString (cast l)
+      writeInlines ts
       writeString (cast r)
 
+
   writeMarkup : Char -> Either String (List (Edda PRIME INLINE))
-              -> {[FILE_IO (OpenFile Write)]} Eff ()
+              -> Eff () [FILE_IO (OpenFile Write)]
   writeMarkup t txt = writeParens t t txt
 
   writeLink : String
             -> (List (Edda PRIME INLINE))
-            -> {[FILE_IO (OpenFile Write)]} Eff ()
+            -> Eff () [FILE_IO (OpenFile Write)]
   writeLink uri Nil = do
       writeString "[["
       writeString uri
@@ -74,7 +77,7 @@ mutual
       writeString "]"
       writeString "]"
 
-  writeInline : Edda PRIME INLINE -> {[FILE_IO (OpenFile Write)]} Eff ()
+  writeInline : Edda PRIME INLINE -> Eff () [FILE_IO (OpenFile Write)]
   writeInline (Text t) = writeString t
   writeInline (Sans t) = writeString t
   writeInline (Scap t) = writeString t
@@ -134,16 +137,16 @@ mutual
   writeInline Pipe       = writeString "|"
 
 -- ----------------------------------------------------------- [ Write Inlines ]
-  writeInlines : List (Edda PRIME INLINE) -> {[FILE_IO (OpenFile Write)]} Eff ()
+  writeInlines : List (Edda PRIME INLINE) -> Eff () [FILE_IO (OpenFile Write)]
   writeInlines = writeManyThings (writeInline)
 -- ----------------------------------------------------- [ Write Generic Block ]
 
-writeGenBlock : (a -> {[FILE_IO (OpenFile Write)]} Eff ())
+writeGenBlock : (a -> Eff () [FILE_IO (OpenFile Write)])
               -> String
               -> Maybe String
               -> List (Edda PRIME INLINE)
               -> a
-              -> {[FILE_IO (OpenFile Write)]} Eff ()
+              -> Eff () [FILE_IO (OpenFile Write)]
 writeGenBlock f tag l c b = do
     writeTag "CAPTION" c
     writeMaybe (\x => writeRawTag "NAME" x) l
@@ -156,18 +159,18 @@ writeTextBlock : String
               -> Maybe String
               -> List (Edda PRIME INLINE)
               -> List (Edda PRIME INLINE)
-              -> {[FILE_IO (OpenFile Write)]} Eff ()
+              -> Eff () [FILE_IO (OpenFile Write)]
 writeTextBlock = writeGenBlock (writeInlines)
 
 writeVerbBlock : String
               -> Maybe String
               -> List (Edda PRIME INLINE)
               -> String
-              -> {[FILE_IO (OpenFile Write)]} Eff ()
+              -> Eff () [FILE_IO (OpenFile Write)]
 writeVerbBlock = writeGenBlock (writeString)
 
 -- ------------------------------------------------------------- [ Write Block ]
-writeDefItem : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> {[FILE_IO (OpenFile Write)]} Eff ()
+writeDefItem : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> Eff () [FILE_IO (OpenFile Write)]
 writeDefItem (k, vs) = do
     writeString "- "
     writeInlines k
@@ -175,14 +178,14 @@ writeDefItem (k, vs) = do
     writeInlines vs
     writeString "\n"
 
-writeItem : String -> List (Edda PRIME INLINE) -> {[FILE_IO (OpenFile Write)]} Eff ()
+writeItem : String -> List (Edda PRIME INLINE) -> Eff () [FILE_IO (OpenFile Write)]
 writeItem mark b = do
     writeString mark
     writeInlines b
     writeString "\n"
 
 mutual
-  writeBlock : Edda PRIME BLOCK -> {[FILE_IO (OpenFile Write)]} Eff ()
+  writeBlock : Edda PRIME BLOCK -> Eff () [FILE_IO (OpenFile Write)]
   writeBlock (HRule PRIME) = writeString "-----"
   writeBlock (Empty PRIME) = writeString ""
   writeBlock (Section PRIME lvl label title as) = do
@@ -241,11 +244,11 @@ mutual
   writeBlock (Example l c txt)     = writeTextBlock "EXAMPLE" l c txt
 
   -- -------------------------------------------------------------- [ Write Body ]
-  writeBlocks : List (Edda PRIME BLOCK) -> {[FILE_IO (OpenFile Write)]} Eff ()
+  writeBlocks : List (Edda PRIME BLOCK) -> Eff () [FILE_IO (OpenFile Write)]
   writeBlocks = writeManyThings (writeBlock)
 
 -- -------------------------------------------------------- [ Write List (String, String) ]
-writeProps : List (String, String) -> {[FILE_IO (OpenFile Write)]} Eff ()
+writeProps : List (String, String) -> Eff () [FILE_IO (OpenFile Write)]
 writeProps Nil = pure ()
 writeProps ps = do
     writeRawTag "TITLE" title
@@ -262,13 +265,12 @@ writeProps ps = do
 -- --------------------------------------------------------------- [ Write Org ]
 doWrite' : List (String, String)
          -> List (Edda PRIME BLOCK)
-         -> {[FILE_IO (OpenFile Write)]} Eff ()
+         -> Eff () [FILE_IO (OpenFile Write)]
 doWrite' ps body = do
     writeProps ps
     writeBlocks body
 
-covering
-doWrite : Edda PRIME MODEL -> {[FILE_IO (OpenFile Write)]} Eff ()
+doWrite : Edda PRIME MODEL -> Eff () [FILE_IO (OpenFile Write)]
 doWrite (MkEdda ps body) = doWrite' ps body
 
 public
