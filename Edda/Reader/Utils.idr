@@ -1,8 +1,12 @@
+-- --------------------------------------------------------------- [ Utils.idr ]
+-- Module    : Utils.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
 module Edda.Reader.Utils
 
-import public Control.Monad.Identity
-import public Lightyear.Core
-import public Lightyear.Combinators
+import public Lightyear
 import public Lightyear.Strings
 
 import Edda.Model
@@ -12,9 +16,10 @@ import Edda.Utils
 
 -- ------------------------------------------------------------- [ Combinators ]
 
-manyTill : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str (List a)
+manyTill : Monad m => ParserT m String a -> ParserT m String b -> ParserT m String (List a)
 manyTill p end = scan
   where
+    scan : Monad m => ParserT m String (List a)
     scan = do { end; return List.Nil } <|>
            do { x <- p; xs <- scan; return (x::xs)}
 
@@ -27,20 +32,10 @@ lexL p = lexemeL p
 lex : Monad m => ParserT m String a -> ParserT m String a
 lex p = lexeme p
 
-brackets' : Monad m => ParserT m String a -> ParserT m String a
-brackets' p = between (char '[') (char ']') p
-
-parens' : Monad m => ParserT m String a -> ParserT m String a
-parens' p = between (char '(') (char ')') p
-
-angles' : Monad m => ParserT m String a -> ParserT m String a
-angles' p = between (char '<') (char '>') p
-
+-- ---------------------------------------------------------- [ String Parsers ]
 
 literallyBetween : Char -> Parser String
 literallyBetween c = map pack $ between (char c) (char c) (some (satisfy (/= c)))
-
--- ---------------------------------------------------------- [ String Parsers ]
 
 eol : Parser ()
 eol = char '\n' *> return ()

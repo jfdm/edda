@@ -1,4 +1,15 @@
+-- --------------------------------------------------------------- [ Model.idr ]
+-- Module    : Model.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
 module Edda.Model
+
+%access public
+%default total
+
+-- ------------------------------------------------------------------- [ Types ]
 
 data Step = STAR | PRIME
 
@@ -21,7 +32,7 @@ data ListTy = BulletTy | NumberTy
 ||| Add different block types but that will require adding predicated lists
 data EddaTy = INLINE | BLOCK | MODEL
 
-||| Support Tables
+--- @ Support Tables
 
 data Edda : Step -> EddaTy -> Type where
 -- ------------------------------------------------------------------ [ Inline ]
@@ -164,3 +175,8 @@ data Edda : Step -> EddaTy -> Type where
 -- --------------------------------------------------------------- [ Documents ]
   EddaRaw : List (String, String) -> List (Edda STAR BLOCK) -> Edda STAR MODEL
   MkEdda  : List (String, String) -> List (Edda PRIME BLOCK) -> Edda PRIME MODEL
+
+
+
+
+-- --------------------------------------------------------------------- [ EOF ]

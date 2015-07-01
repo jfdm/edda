@@ -1,10 +1,14 @@
+-- ---------------------------------------------------------- [ CommonMark.idr ]
+-- Module    : CommonMark.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
 module Edda.Reader.CommonMark
 
 -- TODO Make recursive parsing.
 
-import public Control.Monad.Identity
-import public Lightyear.Core
-import public Lightyear.Combinators
+import public Lightyear
 import public Lightyear.Strings
 
 import Edda.Effs
@@ -35,13 +39,13 @@ emph = markup EmphTy "*" <|> markup EmphTy "_" <?> "Emph"
 
 expLink : Parser (Edda STAR INLINE)
 expLink = do
-  txt <- angles' url
+  txt <- angles url
   pure $ Link ExposedTy txt Nil
 
 hyper : Parser (Edda STAR INLINE)
 hyper = do
-  d <- brackets' $ some (text <* space)
-  uri  <- parens' $ url
+  d <- brackets $ some (text <* space)
+  uri  <- parens $ url
   let desc = intersperse (Punc ' ') d
   pure $ Link HyperTy uri (desc)
 
@@ -51,18 +55,18 @@ link = hyper <|> expLink <?> "Links"
 inline : Parser (Edda STAR INLINE)
 inline = text
      <|> link
-     <|> bold <|> emph
+     <|> bold
+     <|> emph
      <|> code
      <|> punc
      <?> "Raw Inline"
 
-
 figure : Parser (Edda STAR BLOCK)
 figure = do
     char '!'
-    d <- brackets' $ some text
+    d <- brackets $ some text
     let desc = intersperse (Punc ' ') d
-    uri <- parens' url
+    uri <- parens url
     let img = Link ExposedTy uri Nil
     eol
     eol
@@ -105,6 +109,7 @@ blist = do
 
 list : Parser (Edda STAR BLOCK)
 list = blist <|> olist
+
 -- ------------------------------------------------------------------ [ Blocks ]
 
 indentedcode : Parser (Edda STAR BLOCK)
@@ -181,7 +186,6 @@ block = header
     <|> list <|> figure <|> hrule <|> para <|> empty
     <?> "Block"
 
-
 parseCommonMark : Parser (Edda STAR MODEL)
 parseCommonMark = do
     txt <- some block
@@ -193,3 +197,5 @@ parseCommonMark = do
 public
 readCommonMark : String -> {[FILE_IO ()]} Eff (Either String (Edda PRIME MODEL))
 readCommonMark = readEddaFile parseCommonMark
+
+-- --------------------------------------------------------------------- [ EOF ]

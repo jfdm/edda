@@ -1,6 +1,15 @@
+-- ------------------------------------------------------------------ [ Eq.idr ]
+-- Module    : Eq.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
 module Edda.Model.Eq
 
 import Edda.Model
+
+%access public
+%default partial
 
 instance Eq Step where
     (==) STAR  STAR  = True

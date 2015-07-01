@@ -1,3 +1,9 @@
+-- -------------------------------------------------------------- [ Common.idr ]
+-- Module    : Common.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
 module Edda.Reader.Common
 
 import Lightyear
@@ -60,4 +66,6 @@ readEddaFile p f = do
           Left err  => pure $ Left err
           Right res => pure $ Right (refineEdda res)
       False => pure $ Left "Error"
+
+
 -- --------------------------------------------------------------------- [ EOF ]

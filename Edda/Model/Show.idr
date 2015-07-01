@@ -1,6 +1,15 @@
+-- ---------------------------------------------------------------- [ Show.idr ]
+-- Module    : Show.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
 module Edda.Model.Show
 
 import Edda.Model
+
+%access public
+%default total
 
 instance Show Step where
   show STAR   = "STAR"
@@ -77,11 +86,11 @@ instance Show EddaTy where
 
 instance Show (Edda s ty) where
 -- ------------------------------------------------------------------ [ Inline ]
-  show (Punc c)      = "{Punc " ++ show c  ++ "}"
-  show (Font ty t)   = "{Font "   ++ show ty ++ " " ++ show t ++ "}"
-  show (Raw ty t)    = "{Raw "    ++ show ty ++ " " ++ show t ++ "}"
-  show (Mark ty t)   = "{Mark "   ++ show ty ++ " " ++ show t ++ "}"
-  show (Link ty u t) = "{Link "   ++ show ty ++ " <" ++ u ++ "> \"" ++ show t ++ "\"}"
+  show (Punc c)      = with String "{Punc "   ++ show c  ++ "}"
+  show (Font ty t)   = with String "{Font "   ++ show ty ++ " " ++ show t ++ "}"
+  show (Raw ty t)    = with String "{Raw "    ++ show ty ++ " " ++ show t ++ "}"
+  show (Mark ty t)   = with String "{Mark "   ++ show ty ++ " " ++ show t ++ "}"
+  show (Link ty u t) = with String "{Link "   ++ show ty ++ " <" ++ u ++ "> \"" ++ show t ++ "\"}"
 
   show (Text text) = "{Text \"" ++ text ++ "\"}"
   show (Mono mono) = "{Mono \"" ++ mono ++ "\"}"
@@ -221,3 +230,6 @@ instance Show (Edda s ty) where
        ++ show PRIME ++ "\n"
        ++ "[Mdata " ++ concatMap show ps ++ "]\n"
        ++ concatMap show body ++ "]\n"
+
+
+-- --------------------------------------------------------------------- [ EOF ]

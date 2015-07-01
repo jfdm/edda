@@ -1,8 +1,12 @@
+-- ----------------------------------------------------------------- [ Org.idr ]
+-- Module    : Org.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
 module Edda.Reader.Org
 
-import public Control.Monad.Identity
-import public Lightyear.Core
-import public Lightyear.Combinators
+import public Lightyear
 import public Lightyear.Strings
 
 import Edda.Effs
@@ -44,19 +48,19 @@ uline = markup UlineTy '_' <?> "Uline"
 
 expLink : Parser (Edda STAR INLINE)
 expLink = do
-    txt <- brackets' $ brackets' url
+    txt <- brackets $ brackets url
     pure $ Link ExposedTy txt Nil
   <?> "Exposed Link"
 
 hyper : Parser (Edda STAR INLINE)
 hyper = do
-    (uri, desc) <- brackets' internal
+    (uri, desc) <- brackets internal
     pure $ Link HyperTy uri desc
   where
     internal : Parser (String, List (Edda STAR INLINE))
     internal = do
-      u <- brackets' url
-      d <- brackets' $ some (text <* space)
+      u <- brackets url
+      d <- brackets $ some (text <* space)
       pure (u, intersperse (Punc ' ' ) d)
 
 link : Parser (Edda STAR INLINE)
@@ -64,7 +68,7 @@ link = hyper <|> expLink <?> "Link"
 
 fnote : Parser (Edda STAR INLINE)
 fnote = do
-   (l,d) <- brackets' doFnote
+   (l,d) <- brackets doFnote
    pure $ Link FnoteTy (fromMaybe "" l) d
  where
    doFnote : Parser (Maybe String, (List (Edda STAR INLINE)))
@@ -296,3 +300,6 @@ parseOrg = do
 public
 readOrg : String -> {[FILE_IO ()]} Eff (Either String (Edda PRIME MODEL))
 readOrg = readEddaFile parseOrg
+
+
+-- --------------------------------------------------------------------- [ EOF ]
