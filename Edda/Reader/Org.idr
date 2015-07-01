@@ -15,6 +15,8 @@ import Edda.Utils
 import Edda.Reader.Common
 import Edda.Reader.Utils
 
+import public Edda.Refine
+
 %access public
 
 -- --------------------------------------------------------------------- [ Org ]

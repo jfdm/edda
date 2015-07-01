@@ -14,7 +14,7 @@ import Effect.File
 import Effect.StdIO
 
 import Edda.Model
-import Edda.Refine
+import public Edda.Refine
 
 import Edda.Reader.Utils
 
