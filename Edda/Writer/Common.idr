@@ -1,3 +1,8 @@
+-- -------------------------------------------------------------- [ Common.idr ]
+-- Module    : Common.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 module Edda.Writer.Common
 
 import Effects
@@ -7,34 +12,19 @@ import Effect.StdIO
 
 import Edda.Model
 
-writeManyThings : (a -> {[FILE_IO (OpenFile Write)]} Eff ())
-            -> List a
-            -> {[FILE_IO (OpenFile Write)]} Eff ()
-writeManyThings _          Nil = pure ()
-writeManyThings writeOnce (x::xs) = do
-    writeOnce x
-    writeManyThings (writeOnce) xs
+strFromMaybe : (a -> String) -> Maybe a -> String
+strFromMaybe f Nothing  = ""
+strFromMaybe f (Just x) = f x
 
-
-writeList : (a -> {[FILE_IO (OpenFile Write)]} Eff ())
-          -> List a
-          -> {[FILE_IO (OpenFile Write)]} Eff ()
-writeList f Nil = pure ()
-writeList f (x::xs) = do
-    f x
-    writeList f xs
-
-writeMaybe : (a -> {[FILE_IO (OpenFile Write)]} Eff ())
-           -> Maybe a
-           -> {[FILE_IO (OpenFile Write)]} Eff ()
-writeMaybe _ Nothing  = pure ()
-writeMaybe f (Just x) = f x
-
-writeEddaFile : (Edda PRIME MODEL -> {[FILE_IO (OpenFile Write)]} Eff ())
+writeEddaFile : (Edda PRIME MODEL -> String)
               -> String
-              -> Edda PRIME MODEL -> {[FILE_IO (), EXCEPTION String]} Eff ()
-writeEddaFile write fname doc = case !(open fname Write) of
+              -> Edda PRIME MODEL
+              -> Eff () [FILE_IO (), EXCEPTION String]
+writeEddaFile write fname doc =
+  case !(open fname Write) of
     True => do
-      write doc
+      writeString $ write doc
       close
     False => raise "Unable to create file handle for writing."
+
+-- --------------------------------------------------------------------- [ EOF ]

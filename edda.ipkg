@@ -13,6 +13,8 @@ modules = Edda.Model
 
         , Edda.Writer.Common
         , Edda.Writer.Org
+        , Edda.Writer.LaTeX
+        , Edda.Writer.CommonMark
 
         , Edda.Utils
         , Edda.Squash

@@ -1,8 +1,13 @@
-module Edda.Writer
+-- ----------------------------------------------------------------- [ Org.idr ]
+-- Module    : Org.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+module Edda.Writer.Org
 
-import public Effects
-import public Effect.File
-import public Effect.Exception
+import Effects
+import Effect.File
+import Effect.Exception
 
 import Edda.Model
 import Edda.Utils
@@ -12,269 +17,216 @@ import Edda.Writer.Common
 %access private
 
 -- ------------------------------------------------------------ [ Misc Writing ]
-writeRawTag : String -> String -> Eff () [FILE_IO (OpenFile Write)]
-writeRawTag key value = do
-    writeString "#+"
-    writeString key
-    writeString ": "
-    writeLine value
+rawtag : String -> String -> String
+rawtag k v = unwords ["#+" ++ k ++ ":", v]
 
-writeThing : Char -> Nat -> Eff () [FILE_IO (OpenFile Write)]
-writeThing c Z = pure ()
-writeThing c (S k) = do
-    writeString (cast c)
-    writeThing c k
+ntimes : Char -> Nat -> String
+ntimes c n = concat $ ntimes' n
+  where
+    ntimes' : Nat -> List String
+    ntimes' Z     = Nil
+    ntimes' (S k) = (cast c) :: ntimes' k
 
-writeAttrs : List (String, String) -> Eff () [FILE_IO (OpenFile Write)]
-writeAttrs Nil = pure ()
-writeAttrs as  = do
-    writeRawTag "ATTR" $ unwords $ map (\(k,v) => k ++ ":" ++ v) as
-    writeLine ""
+attrs : List (String, String) -> String
+attrs as = rawtag "ATTR" as'
+  where
+    as' : String
+    as' = unwords $ map (\(k,v) => k ++ ":" ++ v) as
 
 -- ----------------------------------------------------------- [ Write Inlines ]
+
 mutual
-  writeTag : String
-           -> List (Edda PRIME INLINE)
-           -> Eff () [FILE_IO (OpenFile Write)]
-  writeTag _   Nil   = pure ()
-  writeTag key value = do
-     writeString "#+"
-     writeString key
-     writeString ": "
-     writeInlines value
-     writeString "\n"
+  inlines : List (Edda PRIME INLINE) -> String
+  inlines xs = unlines $ map inline xs
 
-  writeParens : Char -> Char -> Either String (List (Edda PRIME INLINE))
-              -> Eff () [FILE_IO (OpenFile Write)]
-  writeParens l r (Left str) = do
-      writeString (cast l)
-      writeString str
-      writeString (cast r)
-  writeParens l r (Right ts ) = do
-      writeString (cast l)
-      writeInlines ts
-      writeString (cast r)
+  tag : String -> List (Edda PRIME INLINE) -> String
+  tag k vs = unlines [rawtag k (inlines vs), "\n"]
 
+  parens : Char -> Char -> Either String (List (Edda PRIME INLINE)) -> String
+  parens l r (Left str) = concat [cast l, str,        cast r]
+  parens l r (Right ts) = concat [cast l, inlines ts, cast r]
 
-  writeMarkup : Char -> Either String (List (Edda PRIME INLINE))
-              -> Eff () [FILE_IO (OpenFile Write)]
-  writeMarkup t txt = writeParens t t txt
+  markup : Char -> Either String (List (Edda PRIME INLINE)) -> String
+  markup t txt = parens t t txt
 
-  writeLink : String
-            -> (List (Edda PRIME INLINE))
-            -> Eff () [FILE_IO (OpenFile Write)]
-  writeLink uri Nil = do
-      writeString "[["
-      writeString uri
-      writeString "]]"
-  writeLink uri desc = do
-      writeString "["
-      writeString "["
-      writeString uri
-      writeString "]"
-      writeString "["
-      writeInlines desc
-      writeString "]"
-      writeString "]"
+  link : String -> List (Edda PRIME INLINE) -> String
+  link uri Nil  = concat ["[[", uri, "]]"]
+  link uri desc = concat ["[[", uri, "][", inlines desc, "]]"]
 
-  writeInline : Edda PRIME INLINE -> Eff () [FILE_IO (OpenFile Write)]
-  writeInline (Text t) = writeString t
-  writeInline (Sans t) = writeString t
-  writeInline (Scap t) = writeString t
-  writeInline (Mono t) = writeString t
-  writeInline (Verb v) = writeMarkup '=' (Left v)
-  writeInline (Code v) = writeMarkup '~' (Left v)
-  writeInline (Math v) = writeMarkup '$' (Left v)
-  writeInline (Emph t) = writeMarkup '/' (Right t)
-  writeInline (Bold t) = writeMarkup '*' (Right t)
-  writeInline (Strike t) = writeMarkup '+' (Right t)
-  writeInline (Uline t) = writeMarkup '_' (Right t)
-  writeInline (Quote ty t) = case ty of
-    SQuote => writeMarkup '\'' (Right t)
-    DQuote => writeMarkup '\"' (Right t)
-  writeInline (Parens ty t) = case ty of
-    Parents  => writeParens '(' ')' (Right t)
-    Brackets => writeParens '[' ']' (Right t)
-    Braces   => writeParens '{' '}' (Right t)
-  writeInline (Ref url) = writeLink url Nil
-  writeInline (Hyper uri desc) = writeLink uri desc
-  writeInline (FNote l d) = case d of
-    Nil => writeParens '[' ']' (Left ("fn" ++ ":" ++ l ++ ":"))
-    x   => writeParens '[' ']' (Right ([Text ("fn:" ++ l ++ ":")] ++ x))
-  writeInline (Cite ty uri) = case ty of
-    ParenSty => writeString ("[[citep:" ++ uri ++ "]]")
-    TextSty  => writeString ("[[citet:" ++ uri ++ "]]")
-  writeInline (MiscPunc c) = writeString (cast c)
-  writeInline Space      = writeString " "
-  writeInline Newline    = writeString "\n"
-  writeInline Tab        = writeString "\t"
-  writeInline LBrace     = writeString "{"
-  writeInline RBrace     = writeString "}"
-  writeInline LParen     = writeString "("
-  writeInline RParen     = writeString ")"
-  writeInline LBrack     = writeString "["
-  writeInline RBrack     = writeString "]"
-  writeInline LAngle     = writeString "<"
-  writeInline RAngle     = writeString ">"
-  writeInline Dollar     = writeString "$"
-  writeInline Colon      = writeString ":"
-  writeInline Semi       = writeString ";"
-  writeInline EnDash     = writeString "--"
-  writeInline EmDash     = writeString "---"
-  writeInline FSlash     = writeString "/"
-  writeInline BSlash     = writeString "\\"
-  writeInline Apostrophe = writeString "'"
-  writeInline SMark      = writeString "\""
-  writeInline Comma      = writeString ","
-  writeInline Plus       = writeString "+"
-  writeInline Ellipsis   = writeString "..."
-  writeInline Hyphen     = writeString "-"
-  writeInline Bang       = writeString "!"
-  writeInline Period     = writeString "."
-  writeInline QMark      = writeString "?"
-  writeInline Hash       = writeString "#"
-  writeInline Equals     = writeString "="
-  writeInline Pipe       = writeString "|"
+  inline : Edda PRIME INLINE -> String
+  inline (Text t) = t
+  inline (Sans t) = t
+  inline (Scap t) = t
+  inline (Mono t) = t
+  inline (Verb v)     = markup '=' (Left v)
+  inline (Code v)     = markup '~' (Left v)
+  inline (Math v)     = markup '$' (Left v)
+  inline (Emph t)     = markup '/' (Right t)
+  inline (Bold t)     = markup '*' (Right t)
+  inline (Strike t)   = markup '+' (Right t)
+  inline (Uline t)    = markup '_' (Right t)
+  inline (Quote ty t) =
+    case ty of
+      SQuote => markup '\'' (Right t)
+      DQuote => markup '\"' (Right t)
+  inline (Parens ty t) =
+    case ty of
+      Parents  => parens '(' ')' (Right t)
+      Brackets => parens '[' ']' (Right t)
+      Braces   => parens '{' '}' (Right t)
+  inline (Ref url)        = link url Nil
+  inline (Hyper uri desc) = link uri desc
+  inline (FNote l d) =
+    case d of
+      Nil => parens '[' ']' (Left (concat ["fn", ":", l, ":"]))
+      x   => parens '[' ']' (Right ([Text ("fn:" ++ l ++ ":")] ++ x))
+  inline (Cite ty uri) =
+    case ty of
+      ParenSty => ("[[citep:" ++ uri ++ "]]")
+      TextSty  => ("[[citet:" ++ uri ++ "]]")
+  inline (MiscPunc c) = (cast c)
+  inline Space      = " "
+  inline Newline    = "\n"
+  inline Tab        = "\t"
+  inline LBrace     = "{"
+  inline RBrace     = "}"
+  inline LParen     = "("
+  inline RParen     = ")"
+  inline LBrack     = "["
+  inline RBrack     = "]"
+  inline LAngle     = "<"
+  inline RAngle     = ">"
+  inline Dollar     = "$"
+  inline Colon      = ":"
+  inline Semi       = ";"
+  inline EnDash     = "--"
+  inline EmDash     = "---"
+  inline FSlash     = "/"
+  inline BSlash     = "\\"
+  inline Apostrophe = "'"
+  inline SMark      = "\""
+  inline Comma      = ","
+  inline Plus       = "+"
+  inline Ellipsis   = "..."
+  inline Hyphen     = "-"
+  inline Bang       = "!"
+  inline Period     = "."
+  inline QMark      = "?"
+  inline Hash       = "#"
+  inline Equals     = "="
+  inline Pipe       = "|"
 
--- ----------------------------------------------------------- [ Write Inlines ]
-  writeInlines : List (Edda PRIME INLINE) -> Eff () [FILE_IO (OpenFile Write)]
-  writeInlines = writeManyThings (writeInline)
 -- ----------------------------------------------------- [ Write Generic Block ]
 
-writeGenBlock : (a -> Eff () [FILE_IO (OpenFile Write)])
-              -> String
-              -> Maybe String
-              -> List (Edda PRIME INLINE)
-              -> a
-              -> Eff () [FILE_IO (OpenFile Write)]
-writeGenBlock f tag l c b = do
-    writeTag "CAPTION" c
-    writeMaybe (\x => writeRawTag "NAME" x) l
-    writeLine ("#+BEGIN_" ++ tag)
-    f b
-    writeLine ("#+END_" ++ tag)
-    writeString "\n"
+genblock : (a -> String)
+        -> String
+        -> Maybe String
+        -> List (Edda PRIME INLINE)
+        -> a
+        -> String
+genblock f t l c b = unlines
+  [ tag "CAPTION" c
+  , strFromMaybe (\x => rawtag "NAME" x) l
+  , "#+BEGIN_" ++ t
+  , f b
+  , "#+END_" ++ t
+  , "\n"
+  ]
 
-writeTextBlock : String
-              -> Maybe String
-              -> List (Edda PRIME INLINE)
-              -> List (Edda PRIME INLINE)
-              -> Eff () [FILE_IO (OpenFile Write)]
-writeTextBlock = writeGenBlock (writeInlines)
+textblock : String
+         -> Maybe String
+         -> List (Edda PRIME INLINE)
+         -> List (Edda PRIME INLINE)
+         -> String
+textblock = genblock (inlines)
 
-writeVerbBlock : String
-              -> Maybe String
-              -> List (Edda PRIME INLINE)
-              -> String
-              -> Eff () [FILE_IO (OpenFile Write)]
-writeVerbBlock = writeGenBlock (writeString)
+verbblock : String
+         -> Maybe String
+         -> List (Edda PRIME INLINE)
+         -> String
+         -> String
+verbblock = genblock (\x => x)
 
 -- ------------------------------------------------------------- [ Write Block ]
-writeDefItem : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> Eff () [FILE_IO (OpenFile Write)]
-writeDefItem (k, vs) = do
-    writeString "- "
-    writeInlines k
-    writeString " :: "
-    writeInlines vs
-    writeString "\n"
 
-writeItem : String -> List (Edda PRIME INLINE) -> Eff () [FILE_IO (OpenFile Write)]
-writeItem mark b = do
-    writeString mark
-    writeInlines b
-    writeString "\n"
+itemDef : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
+itemDef (k,vs) = unwords ["-", inlines k, "::", inlines vs, "\n"]
 
-mutual
-  writeBlock : Edda PRIME BLOCK -> Eff () [FILE_IO (OpenFile Write)]
-  writeBlock (HRule PRIME) = writeString "-----"
-  writeBlock (Empty PRIME) = writeString ""
-  writeBlock (Section PRIME lvl label title as) = do
-      writeThing '*' lvl
-      writeString " "
-      writeInlines title
-      writeString "\n"
-      writeString $ fromMaybe "" label
-      writeString "\n"
-  writeBlock (Figure PRIME l c as fig) = do
-      writeTag "CAPTION" c
-      writeRawTag "NAME" l
-      writeAttrs as
-      writeInline fig
-      writeString "\n\n"
-  writeBlock (DList PRIME kvs) = do
-      writeManyThings writeDefItem kvs
-      writeString "\n"
-  writeBlock (OList bs) = do
-      writeManyThings (writeItem "1. ") bs
-      writeString "\n"
-  writeBlock (BList bs) = do
-      writeManyThings (writeItem "+ ") bs
-      writeString "\n"
-  writeBlock (Para txt) = do
-      writeInlines txt
-      writeLine "\n"
-  writeBlock (Listing l c lang langopts as src) = do
-      writeTag "CAPTION" c
-      writeRawTag "NAME" $ fromMaybe "MISSING" l
-      writeAttrs as
-      writeString "#+BEGIN_SRC"
-      writeString " "
-      writeString (fromMaybe "" lang)
-      writeString " "
-      writeLine (fromMaybe "" langopts)
-      writeString src
-      writeLine "#+END_SRC"
-      writeString "\n"
-  writeBlock (Comment ss)          = writeVerbBlock "COMMENT" Nothing Nil ss
-  writeBlock (Equation l eq)       = writeVerbBlock "EQUATION" l Nil eq
-  writeBlock (Literal l c src)     = writeVerbBlock "EXAMPLE" l c src
-  writeBlock (Quotation l txt)     = writeTextBlock "QUOTE" l Nil txt
-  writeBlock (Theorem l c txt)     = writeTextBlock "Theorem" l c txt
-  writeBlock (Corollary l c txt)   = writeTextBlock "COROLLARY" l c txt
-  writeBlock (Lemma l c txt)       = writeTextBlock "LEMMA" l c txt
-  writeBlock (Proposition l c txt) = writeTextBlock "PROPOSITION" l c txt
-  writeBlock (Proof l c txt)       = writeTextBlock "PROOF" l c txt
-  writeBlock (Definition l c txt)  = writeTextBlock "DEFINITION" l c txt
-  writeBlock (Exercise l c txt)    = writeTextBlock "EXERCISE" l c txt
-  writeBlock (Note l c txt)        = writeTextBlock "NOTE" l c txt
-  writeBlock (Remark l c txt)      = writeTextBlock "REMARK" l c txt
-  writeBlock (Problem l c txt)     = writeTextBlock "PROBLEM" l c txt
-  writeBlock (Question l c txt)    = writeTextBlock "QUESTION" l c txt
-  writeBlock (Solution l c txt)    = writeTextBlock "SOLUTION" l c txt
-  writeBlock (Example l c txt)     = writeTextBlock "EXAMPLE" l c txt
+item : String -> List (Edda PRIME INLINE) -> String
+item m b = unwords [m, inlines b, "\n"]
 
-  -- -------------------------------------------------------------- [ Write Body ]
-  writeBlocks : List (Edda PRIME BLOCK) -> Eff () [FILE_IO (OpenFile Write)]
-  writeBlocks = writeManyThings (writeBlock)
+block : Edda PRIME BLOCK -> String
+block (HRule PRIME) = "-----"
+block (Empty PRIME) = ""
+block (Section PRIME lvl label title as) =
+    unlines [ ntimes '*' lvl
+            , inlines title
+            , fromMaybe "" label
+            , "\n"]
+block (Figure PRIME l c as fig) =
+    unlines [ tag "CAPTION" c
+            , rawtag "NAME" l
+            , attrs as
+            , inline fig
+            , "\n"]
+block (DList PRIME kvs) = (unlines $ map itemDef kvs)    ++ "\n"
+block (OList bs)        = (unlines $ map (item "1.") bs) ++ "\n"
+block (BList bs)        = (unlines $ map (item "+")  bs) ++ "\n"
+block (Para txt) = inlines txt ++ "\n"
+block (Listing l c lang langopts as src) =
+    unlines [ tag "CAPTION" c
+            , rawtag "NAME" $ fromMaybe "MISSING" l
+            , attrs as
+            , unwords ["#+BEGIN_SRC", fromMaybe "" lang, fromMaybe "" langopts]
+            , src
+            , "#+END_SRC\n"
+            ]
+block (Comment ss)          = verbblock "COMMENT" Nothing Nil ss
+block (Equation l eq)       = verbblock "EQUATION" l Nil eq
+block (Literal l c src)     = verbblock "EXAMPLE" l c src
+block (Quotation l txt)     = textblock "QUOTE" l Nil txt
+block (Theorem l c txt)     = textblock "Theorem" l c txt
+block (Corollary l c txt)   = textblock "COROLLARY" l c txt
+block (Lemma l c txt)       = textblock "LEMMA" l c txt
+block (Proposition l c txt) = textblock "PROPOSITION" l c txt
+block (Proof l c txt)       = textblock "PROOF" l c txt
+block (Definition l c txt)  = textblock "DEFINITION" l c txt
+block (Exercise l c txt)    = textblock "EXERCISE" l c txt
+block (Note l c txt)        = textblock "NOTE" l c txt
+block (Remark l c txt)      = textblock "REMARK" l c txt
+block (Problem l c txt)     = textblock "PROBLEM" l c txt
+block (Question l c txt)    = textblock "QUESTION" l c txt
+block (Solution l c txt)    = textblock "SOLUTION" l c txt
+block (Example l c txt)     = textblock "EXAMPLE" l c txt
 
 -- -------------------------------------------------------- [ Write List (String, String) ]
-writeProps : List (String, String) -> Eff () [FILE_IO (OpenFile Write)]
-writeProps Nil = pure ()
-writeProps ps = do
-    writeRawTag "TITLE" title
-    writeRawTag "AUTHOR" author
-    writeRawTag "DATE" date
-    let ps' = nubAttribute "TITLE" $ nubAttribute "AUTHOR" $ nubAttribute "DATE" ps
-    writeManyThings (\(k,v) => writeRawTag k v) ps'
-    writeString "\n"
+
+properties : List (String, String) -> String
+properties Nil = ""
+properties ps  = unlines ts
   where
-    title = fromMaybe "title missing" (lookup "TITLE" ps)
-    author = fromMaybe "author missing" (lookup "AUTHOR" ps)
-    date = fromMaybe "date missing" (lookup "DATE" ps)
+    ps' : List (String, String)
+    ps' = nubAttribute "TITLE" $ nubAttribute "AUTHOR" $ nubAttribute "DATE" ps
+
+    ts : List String
+    ts = [ rawtag "TITLE"  $ fromMaybe "title missing" (lookup "TITLE" ps)
+         , rawtag "AUTHOR" $ fromMaybe "author missing" (lookup "AUTHOR" ps)
+         , rawtag "DATE"   $ fromMaybe "date missing" (lookup "DATE" ps)
+         ]
+         ++
+         map (\(k,v) => rawtag k v) ps'
+         ++
+         ["\n"]
 
 -- --------------------------------------------------------------- [ Write Org ]
-doWrite' : List (String, String)
-         -> List (Edda PRIME BLOCK)
-         -> Eff () [FILE_IO (OpenFile Write)]
-doWrite' ps body = do
-    writeProps ps
-    writeBlocks body
-
-doWrite : Edda PRIME MODEL -> Eff () [FILE_IO (OpenFile Write)]
-doWrite (MkEdda ps body) = doWrite' ps body
+public
+org : Edda PRIME MODEL -> String
+org (MkEdda ps body) = unlines $ (properties ps :: map block body)
 
 public
 writeOrg : String
          -> Edda PRIME MODEL
-         -> {[FILE_IO (), EXCEPTION String]} Eff ()
-writeOrg = writeEddaFile (doWrite)
+         -> Eff () [FILE_IO (), EXCEPTION String]
+writeOrg fn doc = writeEddaFile org fn doc
+
+-- --------------------------------------------------------------------- [ EOF ]
