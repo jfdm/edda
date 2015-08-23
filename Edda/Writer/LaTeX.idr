@@ -156,7 +156,7 @@ secLvl _                 t = inlines t ++ "% Depth not recognised\n"
 
 -- ------------------------------------------------------------- [ Write Block ]
 -- deal with attrs
-
+public
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "\\hrulefill"
 block (Empty PRIME) = "\n"

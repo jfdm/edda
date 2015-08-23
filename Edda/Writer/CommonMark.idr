@@ -130,6 +130,7 @@ itemDef (k,vs) =
 item : String -> List (Edda PRIME INLINE) -> String
 item m b = unwords [m, inlines b, "\n"]
 
+public
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "-----"
 block (Empty PRIME) = ""
