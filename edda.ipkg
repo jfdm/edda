@@ -1,6 +1,6 @@
 package edda
 
-opts = "-p lightyear -p effects --warnreach --typeintype"
+opts = "-p lightyear -p effects --warnreach"
 
 modules = Edda.Model
         , Edda.Model.Show
