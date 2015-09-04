@@ -135,7 +135,7 @@ block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "-----"
 block (Empty PRIME) = ""
 block (Section PRIME lvl label title as) =
-    unlines [ntimes '#' lvl, inlines title, fromMaybe "" label, "\n"]
+    unwords [ntimes '#' lvl, inlines title, fromMaybe "" label, "\n"]
 
 block (Figure PRIME l c as fig) = unlines [inline fig, "\n"]
 

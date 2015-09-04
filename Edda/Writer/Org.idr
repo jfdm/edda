@@ -160,7 +160,7 @@ block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "-----"
 block (Empty PRIME) = ""
 block (Section PRIME lvl label title as) =
-    unlines [ ntimes '*' lvl
+    unwords [ ntimes '*' lvl
             , inlines title
             , fromMaybe "" label
             , "\n"]

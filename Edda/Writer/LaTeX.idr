@@ -161,7 +161,7 @@ block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "\\hrulefill"
 block (Empty PRIME) = "\n"
 block (Section PRIME lvl label title as) =
-    unlines [ secLvl lvl title
+    unwords [ secLvl lvl title
             , strFromMaybe (macro "label") label
             , "\n"]
 block (Figure PRIME l c as fig) = figure (Just l) c (inline fig) ++ "\n"
