@@ -30,7 +30,7 @@ ntimes c n = concat $ ntimes' n
 
 mutual
   inlines : List (Edda PRIME INLINE) -> String
-  inlines xs = unwords $ map inline xs
+  inlines xs = concatMap inline xs
 
   parens : String -> String -> Either String (List (Edda PRIME INLINE)) -> String
   parens l r (Left str) = concat [l, str,        r]

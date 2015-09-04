@@ -25,7 +25,7 @@ macro c s = concat ["\\", c, "{", s, "}"]
 
 mutual
   inlines : List (Edda PRIME INLINE) -> String
-  inlines xs = concatMap inline xs ++ "\n"
+  inlines xs = concatMap inline xs
 
   parens : String -> String -> List (Edda PRIME INLINE) -> String
   parens l r ts = concat [l, inlines ts, r]

@@ -37,7 +37,7 @@ attrs as = rawtag "ATTR" as'
 
 mutual
   inlines : List (Edda PRIME INLINE) -> String
-  inlines xs = unlines $ map inline xs
+  inlines xs = concatMap inline xs
 
   tag : String -> List (Edda PRIME INLINE) -> String
   tag k vs = unlines [rawtag k (inlines vs), "\n"]
