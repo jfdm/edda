@@ -120,6 +120,7 @@ mutual
     BulletTy => BList $ map refineInlines bs
 
   covering
+  public
   refineBlocks : List (Edda STAR BLOCK) -> List (Edda PRIME BLOCK)
   refineBlocks Nil = Nil
   refineBlocks bs = squash2 $ map refineBlock bs

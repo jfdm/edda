@@ -76,5 +76,12 @@ readEddaSentance p s =
     Left err  => Left err
     Right res => Right $ refineInlines res
 
+readEddaBody : Parser (Edda STAR BLOCK)
+        -> String
+        -> Either String (List $ EddaDoc BLOCK)
+readEddaBody p ps =
+  case parse (some p) ps of
+    Left err  => Left err
+    Right res => Right $ refineBlocks res
 
 -- --------------------------------------------------------------------- [ EOF ]

@@ -307,4 +307,8 @@ public
 readOrgInline : String -> Either String EddaString
 readOrgInline = readEddaSentance inline
 
+public
+readOrgBody : String -> Either String EddaBody
+readOrgBody s = readEddaBody orgBlock (s ++ "\n\n")
+
 -- --------------------------------------------------------------------- [ EOF ]

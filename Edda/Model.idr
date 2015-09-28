@@ -184,4 +184,7 @@ EddaDoc ty = Edda PRIME ty
 EddaString : Type
 EddaString = List $ Edda PRIME INLINE
 
+EddaBody : Type
+EddaBody = List $ Edda PRIME BLOCK
+
 -- --------------------------------------------------------------------- [ EOF ]
