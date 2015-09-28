@@ -71,6 +71,7 @@ mutual
       MathTy => Math v
 
   covering
+  public
   refineInlines : List (Edda STAR INLINE) -> List (Edda PRIME INLINE)
   refineInlines Nil = Nil
   refineInlines is = squash2 $ squash3 $ map refineInline is

@@ -303,5 +303,8 @@ public
 readOrg : String -> {[FILE_IO ()]} Eff (Either String (Edda PRIME MODEL))
 readOrg = readEddaFile parseOrg
 
+public
+readOrgInline : String -> Either String EddaString
+readOrgInline = readEddaSentance inline
 
 -- --------------------------------------------------------------------- [ EOF ]

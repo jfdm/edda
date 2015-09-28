@@ -68,4 +68,13 @@ readEddaFile p f = do
       False => pure $ Left "Error"
 
 
+readEddaSentance : Parser (Edda STAR INLINE)
+                -> String
+                -> Either String EddaString
+readEddaSentance p s =
+  case parse (some p) s of
+    Left err  => Left err
+    Right res => Right $ refineInlines res
+
+
 -- --------------------------------------------------------------------- [ EOF ]

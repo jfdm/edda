@@ -181,5 +181,7 @@ data Edda : Step -> EddaTy -> Type where
 EddaDoc : EddaTy -> Type
 EddaDoc ty = Edda PRIME ty
 
+EddaString : Type
+EddaString = List $ Edda PRIME INLINE
 
 -- --------------------------------------------------------------------- [ EOF ]
