@@ -176,7 +176,10 @@ data Edda : Step -> EddaTy -> Type where
   EddaRaw : List (String, String) -> List (Edda STAR BLOCK) -> Edda STAR MODEL
   MkEdda  : List (String, String) -> List (Edda PRIME BLOCK) -> Edda PRIME MODEL
 
+-- ----------------------------------------------------------- [ Type Synonyms ]
 
+EddaDoc : EddaTy -> Type
+EddaDoc ty = Edda PRIME ty
 
 
 -- --------------------------------------------------------------------- [ EOF ]
