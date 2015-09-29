@@ -36,6 +36,7 @@ attrs as = rawtag "ATTR" as'
 -- ----------------------------------------------------------- [ Write Inlines ]
 
 mutual
+  public
   inlines : List (Edda PRIME INLINE) -> String
   inlines xs = concatMap inline xs
 

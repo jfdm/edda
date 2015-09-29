@@ -20,7 +20,7 @@ Here are a few guidelines that I would like contributors to follow so that we ca
 
 # Issue Reporting
 
-Before you report an issue, or wish to add cool functionality please try and check to see if there are existing [issues](https://github.com/jfdm/idris-protocol-examples/issues) and [pull requests](https://github.com/jfdm/idris-protocol-examples/pulls).
+Before you report an issue, or wish to add cool functionality please try and check to see if there are existing [issues](https://github.com/jfdm/edda/issues) and [pull requests](https://github.com/jfdm/edda/pulls).
 I do not want you wasting your time, duplicating somebody's work!
 
 ## The Campsite Rule
@@ -38,17 +38,17 @@ The steps are straightforward.
 
 For those new to the project:
 
-1. Fork the [main development repository](https://github.com/jfdm/idris-protocol-examples) on github e.g.
+1. Fork the [main development repository](https://github.com/jfdm/edda) on github e.g.
 2. Clone your fork to your local machine:
 
 ```
-$ git clone git@github.com/<your github user name>/idris-protocol-examples.git
+$ git clone git@github.com/<your github user name>/edda.git
 ```
 
-3. Add `jfdm/idris-protocol-examples` as a remote upstream
+3. Add `jfdm/edda` as a remote upstream
 
 ```
-$ git remote add upstream git@github.com:jfdm/idris-protocol-examples.git
+$ git remote add upstream git@github.com:jfdm/edda.git
 ```
 
 ### Existing Contributors
@@ -92,11 +92,11 @@ $ git diff --check
         line separating the summary from the body is critical (unless you omit
         the body entirely); tools like rebase can get confused if you run the
         two together.
-          
+
         Further paragraphs come after blank lines.
-         
+
         - Bullet points are okay, too
-         
+
         - Typically a hyphen or asterisk is used for the bullet, preceded by a
           single space, with blank lines in between, but conventions vary here
 
@@ -106,7 +106,7 @@ $ git diff --check
 $ git push origin fix/master/my_contrib
 ```
 
-1. Go to GitHub and submit a pull request to `idris-protocol-examples`
+1. Go to GitHub and submit a pull request to `edda`
 
 From there you will have to wait on my response to the request.
 This response might be an accept or some changes/improvements/alternatives will be suggest.
