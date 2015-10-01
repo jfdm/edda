@@ -7,7 +7,9 @@
 module Edda.Reader.Common
 
 import Lightyear
+import Lightyear.Char
 import Lightyear.Strings
+import Lightyear.StringFile
 
 import Effects
 import Effect.File
@@ -47,26 +49,16 @@ mText = text <|> map Punc borderPunc <?> "Texted used in markup"
 
 -- ------------------------------------------------------------------ [ Reader ]
 
-readFile : { [FILE_IO (OpenFile Read)] } Eff String
-readFile = readAcc ""
-  where
-    readAcc : String -> { [FILE_IO (OpenFile Read)] } Eff String
-    readAcc acc = if (not !eof)
-                     then readAcc (acc ++ !readLine)
-                     else pure acc
 
 public
-readEddaFile : Parser (Edda STAR MODEL) -> String -> { [FILE_IO ()] } Eff (Either String (Edda PRIME MODEL))
+readEddaFile : Parser (Edda STAR MODEL)
+            -> String
+            -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]
 readEddaFile p f = do
-    case !(open f Read) of
-      True => do
-        src <- readFile
-        close
-        case parse p src of
-          Left err  => pure $ Left err
-          Right res => pure $ Right (refineEdda res)
-      False => pure $ Left "Error"
-
+    c <- parseFile (\x => x) (\x,y => unwords [x,y]) p f
+    case  c of
+      Left err  => pure $ Left err
+      Right res => pure $ Right (refineEdda res)
 
 readEddaSentance : Parser (Edda STAR INLINE)
                 -> String

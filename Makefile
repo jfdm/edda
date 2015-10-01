@@ -14,7 +14,6 @@ lib:
 
 clean:
 	${IDRIS} --clean ${LIB}.ipkg
-	${IDRIS} --clean ${BIN}.ipkg
 	find . -name "*~" -delete
 
 check: clobber
@@ -24,10 +23,8 @@ clobber : clean
 	rm eddabin
 	find . -name "*.ibc" -delete
 
-test: install
-	$(MAKE) -C test build
-	(cd test; ./a.out)
-	$(MAKE) -C test clean
+test:
+	${IDRIS} --testpkg ${LIB}.ipkg
 
 doc:
 	${IDRIS} --mkdoc ${LIB}.ipkg

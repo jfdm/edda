@@ -6,10 +6,13 @@
 
 module Edda.Reader.Org
 
-import public Lightyear
-import public Lightyear.Strings
+import Effects
+import Effect.File
 
-import Edda.Effs
+import Lightyear
+import Lightyear.Char
+import Lightyear.Strings
+
 import Edda.Model
 import Edda.Utils
 import Edda.Reader.Common
@@ -22,13 +25,13 @@ import public Edda.Refine
 -- --------------------------------------------------------------------- [ Org ]
 
 code : Parser (Edda STAR INLINE)
-code = map (Raw CodeTy) (literallyBetween '~') <?> "Code"
+code = map (Raw CodeTy) (quoted '~') <?> "Code"
 
 verb : Parser (Edda STAR INLINE)
-verb = map (Raw VerbTy) (literallyBetween '=') <?> "Verb"
+verb = map (Raw VerbTy) (quoted '=') <?> "Verb"
 
 math : Parser (Edda STAR INLINE)
-math = map (Raw MathTy) (literallyBetween '$') <?> "Math"
+math = map (Raw MathTy) (quoted '$') <?> "Math"
 
 markup : MarkupTy -> Char -> Parser (Edda STAR INLINE)
 markup mTy c = do
@@ -62,7 +65,7 @@ hyper = do
     internal : Parser (String, List (Edda STAR INLINE))
     internal = do
       u <- brackets url
-      d <- brackets $ some (text <* space)
+      d <- brackets $ some (text <* spaces)
       pure (u, intersperse (Punc ' ' ) d)
 
 link : Parser (Edda STAR INLINE)
@@ -94,7 +97,7 @@ attribute : String -> Parser (String, String)
 attribute key = do
     string "#+" *> string key
     colon
-    ps <- manyTill (anyChar) eol
+    ps <- manyTill anyChar endOfLine
     pure (key, pack ps)
   <?> "Raw Attribute"
 
@@ -105,8 +108,8 @@ inlineKeyWord : String -> Parser (String, List (Edda STAR INLINE))
 inlineKeyWord key = do
     string "#+" *> string key
     colon
-    space
-    ps <- manyTill (inline) eol
+    spaces
+    ps <- manyTill inline endOfLine
     pure (key, ps)
   <?> "Attribute."
 
@@ -133,15 +136,15 @@ propEntry = do
     colon
     key <- word
     colon
-    space
-    value <- manyTill (anyChar) eol
+    spaces
+    value <- manyTill anyChar endOfLine
     pure (key, pack value)
   <?> "Property Entry"
 
 drawer : Parser $ List (String, String)
 drawer = do
     string ":PROPERTIES:"
-    eol
+    endOfLine
     ps <- some propEntry
     token ":END:"
     pure ps
@@ -179,7 +182,7 @@ block = do
     ty <- word
     case getOrgBlockType ty of
       Left x => do
-        srcopts <- opt $ char ' ' *> manyTill (anyChar) eol
+        srcopts <- opt $ space  *> manyTill anyChar endOfLine
         let as = dealWithSrcAttrs (convertOpts srcopts) (convertAttrs attr)
 
         txt <- manyTill anyChar (string "#+END_" *> token ty)
@@ -196,20 +199,20 @@ figure = do
     lab <- label
     as  <- opt $ some (attribute "ATTR")
     img <- expLink
-    space
+    spaces
     pure (Figure STAR lab cap (fromMaybe Nil as) img)
   <?> "Figure"
 
 para : Parser (Edda STAR BLOCK)
 para = do
-    txt <- manyTill inline (eol *> eol)
-    space
+    txt <- manyTill inline (endOfLine *> endOfLine)
+    spaces
     pure $ TextBlock ParaTy Nothing Nil Nil txt
   <?> "Paragraphs"
 
 paraLast : Parser (Edda STAR BLOCK)
 paraLast = do
-    txt <- manyTill inline (eol *> space)
+    txt <- manyTill inline (endOfLine *> spaces)
     pure $ TextBlock ParaTy Nothing Nil Nil txt
   <?> "Filthy hack for last para"
 
@@ -226,46 +229,46 @@ olMarker = marker '.' <|> marker ')'
   where
     marker : Char -> Parser ()
     marker c = do
-      some $ satisfy (isDigit)
+      some $ digit
       char c
-      (satisfy isSpace)
+      spaces
       pure ()
 
 -- @TODO Add coninuations
 listItem : Parser () -> Parser (List (Edda STAR INLINE))
 listItem mark = do
     mark
-    line <- manyTill inline eol
+    line <- manyTill inline endOfLine
     pure $ line
 
 olist : Parser (Edda STAR BLOCK)
 olist = do
     is <- some (listItem olMarker)
-    eol
+    endOfLine
     pure $ ListBlock NumberTy is
 
 blist : Parser (Edda STAR BLOCK)
 blist = do
     is <- some (listItem ulMarker)
-    eol
+    endOfLine
     pure $ ListBlock BulletTy is
   <?> "Bulleted lists"
 
 dlist : Parser (Edda STAR BLOCK)
 dlist = do
-    is <- some defItem <* eol
+    is <- some defItem <* endOfLine
     pure $ DList STAR is
   <?> "Description Lists"
   where
     marker : Parser (List (Edda STAR INLINE))
-    marker = ulMarker *> space *> manyTill inline (space *> colon *> colon)
+    marker = ulMarker *> space *> manyTill inline (spaces *> colon *> colon)
         <?> "Desc Marker"
 
     defItem : Parser (List (Edda STAR INLINE), List (Edda STAR INLINE))
     defItem = do
         key <- marker
-        space
-        values <- manyTill inline eol
+        spaces
+        values <- manyTill inline endOfLine
         pure (key, values)
       <?> "Desc Lists"
 
@@ -276,10 +279,10 @@ header : Parser (Edda STAR BLOCK)
 header = char '*' >! do
     depth <- opt (many $ char '*')
     let d = length (fromMaybe [] depth) + 1
-    space
-    title <- manyTill (inline) (eol)
+    spaces
+    title <- manyTill (inline) (endOfLine)
     l <- opt target
-    space
+    spaces
     as <- opt drawer
     pure $ Section STAR d l title (fromMaybe Nil as)
 
@@ -300,7 +303,7 @@ parseOrg = do
 
 -- -------------------------------------------------------------------- [ Read ]
 public
-readOrg : String -> {[FILE_IO ()]} Eff (Either String (Edda PRIME MODEL))
+readOrg : String -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]
 readOrg = readEddaFile parseOrg
 
 public

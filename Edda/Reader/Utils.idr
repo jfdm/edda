@@ -6,8 +6,9 @@
 
 module Edda.Reader.Utils
 
-import public Lightyear
-import public Lightyear.Strings
+import Lightyear
+import Lightyear.Char
+import Lightyear.Strings
 
 import Edda.Model
 import Edda.Utils
@@ -15,13 +16,6 @@ import Edda.Utils
 %access public
 
 -- ------------------------------------------------------------- [ Combinators ]
-
-manyTill : Monad m => ParserT m String a -> ParserT m String b -> ParserT m String (List a)
-manyTill p end = scan
-  where
-    scan : Monad m => ParserT m String (List a)
-    scan = do { end; return List.Nil } <|>
-           do { x <- p; xs <- scan; return (x::xs)}
 
 lexemeL : Monad m => ParserT m String a -> ParserT m String a
 lexemeL p = space *> p
@@ -34,21 +28,12 @@ lex p = lexeme p
 
 -- ---------------------------------------------------------- [ String Parsers ]
 
-literallyBetween : Char -> Parser String
-literallyBetween c = map pack $ between (char c) (char c) (some (satisfy (/= c)))
-
-eol : Parser ()
-eol = char '\n' *> return ()
-
 char' : Char -> Parser ()
 char' c = char c *> return ()
 
-anyChar : Parser Char
-anyChar = satisfy (const True)
-
 private
 pathChar : Parser Char
-pathChar = urlChar <|> satisfy isAlphaNum <?> "Path Char"
+pathChar = urlChar <|> satisfy (isAlphaNum) <?> "Path Char"
   where
     urlChar : Parser Char
     urlChar = do
@@ -68,7 +53,7 @@ url : Parser String
 url = map pack (some pathChar) <?> "URL"
 
 word : Parser String
-word = map pack (some $ satisfy isAlphaNum) <?> "Word"
+word = map pack (some alphaNum) <?> "Word"
 
 punctuation : Parser Char
 punctuation = satisfy (\x => not $ isAlphaNum x) <?> "Punctuation"

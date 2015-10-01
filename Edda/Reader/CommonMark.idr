@@ -7,11 +7,13 @@
 module Edda.Reader.CommonMark
 
 -- TODO Make recursive parsing.
+import Effects
+import Effect.File
 
-import public Lightyear
-import public Lightyear.Strings
+import Lightyear
+import Lightyear.Char
+import Lightyear.Strings
 
-import Edda.Effs
 import Edda.Model
 import Edda.Utils
 
@@ -23,7 +25,7 @@ import Edda.Reader.Common
 -- ------------------------------------------------------------------ [ Inline ]
 
 code : Parser (Edda STAR INLINE)
-code = map (Raw CodeTy) (literallyBetween '`') <?> "Code"
+code = map (Raw CodeTy) (quoted '`') <?> "Code"
 
 markup : MarkupTy -> String -> Parser (Edda STAR INLINE)
 markup mTy c = do
@@ -44,7 +46,7 @@ expLink = do
 
 hyper : Parser (Edda STAR INLINE)
 hyper = do
-  d <- brackets $ some (text <* space)
+  d <- brackets $ some (text <* spaces)
   uri  <- parens $ url
   let desc = intersperse (Punc ' ') d
   pure $ Link HyperTy uri (desc)
@@ -68,8 +70,8 @@ figure = do
     let desc = intersperse (Punc ' ') d
     uri <- parens url
     let img = Link ExposedTy uri Nil
-    eol
-    eol
+    endOfLine
+    endOfLine
     pure (Figure STAR "" desc Nil img)
   <?> "Figure"
 
@@ -82,7 +84,7 @@ olMarker = marker '.' <|> marker ')'
   where
     marker : Char -> Parser ()
     marker c = do
-      some $ satisfy (isDigit)
+      some $ digit
       char c
       (satisfy isSpace)
       pure ()
@@ -91,20 +93,20 @@ olMarker = marker '.' <|> marker ')'
 listItem : Parser () -> Parser (List (Edda STAR INLINE))
 listItem mark = do
     mark
-    char ' '
-    line <- manyTill inline eol
+    space
+    line <- manyTill inline endOfLine
     pure $ line
 
 olist : Parser (Edda STAR BLOCK)
 olist = do
     is <- some (listItem olMarker)
-    eol
+    endOfLine
     pure $ ListBlock NumberTy is
 
 blist : Parser (Edda STAR BLOCK)
 blist = do
     is <- some (listItem ulMarker)
-    eol
+    endOfLine
     pure $ ListBlock BulletTy is
 
 list : Parser (Edda STAR BLOCK)
@@ -117,8 +119,8 @@ indentedcode = identcode "\t" <|> identcode "    " <?> "Indented Code Block"
   where
     identcode : String -> Parser (Edda STAR BLOCK)
     identcode m = do
-      ss <- some $ (string m *!> manyTill (anyChar) eol)
-      eol
+      ss <- some $ (string m *!> manyTill (anyChar) endOfLine)
+      endOfLine
       let src = concatMap (\x => pack (List.(++) x ['\n'])) ss
       pure $ VerbBlock LiteralTy Nothing Nil Nil src
      <?> "Indented Code"
@@ -129,30 +131,30 @@ fencedcode = fencedcode' "```" <|> fencedcode' "~~~" <?> "Fenced Code Block"
     fencedcode' : String -> Parser (Edda STAR BLOCK)
     fencedcode' m = do
         string m
-        srcopts <- opt $ char ' ' *> manyTill (anyChar) eol
+        srcopts <- opt $ space *> manyTill (anyChar) endOfLine
         let as = dealWithSrcAttrs (convertOpts srcopts) Nil
         src <- manyTill anyChar (string m)
-        eol
+        endOfLine
         pure $ VerbBlock ListingTy Nothing Nil as (pack src)
       <?> "Fenced Code Block: " ++ m
 
 blockquote : Parser (Edda STAR BLOCK)
 blockquote = do
-    txt <- some $ (token ">" *!> manyTill inline eol)
-    eol
+    txt <- some $ (token ">" *!> manyTill inline endOfLine)
+    endOfLine
     let p = concat txt
     pure $ TextBlock QuotationTy Nothing Nil Nil p
 
 -- ------------------------------------------------------------------- [ Paras ]
 para : Parser (Edda STAR BLOCK)
 para = do
-    txt <- manyTill (inline) (eol *> eol)
+    txt <- manyTill (inline) (endOfLine *> endOfLine)
     pure $ TextBlock ParaTy Nothing Nil Nil txt
   <?> "Paragraphs"
 
 paraLast : Parser (Edda STAR BLOCK)
 paraLast = do
-    txt <- manyTill inline (eol *> space)
+    txt <- manyTill inline (endOfLine *> spaces)
     pure $ TextBlock ParaTy Nothing Nil Nil txt
   <?> "Filthy hack for last para"
 
@@ -161,21 +163,21 @@ hrule = hrule' "***" <|> hrule' "---" <|> hrule' "___" <?> "hrules"
   where
     hrule' m = do
       string m
-      eol
+      endOfLine
       pure $ HRule STAR
 
 empty : Parser (Edda STAR BLOCK)
 empty = do
-  eol
-  eol
+  endOfLine
+  endOfLine
   pure $ Empty STAR
 
 header : Parser (Edda STAR BLOCK)
 header = char '#' >! do
     depth <- opt (many $ char '#')
-    space
-    title <- manyTill (inline) (eol)
-    eol
+    spaces
+    title <- manyTill (inline) (endOfLine)
+    endOfLine
     let d = length (fromMaybe Nil depth) + 1
     pure (Section STAR d Nothing title Nil)
   <?> "Header"
@@ -195,7 +197,7 @@ parseCommonMark = do
 
 -- -------------------------------------------------------------------- [ Read ]
 public
-readCommonMark : String -> {[FILE_IO ()]} Eff (Either String (Edda PRIME MODEL))
+readCommonMark : String -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]
 readCommonMark = readEddaFile parseCommonMark
 
 -- --------------------------------------------------------------------- [ EOF ]
