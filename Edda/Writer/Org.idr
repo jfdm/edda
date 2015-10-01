@@ -21,7 +21,7 @@ rawtag : String -> String -> String
 rawtag k v = unwords ["#+" ++ k ++ ":", v]
 
 ntimes : Char -> Nat -> String
-ntimes c n = concat $ ntimes' n
+ntimes c n = concat $ ntimes' (S n)
   where
     ntimes' : Nat -> List String
     ntimes' Z     = Nil
@@ -131,7 +131,6 @@ genblock f t l c b = unlines
   , "#+BEGIN_" ++ t
   , f b
   , "#+END_" ++ t
-  , "\n"
   ]
 
 textblock : String
@@ -151,10 +150,10 @@ verbblock = genblock (\x => x)
 -- ------------------------------------------------------------- [ Write Block ]
 
 itemDef : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
-itemDef (k,vs) = unwords ["-", inlines k, "::", inlines vs, "\n"]
+itemDef (k,vs) = unwords ["-", inlines k, "::", inlines vs]
 
 item : String -> List (Edda PRIME INLINE) -> String
-item m b = unwords [m, inlines b, "\n"]
+item m b = unwords [m, inlines b]
 
 public
 block : Edda PRIME BLOCK -> String
@@ -181,7 +180,7 @@ block (Listing l c lang langopts as src) =
             , attrs as
             , unwords ["#+BEGIN_SRC", fromMaybe "" lang, fromMaybe "" langopts]
             , src
-            , "#+END_SRC\n"
+            , "#+END_SRC"
             ]
 block (Comment ss)          = verbblock "COMMENT" Nothing Nil ss
 block (Equation l eq)       = verbblock "EQUATION" l Nil eq
