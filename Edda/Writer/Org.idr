@@ -170,9 +170,9 @@ block (Figure PRIME l c as fig) =
             , attrs as
             , inline fig
             , "\n"]
-block (DList PRIME kvs) = (unlines $ map itemDef kvs)    ++ "\n"
-block (OList bs)        = (unlines $ map (item "1.") bs) ++ "\n"
-block (BList bs)        = (unlines $ map (item "+")  bs) ++ "\n"
+block (DList PRIME kvs) = (unlines $ map itemDef kvs)
+block (OList bs)        = (unlines $ map (item "1.") bs)
+block (BList bs)        = (unlines $ map (item "+")  bs)
 block (Para txt) = inlines txt ++ "\n"
 block (Listing l c lang langopts as src) =
     unlines [ tag "CAPTION" c

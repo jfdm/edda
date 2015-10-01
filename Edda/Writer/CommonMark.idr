@@ -20,7 +20,7 @@ import Edda.Writer.Common
 
 -- ------------------------------------------------------------ [ Misc Writing ]
 ntimes : Char -> Nat -> String
-ntimes c n = concat $ ntimes' n
+ntimes c n = concat $ ntimes' (S n)
   where
     ntimes' : Nat -> List String
     ntimes' Z     = Nil
@@ -125,27 +125,27 @@ verbblock = genblock (\x => ">" ++ x)
 
 itemDef : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
 itemDef (k,vs) =
-    unwords ["+", markup "*" (Left $ inlines k), "::", inlines vs, "\n"]
+    unwords ["+", markup "*" (Left $ inlines k), "::", inlines vs]
 
 item : String -> List (Edda PRIME INLINE) -> String
-item m b = unwords [m, inlines b, "\n"]
+item m b = unwords [m, inlines b]
 
 public
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "-----"
 block (Empty PRIME) = ""
 block (Section PRIME lvl label title as) =
-    unwords [ntimes '#' lvl, inlines title, fromMaybe "" label, "\n"]
+    unwords [ntimes '#' lvl, inlines title, fromMaybe "" label]
 
 block (Figure PRIME l c as fig) = unlines [inline fig, "\n"]
 
-block (DList PRIME kvs) = (unlines $ map itemDef kvs)    ++ "\n"
-block (OList bs)        = (unlines $ map (item "1.") bs) ++ "\n"
-block (BList bs)        = (unlines $ map (item "*")  bs) ++ "\n"
-block (Para txt)        = inlines txt ++ "\n"
+block (DList PRIME kvs) = (unlines $ map itemDef kvs)
+block (OList bs)        = (unlines $ map (item "1.") bs)
+block (BList bs)        = (unlines $ map (item "*")  bs)
+block (Para txt)        = inlines txt
 
 block (Listing l c lang langopts as src) =
-    unlines [ "\n```" ++ fromMaybe "" lang , src, "```\n"]
+    unlines [ "\n```" ++ fromMaybe "" lang , src, "```"]
 
 block (Comment ss)          = verbblock ss
 block (Equation l eq)       = verbblock eq
