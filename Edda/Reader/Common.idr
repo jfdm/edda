@@ -78,7 +78,7 @@ readEddaSentance p s =
 
 readEddaBody : Parser (Edda STAR BLOCK)
         -> String
-        -> Either String (List $ EddaDoc BLOCK)
+        -> Either String (List EddaBlock)
 readEddaBody p ps =
   case parse (some p) ps of
     Left err  => Left err

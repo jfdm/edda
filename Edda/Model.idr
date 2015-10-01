@@ -178,8 +178,14 @@ data Edda : Step -> EddaTy -> Type where
 
 -- ----------------------------------------------------------- [ Type Synonyms ]
 
-EddaDoc : EddaTy -> Type
-EddaDoc ty = Edda PRIME ty
+EddaBlock : Type
+EddaBlock = Edda PRIME BLOCK
+
+EddaInline : Type
+EddaInline = Edda PRIME INLINE
+
+EddaDoc : Type
+EddaDoc = Edda PRIME MODEL
 
 EddaString : Type
 EddaString = List $ Edda PRIME INLINE
