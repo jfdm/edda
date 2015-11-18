@@ -12,6 +12,12 @@ cd lightyear/
 make install
 cd ../
 
+echo "Fetching XML"
+git clone git@github.com:jfdm/idris-xml.git xml
+cd xml/
+make install
+cd ../
+
 echo "Fetching testing"
 git clone git@github.com:jfdm/idris-testing.git testing
 cd testing/

@@ -200,6 +200,10 @@ block (Question l c txt)    = textblock "QUESTION" l c txt
 block (Solution l c txt)    = textblock "SOLUTION" l c txt
 block (Example l c txt)     = textblock "EXAMPLE" l c txt
 
+public
+blocks : List (Edda PRIME BLOCK) -> String
+blocks bs = unlines $ map block bs
+
 -- -------------------------------------------------------- [ Write List (String, String) ]
 
 properties : List (String, String) -> String
