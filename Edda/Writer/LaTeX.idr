@@ -103,9 +103,9 @@ mutual
 -- ----------------------------------------------------- [ Write Generic Block ]
 env : String -> String -> String
 env n body = unlines
-    [ macro "begin" (toLower n) ++ "\n"
+    [ macro "begin" (toLower n)
     , body
-    , macro "end" (toLower n) ++ "\n"]
+    , macro "end" (toLower n)]
 
 
 thm : String
@@ -143,8 +143,11 @@ list s is = env s (unlines $ map item is)
     item : List (Edda PRIME INLINE) -> String
     item bs = unwords ["\\item", inlines bs, "\n"]
 
-descItem : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
-descItem (k,v) = unwords ["\\item[" ++ inlines k ++ "]", inlines v, "\n"]
+dlist : List (Pair (List (Edda PRIME INLINE)) (List (Edda PRIME INLINE))) -> String
+dlist kvs = env "description" (unlines $ map descItem kvs)
+  where
+    descItem : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
+    descItem (k,v) = unwords ["\\item[" ++ inlines k ++ "]", inlines v, "\n"]
 
 secLvl : Nat -> List (Edda PRIME INLINE) -> String
 secLvl Z                 t = macro "section"       (inlines t)
@@ -165,11 +168,11 @@ block (Section PRIME lvl label title as) =
             , strFromMaybe (macro "label") label
             , "\n"]
 block (Figure PRIME l c as fig) = figure (Just l) c (inline fig) ++ "\n"
-block (DList PRIME kvs)         = unlines (map descItem kvs) ++ "\n"
+block (DList PRIME kvs)         = dlist kvs
 block (OList bs)                = list "itemize"  bs
 block (BList bs)                = list "enumerate" bs
 
-block (Para txt) = inlines txt ++ "\n"
+block (Para txt) = inlines txt ++ "\n\n"
 
 block (Listing l c lang langopts as src) = figure l c (env "verbatim" src)
 
@@ -212,41 +215,41 @@ properties ps  = unlines
 public
 latex : Edda PRIME MODEL -> String
 latex (MkEdda ps body) = unlines
-    [ "\\documentclass{article}"
-    , "\\usepackage{thmtools}"
-    , "\\usepackage[normelem]{ulem}"
-    , "\\usepackage{hyperref}"
-    , """
-\\declaretheoremstyle[%
+    [ """\documentclass{article}
+\usepackage{thmtools}
+\usepackage[normelem]{ulem}
+\usepackage{hyperref}
+
+\declaretheoremstyle[%
   spaceabove=6pt, spacebelow=6pt,
-  headfont=\\normalfont\\bfseries,
-  bodyfont=\\normalfont\\em,
+  headfont=\normalfont\bfseries,
+  bodyfont=\normalfont\em,
   postheadspace=1em
 ]{thmstyle}
 
-\\declaretheoremstyle[%
+\declaretheoremstyle[%
   spaceabove=6pt, spacebelow=6pt,
-  headfont=\\normalfont\\bfseries,
-  bodyfont=\\normalfont,
+  headfont=\normalfont\bfseries,
+  bodyfont=\normalfont,
   postheadspace=1em
 ]{notestyle}
 
-\\newcommand{\\squote}[1]{`#1'}
-\\newcommand{\\dquote}[1]{``#1''}
+\newcommand{\squote}[1]{`#1'}
+\newcommand{\dquote}[1]{``#1''}
 
-\\declaretheorem[style=notestyle, starred, name={\\textbf{Note}}]{note}
-\\declaretheorem[style=notestyle, starred, name={\\textbf{Remark}}]{remark}
-\\declaretheorem[style=thmstyle, name={Definition}]{definition}
-\\declaretheorem[style=thmstyle, name={Example}]{example}
-\\declaretheorem[style=thmstyle, name={Exercise}]{exercise}
-\\declaretheorem[style=thmstyle, name={Problem}]{problem}
-\\declaretheorem[style=thmstyle, name={Question}]{question}
-\\declaretheorem[style=thmstyle, name={Solution}]{solution}
+\declaretheorem[style=notestyle, starred, name={\textbf{Note}}]{note}
+\declaretheorem[style=notestyle, starred, name={\textbf{Remark}}]{remark}
+\declaretheorem[style=thmstyle, name={Definition}]{definition}
+\declaretheorem[style=thmstyle, name={Example}]{example}
+\declaretheorem[style=thmstyle, name={Exercise}]{exercise}
+\declaretheorem[style=thmstyle, name={Problem}]{problem}
+\declaretheorem[style=thmstyle, name={Question}]{question}
+\declaretheorem[style=thmstyle, name={Solution}]{solution}
 
-\\declaretheorem[style=thmstyle, name={Corollary}]{corollary}
-\\declaretheorem[style=thmstyle, name={Lemma}]{lemma}
-\\declaretheorem[style=thmstyle, name={Proposition}]{proposition}
-\\declaretheorem[style=thmstyle, name={Theorem}]{theorem}
+\declaretheorem[style=thmstyle, name={Corollary}]{corollary}
+\declaretheorem[style=thmstyle, name={Lemma}]{lemma}
+\declaretheorem[style=thmstyle, name={Proposition}]{proposition}
+\declaretheorem[style=thmstyle, name={Theorem}]{theorem}
 """
     , properties ps
     , "\\begin{document}\n\\maketitle"
