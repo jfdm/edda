@@ -14,6 +14,8 @@ import Edda.Utils
 
 import Edda.Writer.Common
 
+-- -------------------------------------------------------------- [ Directives ]
+
 %access private
 
 -- ------------------------------------------------------------ [ Misc Writing ]
@@ -36,12 +38,11 @@ attrs as = rawtag "ATTR" as'
 -- ----------------------------------------------------------- [ Write Inlines ]
 
 mutual
+
+  |||  Convert the list of inlines to their org mode representation.
   public
   inlines : List (Edda PRIME INLINE) -> String
   inlines xs = concatMap inline xs
-
-  tag : String -> List (Edda PRIME INLINE) -> String
-  tag k vs = unlines [rawtag k (inlines vs), "\n"]
 
   parens : Char -> Char -> Either String (List (Edda PRIME INLINE)) -> String
   parens l r (Left str) = concat [cast l, str,        cast r]
@@ -117,6 +118,9 @@ mutual
   inline Equals     = "="
   inline Pipe       = "|"
 
+tag : String -> List (Edda PRIME INLINE) -> String
+tag k vs = unlines [rawtag k (inlines vs)]
+
 -- ----------------------------------------------------- [ Write Generic Block ]
 
 genblock : (a -> String)
@@ -155,6 +159,8 @@ itemDef (k,vs) = unwords ["-", inlines k, "::", inlines vs]
 item : String -> List (Edda PRIME INLINE) -> String
 item m b = unwords [m, inlines b]
 
+
+||| Convert a block to their org mode representation
 public
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "-----"
@@ -200,6 +206,7 @@ block (Question l c txt)    = textblock "QUESTION" l c txt
 block (Solution l c txt)    = textblock "SOLUTION" l c txt
 block (Example l c txt)     = textblock "EXAMPLE" l c txt
 
+||| Convert a list of blocks to their org mode representation.
 public
 blocks : List (Edda PRIME BLOCK) -> String
 blocks bs = unlines $ map block bs
@@ -224,14 +231,17 @@ properties ps  = unlines ts
          ["\n"]
 
 -- --------------------------------------------------------------- [ Write Org ]
+
+||| Return a string containing the org mode representation of the document.
 public
 org : Edda PRIME MODEL -> String
 org (MkEdda ps body) = unlines $ (properties ps :: map block body)
 
+||| Write the org mode representation of the given document to file.
 public
 writeOrg : String
-         -> Edda PRIME MODEL
-         -> Eff () [FILE_IO (), EXCEPTION String]
+        -> Edda PRIME MODEL
+        -> Eff (Either String ()) [FILE_IO ()]
 writeOrg fn doc = writeEddaFile org fn doc
 
 -- --------------------------------------------------------------------- [ EOF ]

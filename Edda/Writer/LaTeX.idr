@@ -14,6 +14,8 @@ import Edda.Utils
 
 import Edda.Writer.Common
 
+-- -------------------------------------------------------------- [ Directives ]
+
 %access private
 
 -- ------------------------------------------------------------ [ Misc Writing ]
@@ -147,7 +149,7 @@ dlist : List (Pair (List (Edda PRIME INLINE)) (List (Edda PRIME INLINE))) -> Str
 dlist kvs = env "description" (unlines $ map descItem kvs)
   where
     descItem : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
-    descItem (k,v) = unwords ["\\item[" ++ inlines k ++ "]", inlines v, "\n"]
+    descItem (k,v) = unwords ["\\item[" ++ inlines k ++ "]", inlines v]
 
 secLvl : Nat -> List (Edda PRIME INLINE) -> String
 secLvl Z                 t = macro "section"       (inlines t)
@@ -155,10 +157,11 @@ secLvl (S Z)             t = macro "subsection"    (inlines t)
 secLvl (S (S Z))         t = macro "subsubsection" (inlines t)
 secLvl (S (S (S Z)))     t = macro "paragraph"     (inlines t)
 secLvl (S (S (S (S Z)))) t = macro "subparagraph"  (inlines t)
-secLvl _                 t = inlines t ++ "% Depth not recognised\n"
+secLvl _                 t = inlines t ++ " % Depth not recognised\n"
 
 -- ------------------------------------------------------------- [ Write Block ]
 -- deal with attrs
+||| Write block to LaTeX version.
 public
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "\\hrulefill"
@@ -211,7 +214,8 @@ properties ps  = unlines
 
 -- --------------------------------------------------------------- [ Write Org ]
 
--- TODO Add customisable preamble, and standalone
+--@ TODO Add customisable preamble, and standalone
+||| Convert document to LaTeX instance.
 public
 latex : Edda PRIME MODEL -> String
 latex (MkEdda ps body) = unlines
@@ -258,10 +262,11 @@ latex (MkEdda ps body) = unlines
     ]
 
 
+||| Write LaTeX representation to file.
 public
 writeLaTeX : String
          -> Edda PRIME MODEL
-         -> Eff () [FILE_IO (), EXCEPTION String]
+         -> Eff (Either String ()) [FILE_IO (), EXCEPTION String]
 writeLaTeX fn doc = writeEddaFile latex fn doc
 
 -- --------------------------------------------------------------------- [ EOF ]

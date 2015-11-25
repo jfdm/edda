@@ -14,9 +14,10 @@ import Edda.Utils
 
 import Edda.Writer.Common
 
+-- -------------------------------------------------------------- [ Directives ]
 %access private
 
--- TODO Attributes...
+-- @TODO Attributes...
 
 -- ------------------------------------------------------------ [ Misc Writing ]
 ntimes : Char -> Nat -> String
@@ -133,7 +134,7 @@ item m b = unwords [m, inlines b]
 public
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "-----"
-block (Empty PRIME) = ""
+block (Empty PRIME) = "\n"
 block (Section PRIME lvl label title as) =
     unwords [ntimes '#' lvl, inlines title, fromMaybe "" label]
 
@@ -180,14 +181,16 @@ properties ps  =
           ]
 
 -- --------------------------------------------------------------- [ Write Org ]
+||| Convert edda document to markdown.
 public
 markdown : Edda PRIME MODEL -> String
 markdown (MkEdda ps body) = unlines $ (properties ps :: map block body)
 
+||| Write document to a markdown file.
 public
 writeMarkdown : String
          -> Edda PRIME MODEL
-         -> Eff () [FILE_IO (), EXCEPTION String]
+         -> Eff (Either String ()) [FILE_IO ()]
 writeMarkdown fn doc = writeEddaFile markdown fn doc
 
 -- --------------------------------------------------------------------- [ EOF ]

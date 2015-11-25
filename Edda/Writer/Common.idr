@@ -12,6 +12,8 @@ import Effect.StdIO
 
 import Edda.Model
 
+-- -------------------------------------------------------------------- [ Body ]
+
 strFromMaybe : (a -> String) -> Maybe a -> String
 strFromMaybe f Nothing  = ""
 strFromMaybe f (Just x) = f x
@@ -19,12 +21,10 @@ strFromMaybe f (Just x) = f x
 writeEddaFile : (Edda PRIME MODEL -> String)
               -> String
               -> Edda PRIME MODEL
-              -> Eff () [FILE_IO (), EXCEPTION String]
-writeEddaFile write fname doc =
-  case !(open fname Write) of
-    True => do
-      writeString $ write doc
-      close
-    False => raise "Unable to create file handle for writing."
+              -> Eff (Either String ()) [FILE_IO ()]
+writeEddaFile write fname doc = writeFile errFunc fname (write doc)
+  where
+    errFunc : String -> String
+    errFunc fn = "Unable to create file handle " ++ show fn ++ " for writing."
 
 -- --------------------------------------------------------------------- [ EOF ]
