@@ -11,6 +11,7 @@ import Edda.Reader.Org
 import Test.Parsing
 import Test.Utils
 
+export
 runTests : IO ()
 runTests = do
   canParse (Just "Markup")

@@ -20,37 +20,10 @@ import public Edda.Refine
 
 import Edda.Reader.Utils
 
-%access public
-
--- ----------------------------------------------------------------- [ Parsers ]
-
-punc : Parser (Edda STAR INLINE)
-punc = map Punc punctuation <?> "Raw Punctuation"
-
-text : Parser (Edda STAR INLINE)
-text = map (Font SerifTy) word <?> "Raw Word"
-
-rsvp : List Char
-rsvp = ['+', '=', '*', '/', '~', '_']
-
-borderPunc : Parser (Char)
-borderPunc = do
-    c <- punctuation
-    case c of
-      ','  => satisfy (const False)
-      '\'' => satisfy (const False)
-      '\"' => satisfy (const False)
-      x    => if x `elem` rsvp
-                then satisfy (const False)
-                else pure x
-
-mText : Parser (Edda STAR INLINE)
-mText = text <|> map Punc borderPunc <?> "Texted used in markup"
+%access export
 
 -- ------------------------------------------------------------------ [ Reader ]
 
-
-public
 readEddaFile : Parser (Edda STAR MODEL)
             -> String
             -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]

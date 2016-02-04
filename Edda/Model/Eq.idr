@@ -8,44 +8,45 @@ module Edda.Model.Eq
 
 import Edda.Model
 
-%access public
+%access public export
+
 %default partial
 
-instance Eq Step where
+implementation Eq Step where
     (==) STAR  STAR  = True
     (==) PRIME PRIME = True
     (==) _     _     = False
 
-instance Eq EddaTy where
+implementation Eq EddaTy where
     (==) INLINE INLINE = True
     (==) BLOCK  BLOCK  = True
     (==) MODEL  MODEL  = True
     (==) _      _      = False
 
-instance Eq FontTy where
+implementation Eq FontTy where
     (==) SerifTy SerifTy = True
     (==) SansTy  SansTy  = True
     (==) ScapTy  ScapTy  = True
     (==) MonoTy  MonoTy  = True
     (==) _       _       = False
 
-instance Eq QuoteTy where
+implementation Eq QuoteTy where
     (==) SQuote SQuote = True
     (==) DQuote DQuote = True
     (==) _      _      = False
 
-instance Eq CiteSty where
+implementation Eq CiteSty where
     (==) ParenSty ParenSty = True
     (==) TextSty  TextSty  = True
     (==) _        _        = False
 
-instance Eq ParenTy where
+implementation Eq ParenTy where
     (==) Parents  Parents  = True
     (==) Brackets Brackets = True
     (==) Braces   Braces   = True
     (==) _        _        = False
 
-instance Eq LinkTy where
+implementation Eq LinkTy where
     (==) HyperTy   HyperTy   = True
     (==) ExposedTy ExposedTy = True
     (==) FnoteTy   FnoteTy   = True
@@ -53,27 +54,27 @@ instance Eq LinkTy where
     (==) CiteTy    CiteTy    = True
     (==) _         _         = False
 
-instance Eq MarkupTy where
+implementation Eq MarkupTy where
     (==) BoldTy   BoldTy   = True
     (==) EmphTy   EmphTy   = True
     (==) StrikeTy StrikeTy = True
     (==) UlineTy  UlineTy  = True
     (==) _        _        = False
 
-instance Eq RawTy where
+implementation Eq RawTy where
     (==) VerbTy VerbTy = True
     (==) CodeTy CodeTy = True
     (==) MathTy MathTy = True
     (==) _      _      = False
 
-instance Eq VerbBlockTy where
+implementation Eq VerbBlockTy where
     (==) CommentTy  CommentTy  = True
     (==) ListingTy  ListingTy  = True
     (==) LiteralTy  LiteralTy  = True
     (==) EquationTy EquationTy = True
     (==) _          _          = False
 
-instance Eq TextBlockTy where
+implementation Eq TextBlockTy where
     (==) ParaTy         ParaTy        = True
     (==) TheoremTy      TheoremTy     = True
     (==) CorollaryTy    CorollaryTy   = True
@@ -93,7 +94,7 @@ instance Eq TextBlockTy where
     (==) QuotationTy    QuotationTy   = True
     (==) _              _             = False
 
-instance Eq ListTy where
+implementation Eq ListTy where
   (==) BulletTy BulletTy = True
   (==) NumberTy NumberTy = True
   (==) _        _        = False
@@ -205,6 +206,6 @@ mutual
 
   eqEdda _ _ = False
 
-  instance Eq (Edda s ty) where
+  implementation Eq (Edda s ty) where
       (==) = eqEdda
 -- --------------------------------------------------------------------- [ EOF ]

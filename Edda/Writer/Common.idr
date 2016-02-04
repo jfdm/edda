@@ -12,6 +12,7 @@ import Effect.StdIO
 
 import Edda.Model
 
+%access export
 -- -------------------------------------------------------------------- [ Body ]
 
 strFromMaybe : (a -> String) -> Maybe a -> String

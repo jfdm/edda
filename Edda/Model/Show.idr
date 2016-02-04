@@ -8,51 +8,51 @@ module Edda.Model.Show
 
 import Edda.Model
 
-%access public
+%access public export
 %default total
 
-instance Show Step where
+implementation Show Step where
   show STAR   = "STAR"
   show PRIME  = "PRIME"
 
-instance Show QuoteTy where
+implementation Show QuoteTy where
   show SQuote = "SQuote"
   show DQuote = "DQuote"
 
-instance Show CiteSty where
+implementation Show CiteSty where
   show ParenSty = "ParenCite"
   show TextSty  = "TextCite"
 
-instance Show ParenTy where
+implementation Show ParenTy where
   show Parents = "Parens"
   show Brackets = "Brackets"
   show Braces = "Braces"
 
-instance Show FontTy where
+implementation Show FontTy where
   show SerifTy = "Serif"
   show SansTy  = "Sans"
   show ScapTy  = "SmallCaps"
   show MonoTy  = "Monospaced"
 
-instance Show LinkTy where
+implementation Show LinkTy where
   show HyperTy   = "HyperLink"
   show ExposedTy = "Exposed"
   show FnoteTy   = "Footnote"
   show RefTy     = "Internal"
   show CiteTy    = "Citation"
 
-instance Show MarkupTy where
+implementation Show MarkupTy where
   show BoldTy   = "Strong"
   show EmphTy   = "Emph"
   show StrikeTy = "Strike"
   show UlineTy  = "Uline"
 
-instance Show RawTy where
+implementation Show RawTy where
   show VerbTy = "Verb"
   show CodeTy = "Code"
   show MathTy = "Math"
 
-instance Show TextBlockTy where
+implementation Show TextBlockTy where
   show ParaTy        = "PARAGRAPH"
   show TheoremTy     = "THEOREM"
   show CorollaryTy   = "COROLLARY"
@@ -69,22 +69,22 @@ instance Show TextBlockTy where
   show SolutionTy    = "SOLUTION"
   show QuotationTy   = "QUOTATION"
 
-instance Show VerbBlockTy where
+implementation Show VerbBlockTy where
   show CommentTy  = "COMMENT"
   show ListingTy  = "LISTING"
   show LiteralTy  = "LITERTAL"
   show EquationTy = "EQUATION"
 
-instance Show ListTy where
+implementation Show ListTy where
   show BulletTy = "Bullet"
   show NumberTy = "Number"
 
-instance Show EddaTy where
+implementation Show EddaTy where
   show INLINE = "INLINE"
   show BLOCK  = "BLOCK"
   show MODEL  = "MODEL"
 
-instance Show (Edda s ty) where
+implementation Show (Edda s ty) where
 -- ------------------------------------------------------------------ [ Inline ]
   show (Punc c)      = with String "{Punc "   ++ show c  ++ "}"
   show (Font ty t)   = with String "{Font "   ++ show ty ++ " " ++ show t ++ "}"

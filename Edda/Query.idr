@@ -6,16 +6,18 @@ import Effect.StdIO
 
 import Edda.Model
 
-class Queryable a b where
+%access public export
+
+interface Queryable a b where
   query : Monoid res => (a -> res) -> b -> res
 
-instance Queryable a b => Queryable a (List b) where
+implementation Queryable a b => Queryable a (List b) where
   query f xs = foldr (<+>) neutral $ map (query f) xs
 
-instance (Queryable a b, Queryable a c) => Queryable a (b,c) where
+implementation (Queryable a b, Queryable a c) => Queryable a (b,c) where
   query f (x,y) = (query f x) <+> (query f y)
 
-instance Queryable (Edda PRIME INLINE) (Edda PRIME INLINE) where
+implementation Queryable (Edda PRIME INLINE) (Edda PRIME INLINE) where
   query f (Text t) = f $ (Text t)
   query f (Sans t) = f $ (Sans t)
   query f (Scap t) = f $ (Scap t)
@@ -71,7 +73,7 @@ instance Queryable (Edda PRIME INLINE) (Edda PRIME INLINE) where
   query f Pipe       = f $ Pipe
 
 -- @TODO Captions
-instance Queryable (Edda PRIME INLINE) (Edda PRIME BLOCK) where
+implementation Queryable (Edda PRIME INLINE) (Edda PRIME BLOCK) where
   query f (HRule PRIME)             = neutral
   query f (Empty PRIME)             = neutral
   query f (Section PRIME d l t as)  = query f t
@@ -103,7 +105,7 @@ instance Queryable (Edda PRIME INLINE) (Edda PRIME BLOCK) where
   query f (Solution l c xs)    = query f xs -- caption
   query f (Example l c xs)     = query f xs -- caption
 
-instance Queryable (Edda PRIME BLOCK) (Edda PRIME INLINE) where
+implementation Queryable (Edda PRIME BLOCK) (Edda PRIME INLINE) where
   query f (Text t) = neutral
   query f (Sans t) = neutral
   query f (Scap t) = neutral
@@ -160,7 +162,7 @@ instance Queryable (Edda PRIME BLOCK) (Edda PRIME INLINE) where
   query f Pipe       = neutral
 
 -- @TODO Query Table
-instance Queryable (Edda PRIME BLOCK) (Edda PRIME BLOCK) where
+implementation Queryable (Edda PRIME BLOCK) (Edda PRIME BLOCK) where
   query f (HRule PRIME)            = f (HRule PRIME)
   query f (Empty PRIME)            = f (Empty PRIME)
   query f (Section PRIME d l t as) = f (Section PRIME d l t as) <+> (query f t)
@@ -192,11 +194,11 @@ instance Queryable (Edda PRIME BLOCK) (Edda PRIME BLOCK) where
   query f (Solution l c xs)    = f (Solution l c xs) <+> (query f xs) -- caption
   query f (Example l c xs)     = f (Example l c xs) <+> (query f xs) -- caption
 
-instance Queryable (Edda PRIME BLOCK) (Edda PRIME MODEL) where
+implementation Queryable (Edda PRIME BLOCK) (Edda PRIME MODEL) where
   query f (MkEdda as xs) = query f xs
 
-instance Queryable (Edda PRIME INLINE) (Edda PRIME MODEL) where
+implementation Queryable (Edda PRIME INLINE) (Edda PRIME MODEL) where
   query f (MkEdda as xs) = query f xs
 
-instance Queryable (Edda PRIME MODEL) (Edda PRIME MODEL) where
+implementation Queryable (Edda PRIME MODEL) (Edda PRIME MODEL) where
   query f (MkEdda as xs) = f $ MkEdda as xs

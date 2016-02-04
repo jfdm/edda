@@ -6,7 +6,7 @@
 
 module Edda.Model
 
-%access public
+%access public export
 %default total
 
 -- ------------------------------------------------------------------- [ Types ]

@@ -71,7 +71,7 @@ mutual
       MathTy => Math v
 
   covering
-  public
+  export
   refineInlines : List (Edda STAR INLINE) -> List (Edda PRIME INLINE)
   refineInlines Nil = Nil
   refineInlines is = squash2 $ squash3 $ map refineInline is
@@ -120,13 +120,13 @@ mutual
     BulletTy => BList $ map refineInlines bs
 
   covering
-  public
+  export
   refineBlocks : List (Edda STAR BLOCK) -> List (Edda PRIME BLOCK)
   refineBlocks Nil = Nil
   refineBlocks bs = squash2 $ map refineBlock bs
 
 -- -------------------------------------------------------------- [ Refine Doc ]
-public
 covering
+export
 refineEdda : Edda STAR MODEL -> Edda PRIME MODEL
 refineEdda (EddaRaw ps body) = MkEdda ps (refineBlocks body)

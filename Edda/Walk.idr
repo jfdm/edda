@@ -2,6 +2,7 @@ module Edda.Walk
 
 import Edda.Model
 
+%access public export
 -- %default total
 
 -- @TODO walk attributes
@@ -9,16 +10,16 @@ import Edda.Model
 -- @TODO Walk captions
 -- @TODO Walk Table
 
-class Walkable a z where
+interface Walkable a z where
   walk : (a -> a) -> z -> z
 
-instance Walkable a b => Walkable a (List b) where
+implementation Walkable a b => Walkable a (List b) where
   walk f xs = map (walk f) xs
 
-instance (Walkable a b, Walkable a c) => Walkable a (b,c) where
+implementation (Walkable a b, Walkable a c) => Walkable a (b,c) where
   walk f (x,y) = (walk f x, walk f y)
 
-instance Walkable (Edda s INLINE) (Edda s INLINE) where
+implementation Walkable (Edda s INLINE) (Edda s INLINE) where
   walk f (Punc c)       = f $ Punc c
   walk f (Raw ty  t)    = f $ Raw ty t
 
@@ -80,7 +81,7 @@ instance Walkable (Edda s INLINE) (Edda s INLINE) where
   walk f Equals     = f $ Equals
   walk f Pipe       = f $ Pipe
 
-instance Walkable (Edda s INLINE) (Edda s BLOCK) where
+implementation Walkable (Edda s INLINE) (Edda s BLOCK) where
   walk f (ListBlock ty is)        = ListBlock ty (walk f is)
   walk f (TextBlock ty l c as xs) = TextBlock ty l c as (walk f xs)  -- caption
   walk f (VerbBlock ty l c as v)  = VerbBlock ty l c as v            -- caption
@@ -116,7 +117,7 @@ instance Walkable (Edda s INLINE) (Edda s BLOCK) where
   walk f (Solution l c xs)    = Solution l c (walk f xs) -- caption
   walk f (Example l c xs)     = Example l c (walk f xs) -- caption
 
-instance Walkable (Edda s BLOCK) (Edda s INLINE) where
+implementation Walkable (Edda s BLOCK) (Edda s INLINE) where
   walk f (Punc c)       = Punc c
   walk f (Raw ty  t)    = Raw ty t
 
@@ -180,7 +181,7 @@ instance Walkable (Edda s BLOCK) (Edda s INLINE) where
   walk f Pipe       = Pipe
 
 
-instance Walkable (Edda s BLOCK) (Edda s BLOCK) where
+implementation Walkable (Edda s BLOCK) (Edda s BLOCK) where
 
   walk f (ListBlock ty is)        = f $ ListBlock ty (walk f is)
   walk f (TextBlock ty l c as xs) = f $ TextBlock ty l c as (walk f xs)  -- caption
@@ -217,20 +218,20 @@ instance Walkable (Edda s BLOCK) (Edda s BLOCK) where
   walk f (Solution l c xs)    = f $ Solution l c (walk f xs) -- caption
   walk f (Example l c xs)     = f $ Example l c (walk f xs) -- caption
 
-instance Walkable (Edda PRIME BLOCK) (Edda PRIME MODEL) where
+implementation Walkable (Edda PRIME BLOCK) (Edda PRIME MODEL) where
   walk f (MkEdda as xs) = MkEdda as (walk f xs)
 
-instance Walkable (Edda STAR BLOCK) (Edda STAR MODEL) where
+implementation Walkable (Edda STAR BLOCK) (Edda STAR MODEL) where
   walk f (EddaRaw as xs) = EddaRaw as (walk f xs)
 
-instance Walkable (Edda PRIME INLINE) (Edda PRIME MODEL) where
+implementation Walkable (Edda PRIME INLINE) (Edda PRIME MODEL) where
   walk f (MkEdda as xs) = MkEdda as (walk f xs)
 
-instance Walkable (Edda STAR INLINE) (Edda STAR MODEL) where
+implementation Walkable (Edda STAR INLINE) (Edda STAR MODEL) where
   walk f (EddaRaw as xs) = EddaRaw as (walk f xs)
 
-instance Walkable (Edda STAR MODEL) (Edda STAR MODEL) where
+implementation Walkable (Edda STAR MODEL) (Edda STAR MODEL) where
   walk f (EddaRaw as xs) = f $ (EddaRaw as xs)
 
-instance Walkable (Edda PRIME MODEL) (Edda PRIME MODEL) where
+implementation Walkable (Edda PRIME MODEL) (Edda PRIME MODEL) where
   walk f (MkEdda as xs) = f $ (MkEdda as xs)

@@ -20,7 +20,7 @@ import Edda.Reader.Utils
 
 import public Edda.Refine
 
-%access public
+%access private
 
 -- --------------------------------------------------------------------- [ Org ]
 
@@ -85,6 +85,7 @@ fnote = do
      desc <- opt $ some text
      pure (lab, fromMaybe Nil desc)
 
+export
 inline : Parser (Edda STAR INLINE)
 inline = text
      <|> fnote <|> link
@@ -93,6 +94,8 @@ inline = text
      <?> "Raw Inline"
 
 -- -------------------------------------------------------------- [ Properties ]
+
+export
 attribute : String -> Parser (String, String)
 attribute key = do
     string "#+" *> string key
@@ -173,6 +176,7 @@ getOrgBlockType str = case str of
     "SOLUTION"    => Right SolutionTy
     otherwise     => Left LiteralTy
 
+export
 block : Parser (Edda STAR BLOCK)
 block = do
     cap  <- opt caption
@@ -203,6 +207,7 @@ figure = do
     pure (Figure STAR lab cap (fromMaybe Nil as) img)
   <?> "Figure"
 
+export
 para : Parser (Edda STAR BLOCK)
 para = do
     txt <- manyTill inline (endOfLine *> endOfLine)
@@ -275,6 +280,7 @@ dlist = do
 list : Parser (Edda STAR BLOCK)
 list = dlist <|> blist <|> olist <?> "Lists"
 
+export
 header : Parser (Edda STAR BLOCK)
 header = char '*' >! do
     depth <- opt (many $ char '*')
@@ -286,6 +292,7 @@ header = char '*' >! do
     as <- opt drawer
     pure $ Section STAR d l title (fromMaybe Nil as)
 
+export
 orgBlock : Parser (Edda STAR BLOCK)
 orgBlock = header <|> block <|> list <|> figure <|> hrule <|> para <?> "Org Blocks"
 
@@ -302,15 +309,15 @@ parseOrg = do
  <?> "Raw Org Mode"
 
 -- -------------------------------------------------------------------- [ Read ]
-public
+export
 readOrg : String -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]
 readOrg = readEddaFile parseOrg
 
-public
+export
 readOrgInline : String -> Either String EddaString
 readOrgInline = readEddaSentance inline
 
-public
+export
 readOrgBody : String -> Either String EddaBody
 readOrgBody s = readEddaBody orgBlock (s ++ "\n\n")
 

@@ -18,9 +18,9 @@ import Edda.Model
 import Edda.Utils
 
 import Edda.Reader.Utils
-import Edda.Reader.Common
+import public Edda.Reader.Common
 
-%access public
+%access private
 
 -- ------------------------------------------------------------------ [ Inline ]
 
@@ -196,7 +196,7 @@ parseCommonMark = do
   <?> "Raw Common Mark"
 
 -- -------------------------------------------------------------------- [ Read ]
-public
+export
 readCommonMark : String -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]
 readCommonMark = readEddaFile parseCommonMark
 

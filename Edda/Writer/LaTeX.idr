@@ -162,7 +162,7 @@ secLvl _                 t = inlines t ++ " % Depth not recognised\n"
 -- ------------------------------------------------------------- [ Write Block ]
 -- deal with attrs
 ||| Write block to LaTeX version.
-public
+export
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "\\hrulefill"
 block (Empty PRIME) = "\n"
@@ -216,7 +216,7 @@ properties ps  = unlines
 
 --@ TODO Add customisable preamble, and standalone
 ||| Convert document to LaTeX instance.
-public
+export
 latex : Edda PRIME MODEL -> String
 latex (MkEdda ps body) = unlines
     [ """\documentclass{article}
@@ -263,7 +263,7 @@ latex (MkEdda ps body) = unlines
 
 
 ||| Write LaTeX representation to file.
-public
+export
 writeLaTeX : String
          -> Edda PRIME MODEL
          -> Eff (Either String ()) [FILE_IO (), EXCEPTION String]

@@ -3,7 +3,6 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-
 module Edda.Reader.Utils
 
 import Lightyear
@@ -13,7 +12,7 @@ import Lightyear.Strings
 import Edda.Model
 import Edda.Utils
 
-%access public
+%access export
 
 -- ------------------------------------------------------------- [ Combinators ]
 
@@ -82,5 +81,30 @@ convertOpts b = case b of
 convertAttrs : Maybe (String, String) -> List (String, String)
 convertAttrs Nothing  = Nil
 convertAttrs (Just x) = [x]
+
+-- ----------------------------------------------------------------- [ Parsers ]
+
+punc : Parser (Edda STAR INLINE)
+punc = map Punc punctuation <?> "Raw Punctuation"
+
+text : Parser (Edda STAR INLINE)
+text = map (Font SerifTy) word <?> "Raw Word"
+
+rsvp : List Char
+rsvp = ['+', '=', '*', '/', '~', '_']
+
+borderPunc : Parser (Char)
+borderPunc = do
+    c <- punctuation
+    case c of
+      ','  => satisfy (const False)
+      '\'' => satisfy (const False)
+      '\"' => satisfy (const False)
+      x    => if x `elem` rsvp
+                then satisfy (const False)
+                else pure x
+
+mText : Parser (Edda STAR INLINE)
+mText = text <|> map Punc borderPunc <?> "Texted used in markup"
 
 -- --------------------------------------------------------------------- [ EOF ]

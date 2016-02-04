@@ -131,7 +131,7 @@ itemDef (k,vs) =
 item : String -> List (Edda PRIME INLINE) -> String
 item m b = unwords [m, inlines b]
 
-public
+export
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "-----"
 block (Empty PRIME) = "\n"
@@ -182,12 +182,12 @@ properties ps  =
 
 -- --------------------------------------------------------------- [ Write Org ]
 ||| Convert edda document to markdown.
-public
+export
 markdown : Edda PRIME MODEL -> String
 markdown (MkEdda ps body) = unlines $ (properties ps :: map block body)
 
 ||| Write document to a markdown file.
-public
+export
 writeMarkdown : String
          -> Edda PRIME MODEL
          -> Eff (Either String ()) [FILE_IO ()]

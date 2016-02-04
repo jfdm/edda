@@ -40,7 +40,7 @@ attrs as = rawtag "ATTR" as'
 mutual
 
   |||  Convert the list of inlines to their org mode representation.
-  public
+  export
   inlines : List (Edda PRIME INLINE) -> String
   inlines xs = concatMap inline xs
 
@@ -161,7 +161,7 @@ item m b = unwords [m, inlines b]
 
 
 ||| Convert a block to their org mode representation
-public
+export
 block : Edda PRIME BLOCK -> String
 block (HRule PRIME) = "-----"
 block (Empty PRIME) = ""
@@ -207,7 +207,7 @@ block (Solution l c txt)    = textblock "SOLUTION" l c txt
 block (Example l c txt)     = textblock "EXAMPLE" l c txt
 
 ||| Convert a list of blocks to their org mode representation.
-public
+export
 blocks : List (Edda PRIME BLOCK) -> String
 blocks bs = unlines $ map block bs
 
@@ -233,12 +233,12 @@ properties ps  = unlines ts
 -- --------------------------------------------------------------- [ Write Org ]
 
 ||| Return a string containing the org mode representation of the document.
-public
+export
 org : Edda PRIME MODEL -> String
 org (MkEdda ps body) = unlines $ (properties ps :: map block body)
 
 ||| Write the org mode representation of the given document to file.
-public
+export
 writeOrg : String
         -> Edda PRIME MODEL
         -> Eff (Either String ()) [FILE_IO ()]

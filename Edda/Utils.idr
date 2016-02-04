@@ -1,6 +1,13 @@
+-- --------------------------------------------------------------- [ Utils.idr ]
+-- Module    : Utils.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 module Edda.Utils
 
 import Edda.Model
+
+%access export
 
 lookupType : List (String, String) -> Maybe String
 lookupType = lookup "type"
@@ -21,3 +28,5 @@ nubAttribute key as = doNub key as
       | (k,v) = case key == k of
                   True => doNub key xs
                   False => x :: doNub key xs
+
+-- --------------------------------------------------------------------- [ EOF ]
