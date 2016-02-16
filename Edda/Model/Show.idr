@@ -8,7 +8,7 @@ module Edda.Model.Show
 
 import Edda.Model
 
-%access public export
+%access export
 %default total
 
 implementation Show Step where
@@ -84,152 +84,272 @@ implementation Show EddaTy where
   show BLOCK  = "BLOCK"
   show MODEL  = "MODEL"
 
+
+private %assert_total
+showStarInline : Edda STAR INLINE -> String
+showStarInline (Punc c)    = unwords ["{Punc", show c,  "}"]
+showStarInline (Font ty t) = unwords ["{Font", show ty, show t, "}"]
+showStarInline (Raw ty t)  = unwords ["{Raw",  show ty, show t, "}"]
+
+showStarInline (Mark ty ts) = unwords ["{Mark"
+                                      , show ty
+                                      , concatMap showStarInline ts
+                                      , "}"]
+
+showStarInline (Link ty u ts) = unwords ["{Link"
+                                        , show ty
+                                        , "<" ++ u ++ ">"
+                                        , show $ concatMap showStarInline ts
+                                        , "}"]
+
+
+private %assert_total
+showPrimeInline : Edda PRIME INLINE -> String
+showPrimeInline (Text text) = unwords ["{Text", show text, "}"]
+showPrimeInline (Mono mono) = unwords ["{Mono", show mono, "}"]
+showPrimeInline (Scap scap) = unwords ["{Scap", show scap, "}"]
+showPrimeInline (Sans sans) = unwords ["{Sans", show sans, "}"]
+
+showPrimeInline (Verb verb) = unwords ["{Verb", show verb, "}"]
+showPrimeInline (Code code) = unwords ["{Code", show code, "}"]
+showPrimeInline (Math math) = unwords ["{Math", show math, "}"]
+
+showPrimeInline (Emph   es) = unwords ["{Emph",   concatMap showPrimeInline es, "}"]
+showPrimeInline (Bold   bs) = unwords ["{Strong", concatMap showPrimeInline bs, "}"]
+showPrimeInline (Strike ss) = unwords ["{Strike", concatMap showPrimeInline ss, "}"]
+showPrimeInline (Uline  us) = unwords ["{Verb",   concatMap showPrimeInline us, "}"]
+
+showPrimeInline (Quote qty ss)  = unwords [ "{" ++ show qty
+                                          , concatMap showPrimeInline ss
+                                          , "}"]
+showPrimeInline (Parens pty ss) = unwords ["{" ++ show pty
+                                          , concatMap showPrimeInline ss
+                                          , "}"]
+
+showPrimeInline (Ref l)      = unwords ["{Ref", show l, "}"]
+showPrimeInline (Cite ty id) = unwords ["{" ++ show ty, id, "}"]
+showPrimeInline (Hyper u ds) = unwords ["{Hyper"
+                                       , "<" ++ u ++ ">"
+                                       , concatMap showPrimeInline ds
+                                       , "}"]
+showPrimeInline (FNote l ds) = unwords ["{Fnote"
+                                       , "<" ++ l ++ ">"
+                                       , concatMap showPrimeInline ds
+                                       , "}"]
+
+showPrimeInline Space      = "{Space}"
+showPrimeInline Newline    = "{Newline}"
+showPrimeInline Tab        = "{Tab}"
+
+showPrimeInline LBrace     = "{LBrace}"
+showPrimeInline RBrace     = "{RBrace}"
+
+showPrimeInline LParen     = "{LParen}"
+showPrimeInline RParen     = "{RParen}"
+
+showPrimeInline LBrack     = "{LBrack}"
+showPrimeInline RBrack     = "{RBrack}"
+showPrimeInline LAngle     = "{LAngle}"
+showPrimeInline RAngle     = "{RAngle}"
+
+showPrimeInline Dollar     = "{Dollar}"
+showPrimeInline Colon      = "{Colon}"
+showPrimeInline Semi       = "{Semi}"
+showPrimeInline EnDash     = "{EnDash}"
+showPrimeInline EmDash     = "{EmDash}"
+showPrimeInline FSlash     = "{Forwardslash}"
+showPrimeInline BSlash     = "{Backslash}"
+showPrimeInline Apostrophe = "{Apostrophe}"
+showPrimeInline SMark      = "{Speech Mark}"
+showPrimeInline Comma      = "{Comma}"
+showPrimeInline Plus       = "{Plus}"
+showPrimeInline Ellipsis   = "{Ellipsis}"
+showPrimeInline Hyphen     = "{Hyphen}"
+showPrimeInline Bang       = "{Bang}"
+showPrimeInline Period     = "{Period}"
+showPrimeInline QMark      = "{Question Mark}"
+showPrimeInline Hash       = "{Hash}"
+showPrimeInline Equals     = "{Equals}"
+showPrimeInline Pipe       = "{Pipe}"
+
+showPrimeInline (MiscPunc c) = "{Punc " ++ show c ++"}"
+
+private
+showInline : Edda s INLINE -> String
+showInline {s=STAR}  x = showStarInline  x
+showInline {s=PRIME} x = showPrimeInline x
+
+
+private
+showStarBlock : Edda STAR BLOCK -> String
+showStarBlock (HRule STAR) = "[HRule STAR ]"
+showStarBlock (Empty STAR) = "[Empty STAR ]"
+showStarBlock (TextBlock ty lab cap as txt) = unwords
+    ["[TextBlock"
+    , show ty
+    , show lab
+    , concatMap showStarInline cap
+    , show as
+    , concatMap showStarInline txt
+    , "]"]
+showStarBlock (VerbBlock ty lab cap as txt) = unwords
+    ["[VerbBlock"
+    , show ty
+    , show lab
+    , concatMap showStarInline cap
+    , show as
+    , show txt
+    , "]"]
+showStarBlock (ListBlock ty iis) = unwords
+    [ "[BList"
+    , show ty
+    , concatMap (\is => unwords ["[Item", concatMap showStarInline is, "]"]) iis
+    , "]"]
+showStarBlock (Section _ d l t a) = unwords
+    [ "[Heading STAR"
+    , show d
+    , show l
+    , concatMap showStarInline t
+    , show a
+    , "]"]
+showStarBlock (Figure _ l c as img) = unwords
+    [ "[FigBlock STAR"
+    , show l
+    , concatMap showStarInline c
+    , show as
+    , showStarInline img
+    , "]"]
+showStarBlock (DList _ ds) = unwords
+    [ "[DList STAR"
+    , concatMap (\(k,vs) => concatMap showStarInline k ++ " " ++ concatMap showStarInline vs) ds
+    , "]"]
+
+
+private
+showPrimeLBlock : String -> List (List (Edda PRIME INLINE)) -> String
+showPrimeLBlock tag is = unwords
+    [ "[" ++ tag
+    , concatMap showItem is
+    , "]"]
+  where
+    showItem : List (Edda PRIME INLINE) -> String
+    showItem xs = unwords ["[Item"
+                          , concatMap showPrimeInline xs
+                          , "]"]
+
+showPrimeQBlock : String
+               -> Maybe String
+               -> List (Edda PRIME INLINE)
+               -> List (Edda PRIME INLINE)
+               -> String
+showPrimeQBlock tag l tit quo = unwords
+    [ "[" ++ tag
+    , show l
+    , concatMap showPrimeInline tit
+    , concatMap showPrimeInline quo
+    , "]"]
+
+private
+showPrimeBlock : Edda PRIME BLOCK -> String
+showPrimeBlock (HRule _) = "[HRule PRIME]"
+showPrimeBlock (Empty _) = "[Empty PRIME]"
+
+showPrimeBlock (Section _ d l t a) = unwords
+    ["[Heading PRIME"
+    , show d
+    , show l
+    , concatMap showPrimeInline t
+    , show a
+    , "]"]
+
+showPrimeBlock (Figure _ l c as img) = unwords
+    [ "[FigBlock PRIME"
+    , show l
+    , concatMap showPrimeInline c
+    , show as
+    , showPrimeInline img
+    , "]"]
+
+showPrimeBlock (DList _ ds) = unwords
+    [ "[DList PRIME"
+    , concatMap (\(k,vs) => concatMap showPrimeInline k ++ " " ++ concatMap showPrimeInline vs) ds
+    , "]"]
+
+showPrimeBlock (BList is) = showPrimeLBlock "BList"  is
+showPrimeBlock (OList is) = showPrimeLBlock "OList"  is
+showPrimeBlock (Para txt) = unwords
+    [ "[Para"
+    , concatMap showPrimeInline txt
+    , "]"]
+
+showPrimeBlock (Comment cs)   = unwords ["[Comment", show cs, "]"]
+showPrimeBlock (Equation l m) = unwords [ "[EqBlock", show l, show m, "]"]
+showPrimeBlock (Quotation l qs) = unwords
+    ["[BQuote"
+    , show l
+    , concatMap showPrimeInline qs
+    , "]"]
+
+showPrimeBlock (Literal l cap src) = unwords
+    [ "[Literal"
+    , show l   ++ " "
+    , concatMap showPrimeInline cap
+    , show src
+    , "]"]
+
+showPrimeBlock (Listing l cap lang ops as co) = unwords
+    [ "[CodeBlock"
+    , show l
+    , concatMap showPrimeInline cap
+    , show lang
+    , show ops
+    , show as
+    , show co
+    , "]"]
+
+showPrimeBlock (Theorem l c txt)     = showPrimeQBlock "Theorem"     l c txt
+showPrimeBlock (Corollary l c txt)   = showPrimeQBlock "Corollary"   l c txt
+showPrimeBlock (Lemma l c txt)       = showPrimeQBlock "Lemma"       l c txt
+showPrimeBlock (Proposition l c txt) = showPrimeQBlock "Proposition" l c txt
+showPrimeBlock (Proof l c txt)       = showPrimeQBlock "Proof"       l c txt
+showPrimeBlock (Definition l c txt)  = showPrimeQBlock "Definition"  l c txt
+showPrimeBlock (Exercise l c txt)    = showPrimeQBlock "Exercise"    l c txt
+showPrimeBlock (Note l c txt)        = showPrimeQBlock "Note"        l c txt
+showPrimeBlock (Remark l c txt)      = showPrimeQBlock "Remark"      l c txt
+showPrimeBlock (Problem l c txt)     = showPrimeQBlock "Problem"     l c txt
+showPrimeBlock (Question l c txt)    = showPrimeQBlock "Question"    l c txt
+showPrimeBlock (Solution l c txt)    = showPrimeQBlock "Solution"    l c txt
+showPrimeBlock (Example l c txt)     = showPrimeQBlock "Example"     l c txt
+
+private
+showBlock : Edda s BLOCK -> String
+showBlock {s=STAR}  x = showStarBlock  x
+showBlock {s=PRIME} x = showPrimeBlock x
+
+private
+showStarModel : Edda STAR MODEL -> String
+showStarModel (EddaRaw ps body) = unwords
+    [ "[Edda STAR"
+    , "[Mdata " ++ concatMap show ps ++ "]"
+    , concatMap showStarBlock body
+    , "]"]
+
+private
+showPrimeModel : Edda PRIME MODEL -> String
+showPrimeModel (MkEdda ps body) = unwords
+    [ "[Edda PRIME"
+    , "[Mdata " ++ concatMap show ps ++ "]"
+    , concatMap showPrimeBlock  body
+    , "]"]
+
+private
+showModel : Edda s MODEL -> String
+showModel {s=STAR}  x = showStarModel x
+showModel {s=PRIME} x = showPrimeModel x
+
 implementation Show (Edda s ty) where
--- ------------------------------------------------------------------ [ Inline ]
-  show (Punc c)      = with String "{Punc "   ++ show c  ++ "}"
-  show (Font ty t)   = with String "{Font "   ++ show ty ++ " " ++ show t ++ "}"
-  show (Raw ty t)    = with String "{Raw "    ++ show ty ++ " " ++ show t ++ "}"
-  show (Mark ty t)   = with String "{Mark "   ++ show ty ++ " " ++ show t ++ "}"
-  show (Link ty u t) = with String "{Link "   ++ show ty ++ " <" ++ u ++ "> \"" ++ show t ++ "\"}"
-
-  show (Text text) = "{Text \"" ++ text ++ "\"}"
-  show (Mono mono) = "{Mono \"" ++ mono ++ "\"}"
-  show (Scap scap) = "{Scap \"" ++ scap ++ "\"}"
-
-  show (Verb verb) = "{Verb \"" ++ verb ++ "\"}"
-  show (Code code) = "{Code \"" ++ code ++ "\"}"
-  show (Math math) = "{Math \"" ++ math ++ "\"}"
-
-  show (Emph e)   = "{Emph "   ++ show e ++ "}"
-  show (Bold b) = "{Strong " ++ show b ++ "}"
-  show (Strike s) = "{Strike " ++ show s ++ "}"
-  show (Uline u)  = "{Verb "   ++ show u ++ "}"
-
-  show (Quote qty ss)  = "{" ++ show qty ++ " " ++ show ss ++ "}"
-  show (Parens pty ss) = "{" ++ show pty ++ " " ++ show ss ++ "}"
-
-  show (Ref l)      = "{Ref " ++ show l ++ "}"
-  show (Cite ty id) = "{" ++ show ty ++ " " ++ id ++ "}"
-  show (Hyper u d)  = "{Hyper " ++ " <" ++ u ++ "> \"" ++ show d ++ "\"}"
-  show (FNote l d)   = "{Fnote " ++ l ++ " \"" ++ show d ++ "\"}"
-
-  show Space      = "{Space}"
-  show Newline    = "{Newline}"
-  show Tab        = "{Tab}"
-  show LBrace     = "{LBrace}"
-  show RBrace     = "{RBrace}"
-  show LParen     = "{LParen}"
-  show RParen     = "{RParen}"
-  show LBrack     = "{LBrack}"
-  show RBrack     = "{RBrack}"
-  show LAngle     = "{LAngle}"
-  show RAngle     = "{RAngle}"
-  show Dollar     = "{Dollar}"
-  show Colon      = "{Colon}"
-  show Semi       = "{Semi}"
-  show EnDash     = "{EnDash}"
-  show EmDash     = "{EmDash}"
-  show FSlash     = "{Forwardslash}"
-  show BSlash     = "{Backslash}"
-  show Apostrophe = "{Apostrophe}"
-  show SMark      = "{Speech Mark}"
-  show Comma      = "{Comma}"
-  show Plus       = "{Plus}"
-  show Ellipsis   = "{Ellipsis}"
-  show Hyphen     = "{Hyphen}"
-  show Bang       = "{Bang}"
-  show Period     = "{Period}"
-  show QMark      = "{Question Mark}"
-  show Hash       = "{Hash}"
-  show Equals     = "{Equals}"
-  show Pipe       = "{Pipe}"
-  show (MiscPunc c) = "{Punc " ++ show c ++"}"
--- ------------------------------------------------------------------ [ BLocks ]
-  -- Star
-  show (TextBlock ty lab cap as txt) = "[TextBlock "
-       ++ show ty  ++ " "
-       ++ show lab ++ " "
-       ++ show cap ++ " "
-       ++ show as  ++ " "
-       ++ show txt ++ "]\n"
-
-  show (VerbBlock ty lab cap as txt) = "[VerbBlock "
-       ++ show ty  ++ " "
-       ++ show lab ++ " "
-       ++ show cap ++ " "
-       ++ show as  ++ " "
-       ++ show txt ++ "]\n"
-
-  show (ListBlock ty is) = "[BList "
-       ++ show ty ++ " "
-       ++ show is ++ "]\n"
-
--- Starry Prime
-  show (HRule s) = "[HRule" ++ show s ++ "]\n"
-  show (Empty s) = "[Empty " ++ show s ++ "]\n"
-  show (Section s d l t a) = "[Heading "
-       ++ show s ++ " "
-       ++ show d ++ " "
-       ++ show l ++ " "
-       ++ show t ++ " "
-       ++ show a ++ "]\n"
-  show (Figure s l c as img) = "[FigBlock "
-       ++ show s ++ " "
-       ++ show l ++ " "
-       ++ show c ++ " "
-       ++ show as ++ " "
-       ++ show img ++ "]\n"
-  show (DList s ds) = "[DList "
-       ++ show s ++ " "
-       ++ concatMap (\(k,vs) => show k ++ " " ++ show vs) ds ++ "]\n"
--- Prime
-  show (BList is) = "[BList " ++ show is ++ "]\n"
-  show (OList is) = "[OList " ++ show is ++ "]\n"
-
-  show (Para txt) = "[Para " ++ show txt ++ "]\n"
-  show (Quotation l qs) = "[BQuote "
-       ++ show l ++ " "
-       ++ show qs ++ "]\n"
-
-  show (Comment cs) = "[Comment "
-       ++ show cs ++ "]\n"
-  show (Equation l m) = "[EqBlock "
-       ++ show l ++ " "
-       ++ show m ++ "]\n"
-  show (Literal l cap src) = "[Literal "
-       ++ show l   ++ " "
-       ++ show cap ++ " "
-       ++ show src ++ "]\n"
-  show (Listing l cap lang ops as co) = "[CodeBlock "
-       ++ show l    ++ " "
-       ++ show cap  ++ " "
-       ++ show lang ++ " "
-       ++ show ops  ++ " "
-       ++ show as   ++ " "
-       ++ show co   ++ "]\n"
-
-  show (Theorem l c txt)     = "[Theorem "     ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Corollary l c txt)   = "[Corollary "   ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Lemma l c txt)       = "[Lemma "       ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Proposition l c txt) = "[Proposition " ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Proof l c txt)       = "[Proof "       ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Definition l c txt)  = "[Definition "  ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Exercise l c txt)    = "[Exercise "    ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Note l c txt)        = "[Note "        ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Remark l c txt)      = "[Remark "      ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Problem l c txt)     = "[Problem "     ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Solution l c txt)    = "[Question "    ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-  show (Example l c txt)     = "[Example "     ++ fromMaybe "" l ++ " " ++ show c ++ " " ++ show txt ++ "]\n"
-
-  show (EddaRaw ps body) = "[Edda "
-       ++ show STAR ++ "\n"
-       ++ "[Mdata " ++ concatMap show ps ++ "]\n"
-       ++ concatMap show body ++ "]\n"
-
-  show (MkEdda ps body) = "[Edda "
-       ++ show PRIME ++ "\n"
-       ++ "[Mdata " ++ concatMap show ps ++ "]\n"
-       ++ concatMap show body ++ "]\n"
-
+  show {ty=INLINE} x = showInline x
+  show {ty=BLOCK}  x = showBlock  x
+  show {ty=MODEL}  x = showModel  x
 
 -- --------------------------------------------------------------------- [ EOF ]

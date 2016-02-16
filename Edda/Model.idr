@@ -68,8 +68,7 @@ data Edda : Step -> EddaTy -> Type where
   Space      : Edda PRIME INLINE
   Newline    : Edda PRIME INLINE
   Tab        : Edda PRIME INLINE
-  LAngle     : Edda PRIME INLINE
-  RAngle     : Edda PRIME INLINE
+
   Colon      : Edda PRIME INLINE
   Semi       : Edda PRIME INLINE
   FSlash     : Edda PRIME INLINE
@@ -90,10 +89,15 @@ data Edda : Step -> EddaTy -> Type where
   EmDash     : Edda PRIME INLINE
   EnDash     : Edda PRIME INLINE
 
+  LAngle     : Edda PRIME INLINE
+  RAngle     : Edda PRIME INLINE
+
   LBrace     : Edda PRIME INLINE
   RBrace     : Edda PRIME INLINE
+
   LParen     : Edda PRIME INLINE
   RParen     : Edda PRIME INLINE
+
   LBrack     : Edda PRIME INLINE
   RBrack     : Edda PRIME INLINE
 
