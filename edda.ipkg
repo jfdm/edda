@@ -17,6 +17,7 @@ modules = Edda.Model
         , Edda.Writer.Org
         , Edda.Writer.LaTeX
         , Edda.Writer.CommonMark
+        , Edda.Writer.GapDoc
 
         , Edda.Utils
         , Edda.Squash
