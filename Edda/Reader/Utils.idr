@@ -16,13 +16,13 @@ import Edda.Utils
 
 -- ------------------------------------------------------------- [ Combinators ]
 
-lexemeL : Monad m => ParserT m String a -> ParserT m String a
+lexemeL : Monad m => ParserT String m a -> ParserT String m a
 lexemeL p = space *> p
 
-lexL : Monad m => ParserT m String a -> ParserT m String a
+lexL : Monad m => ParserT String m a -> ParserT String m a
 lexL p = lexemeL p
 
-lex : Monad m => ParserT m String a -> ParserT m String a
+lex : Monad m => ParserT String m a -> ParserT String m a
 lex p = lexeme p
 
 -- ---------------------------------------------------------- [ String Parsers ]
