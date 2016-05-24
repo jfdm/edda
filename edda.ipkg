@@ -3,6 +3,7 @@ package edda
 pkgs = lightyear
      , effects
      , test
+     , testparse
 
 modules = Edda.Model
         , Edda.Model.Show
