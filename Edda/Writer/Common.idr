@@ -22,10 +22,7 @@ strFromMaybe f (Just x) = f x
 writeEddaFile : (Edda PRIME MODEL -> String)
               -> String
               -> Edda PRIME MODEL
-              -> Eff (Either String ()) [FILE_IO ()]
-writeEddaFile write fname doc = writeFile errFunc fname (write doc)
-  where
-    errFunc : String -> String
-    errFunc fn = "Unable to create file handle " ++ show fn ++ " for writing."
+              -> Eff (FileOpSuccess) [FILE ()]
+writeEddaFile write fname doc = writeFile fname (write doc)
 
 -- --------------------------------------------------------------------- [ EOF ]

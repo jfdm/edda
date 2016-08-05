@@ -266,7 +266,7 @@ latex (MkEdda ps body) = unlines
 export
 writeLaTeX : String
          -> Edda PRIME MODEL
-         -> Eff (Either String ()) [FILE_IO (), EXCEPTION String]
+         -> Eff (FileOpSuccess) [FILE (), EXCEPTION String]
 writeLaTeX fn doc = writeEddaFile latex fn doc
 
 -- --------------------------------------------------------------------- [ EOF ]

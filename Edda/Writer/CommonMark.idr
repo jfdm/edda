@@ -190,7 +190,7 @@ markdown (MkEdda ps body) = unlines $ (properties ps :: map block body)
 export
 writeMarkdown : String
          -> Edda PRIME MODEL
-         -> Eff (Either String ()) [FILE_IO ()]
+         -> Eff (FileOpSuccess) [FILE ()]
 writeMarkdown fn doc = writeEddaFile markdown fn doc
 
 -- --------------------------------------------------------------------- [ EOF ]

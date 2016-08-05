@@ -197,7 +197,7 @@ parseCommonMark = do
 
 -- -------------------------------------------------------------------- [ Read ]
 export
-readCommonMark : String -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]
+readCommonMark : String -> Eff (Either String (Edda PRIME MODEL)) [FILE ()]
 readCommonMark = readEddaFile parseCommonMark
 
 -- --------------------------------------------------------------------- [ EOF ]

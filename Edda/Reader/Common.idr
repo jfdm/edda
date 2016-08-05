@@ -26,9 +26,9 @@ import Edda.Reader.Utils
 
 readEddaFile : Parser (Edda STAR MODEL)
             -> String
-            -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]
+            -> Eff (Either String (Edda PRIME MODEL)) [FILE ()]
 readEddaFile p f = do
-    c <- parseFile (\x => x) (\x,y => unwords [x,y]) p f
+    c <- parseFile (\x,y => unwords [x,show y]) (\x,y => unwords [x,y]) p f
     case  c of
       Left err  => pure $ Left err
       Right res => pure $ Right (refineEdda res)

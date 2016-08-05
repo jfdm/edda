@@ -310,7 +310,7 @@ parseOrg = do
 
 -- -------------------------------------------------------------------- [ Read ]
 export
-readOrg : String -> Eff (Either String (Edda PRIME MODEL)) [FILE_IO ()]
+readOrg : String -> Eff (Either String (Edda PRIME MODEL)) [FILE ()]
 readOrg = readEddaFile parseOrg
 
 export

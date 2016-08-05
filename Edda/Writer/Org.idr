@@ -241,7 +241,7 @@ org (MkEdda ps body) = unlines $ (properties ps :: map block body)
 export
 writeOrg : String
         -> Edda PRIME MODEL
-        -> Eff (Either String ()) [FILE_IO ()]
+        -> Eff (FileOpSuccess) [FILE ()]
 writeOrg fn doc = writeEddaFile org fn doc
 
 -- --------------------------------------------------------------------- [ EOF ]

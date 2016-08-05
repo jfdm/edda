@@ -1,5 +1,14 @@
 package edda
 
+author     = Jan de Muijnck-Hughes
+maintainer = Jan de Muijnck-Hughes
+license    = BSD3 but see LICENSE for more information
+brief      = "A simple pandoc clone"
+readme     = README.md
+version    = 0.1
+sourceloc  = git://git@github.com:jfdm/edda.git
+bugtracker = http://www.github.com/jfdm/edda/issues
+
 pkgs = lightyear
      , effects
      , test
@@ -18,7 +27,6 @@ modules = Edda.Model
         , Edda.Writer.Org
         , Edda.Writer.LaTeX
         , Edda.Writer.CommonMark
-        , Edda.Writer.GapDoc
 
         , Edda.Utils
         , Edda.Squash
