@@ -9,7 +9,7 @@ module Edda.Model.Show
 import Edda.Model
 
 %access export
-%default total
+%default partial
 
 implementation Show Step where
   show STAR   = "STAR"
@@ -85,7 +85,7 @@ implementation Show EddaTy where
   show MODEL  = "MODEL"
 
 
-private %assert_total
+private partial
 showStarInline : Edda STAR INLINE -> String
 showStarInline (Punc c)    = unwords ["{Punc", show c,  "}"]
 showStarInline (Font ty t) = unwords ["{Font", show ty, show t, "}"]
@@ -103,7 +103,7 @@ showStarInline (Link ty u ts) = unwords ["{Link"
                                         , "}"]
 
 
-private %assert_total
+private partial
 showPrimeInline : Edda PRIME INLINE -> String
 showPrimeInline (Text text) = unwords ["{Text", show text, "}"]
 showPrimeInline (Mono mono) = unwords ["{Mono", show mono, "}"]

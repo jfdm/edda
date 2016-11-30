@@ -101,7 +101,7 @@ implementation Eq ListTy where
 
 
 mutual
-  %assert_total
+  partial
   eqEdda : Edda s ty -> Edda s' ty' -> Bool
   eqEdda (Link xty xu xdesc) (Link yty yu ydesc) = xty == yty && xu == yu && xdesc == ydesc
   eqEdda (Mark xty xdesc) (Mark yty ydesc) = xty == yty && xdesc == ydesc
@@ -207,5 +207,5 @@ mutual
   eqEdda _ _ = False
 
   implementation Eq (Edda s ty) where
-      (==) = eqEdda
+      (==) = assert_total eqEdda
 -- --------------------------------------------------------------------- [ EOF ]
