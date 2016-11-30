@@ -28,7 +28,7 @@ lex p = lexeme p
 -- ---------------------------------------------------------- [ String Parsers ]
 
 char' : Char -> Parser ()
-char' c = char c *> return ()
+char' c = char c *> pure ()
 
 private
 pathChar : Parser Char
