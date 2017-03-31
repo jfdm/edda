@@ -8,40 +8,26 @@ module Edda.Test.Org
 import Edda
 import Edda.Reader.Org
 
-import Test.Parsing
-import Test.Utils
+import Lightyear.Testing
 
 export
 runTests : IO ()
-runTests = do
-  canParse (Just "Markup")
-           (many $ lexeme inline)
-           "asasas *bold* /italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.\n"
+runTests = Testing.runTests [
+      parseTest ( "Markup") (many $ lexeme inline) "asasas *bold* /italic/ ~code~ +strike-through+ =verbatim= $mart$ Hello 'Bye bye'.\n"
 
-  canParse (Just "Links 1")
-           (many inline)
-           "[[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]]\n"
+    , parseTest ( "Links 1") (many inline) "[[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]] [[http://www.cs.st-andrews.ac.uk][URL]]\n"
 
-  canParse (Just "Links 2")
-           (many inline)
-           "[[http://www.cs.st-andrews.ac.uk]] [[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]]\n"
+    , parseTest ( "Links 2") (many inline) "[[http://www.cs.st-andrews.ac.uk]] [[Boneh2001]] [[citet:Boneh2001]] [[citep:Boneh2001]]\n"
 
-  canParse (Just "Links 3")
-           (many inline)
-           "[fn:label:description]\n"
+    , parseTest ( "Links 3") (many inline) "[fn:label:description]\n"
 
-  canParse (Just "Attribute Title")
-           (attribute "TITLE")
-           "#+TITLE: I am a Title\n\n"
-  canParse (Just "Attribute Author")
-           (attribute "AUTHOR") "#+AUTHOR: I am an Author\n\n"
-  canParse (Just "Attribute Date ")
-           (attribute "DATE")
-           "#+DATE: I is a date\n\n"
+    , parseTest ("Attribute Title")  (attribute "TITLE")  "#+TITLE: I am a Title\n\n"
+    , parseTest ("Attribute Author") (attribute "AUTHOR") "#+AUTHOR: I am an Author\n\n"
+    , parseTest ("Attribute Date ")  (attribute "DATE")   "#+DATE: I is a date\n\n"
 
-  canParse (Just "Environments")
-           (many block)
-           """#+CAPTION: sdsd
+    , parseTest ( "Environments")
+                (many block)
+                """#+CAPTION: sdsd
 #+NAME: asas:asasre
 #+BEGIN_THEOREM
 sdsdsdsd
@@ -108,9 +94,9 @@ sdsdsdsd
 #+END_SOLUTION
 """
 
-  canParse (Just "Headers")
-           (many header)
-           """* Introduction
+    , parseTest ( "Headers")
+                (many header)
+                """* Introduction
 
 ** Contribution
 
@@ -130,9 +116,9 @@ sdsdsdsd
 
 """
 
-  canParse (Just "Source Block 1")
-           (orgBlock)
-           """#+CAPTION: sdsd
+    , parseTest ( "Source Block 1")
+                (orgBlock)
+                """#+CAPTION: sdsd
 #+NAME: asas:asasre
 #+BEGIN_SRC idris
 
@@ -142,9 +128,9 @@ main = putStrLn "Hello World!"
 
 """
 
-  canParse (Just "Source Block 2")
-           (orgBlock)
-           """#+BEGIN_SRC idris
+    , parseTest ( "Source Block 2")
+                (orgBlock)
+                """#+BEGIN_SRC idris
 main : IO ()
 main = putStrLn "Hello World!"
 main : IO ()
@@ -153,15 +139,15 @@ main = putStrLn "Hello World!"
 
 """
 
-  canParse (Just "Quotes")
-           (orgBlock)
-           """#+BEGIN_QUOTE
+    , parseTest ( "Quotes")
+                (orgBlock)
+                """#+BEGIN_QUOTE
 dfkljfzdjf
 #+END_QUOTE
 
 """
 
-  canParse (Just "Figures")
+    , parseTest ( "Figures")
            (orgBlock)
            """#+CAPTION: sdsd
 #+NAME: asas:asasre
@@ -169,9 +155,9 @@ dfkljfzdjf
 
 """
 
-  canParse (Just "Equations")
-           (many orgBlock)
-           """#+BEGIN_EQUATION
+    , parseTest ( "Equations")
+                (many orgBlock)
+                """#+BEGIN_EQUATION
 y = a*x^2 + b*x + c
 #+END_EQUATION
 
@@ -182,9 +168,9 @@ y^2 = x^3 + ax + b
 
 """
 
-  canParse (Just "Lists")
-           (many orgBlock)
-           """+ a
+    , parseTest ("Lists")
+                (many orgBlock)
+                """+ a
 + b
 + c
 + a
@@ -215,4 +201,5 @@ y^2 = x^3 + ax + b
 
 
 """
+    ]
 -- --------------------------------------------------------------------- [ EOF ]

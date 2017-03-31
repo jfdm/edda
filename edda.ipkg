@@ -12,7 +12,6 @@ bugtracker = http://www.github.com/jfdm/edda/issues
 pkgs = lightyear
      , effects
      , test
-     , testparse
 
 modules = Edda.Model
         , Edda.Model.Show

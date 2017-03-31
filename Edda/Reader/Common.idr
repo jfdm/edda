@@ -6,10 +6,10 @@
 
 module Edda.Reader.Common
 
-import Lightyear
-import Lightyear.Char
-import Lightyear.Strings
-import Lightyear.StringFile
+import public Lightyear
+import public Lightyear.Char
+import public Lightyear.Strings
+import public Lightyear.StringFile
 
 import Effects
 import Effect.File

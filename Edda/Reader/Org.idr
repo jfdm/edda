@@ -9,9 +9,9 @@ module Edda.Reader.Org
 import Effects
 import Effect.File
 
-import Lightyear
-import Lightyear.Char
-import Lightyear.Strings
+import public Lightyear
+import public Lightyear.Char
+import public Lightyear.Strings
 
 import Edda.Model
 import Edda.Utils
