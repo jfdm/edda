@@ -3,10 +3,10 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-module Edda.Test.Org
+module Text.Markup.Edda.Test.Org
 
-import Edda
-import Edda.Reader.Org
+import Text.Markup.Edda.Model
+import Text.Markup.Edda.Reader.Org
 
 import Lightyear.Testing
 

@@ -12,28 +12,39 @@ bugtracker = http://www.github.com/jfdm/edda/issues
 pkgs = lightyear
      , effects
      , test
+     , containers
 
-modules = Edda.Model
-        , Edda.Model.Show
-        , Edda.Model.Eq
+modules = Text.Markup.Edda.Model.Common
+        , Text.Markup.Edda.Model.Raw
+        , Text.Markup.Edda.Model.Processed
+        , Text.Markup.Edda.Model
 
-        , Edda.Reader.Common
-        , Edda.Reader.Utils
-        , Edda.Reader.CommonMark
-        , Edda.Reader.Org
+        , Text.Markup.Edda.Reader.Common
+        , Text.Markup.Edda.Reader.Utils
+        , Text.Markup.Edda.Reader.CommonMark
+        , Text.Markup.Edda.Reader.Org
 
-        , Edda.Writer.Common
-        , Edda.Writer.Org
-        , Edda.Writer.LaTeX
-        , Edda.Writer.CommonMark
+        , Text.Markup.Edda.Writer.Common
+        , Text.Markup.Edda.Writer.Org
+        , Text.Markup.Edda.Writer.LaTeX
+        , Text.Markup.Edda.Writer.CommonMark
 
-        , Edda.Utils
-        , Edda.Squash
-        , Edda.Walk
-        , Edda.Query
-        , Edda.Refine
-        , Edda
+        , Text.Markup.Edda.Process.Utils
+        , Text.Markup.Edda.Process.Inline
+        , Text.Markup.Edda.Process.Block
+        , Text.Markup.Edda.Process.Squash
+        , Text.Markup.Edda.Process.Shunt
+        , Text.Markup.Edda.Process
 
-        , Edda.Test.Org
+        , Text.Markup.Edda.Walk
+        , Text.Markup.Edda.Query
 
-tests = Edda.Test.Org.runTests
+        , Text.Markup.Edda.Org
+        , Text.Markup.Edda.LaTeX
+        , Text.Markup.Edda.CommonMark
+
+        , Text.Markup.Edda
+
+        , Text.Markup.Edda.Test.Org
+
+tests = Text.Markup.Edda.Test.Org.runTests

@@ -3,16 +3,17 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-module Edda.Writer.Org
+module Text.Markup.Edda.Writer.Org
+
+import Data.AVL.Dict
 
 import Effects
 import Effect.File
 import Effect.Exception
 
-import Edda.Model
-import Edda.Utils
+import Text.Markup.Edda.Model
 
-import Edda.Writer.Common
+import Text.Markup.Edda.Writer.Common
 
 -- -------------------------------------------------------------- [ Directives ]
 
@@ -29,11 +30,11 @@ ntimes c n = concat $ ntimes' (S n)
     ntimes' Z     = Nil
     ntimes' (S k) = (cast c) :: ntimes' k
 
-attrs : List (String, String) -> String
-attrs as = rawtag "ATTR" as'
+attrs : Dict String String -> String
+attrs as = rawtag "ATTR" (unwords as')
   where
-    as' : String
-    as' = unwords $ map (\(k,v) => k ++ ":" ++ v) as
+    as' : List String
+    as' = map (\(k,v) => k ++ ":" ++ v) (Dict.toList as)
 
 -- ----------------------------------------------------------- [ Write Inlines ]
 
@@ -41,21 +42,21 @@ mutual
 
   |||  Convert the list of inlines to their org mode representation.
   export
-  inlines : List (Edda PRIME INLINE) -> String
+  inlines : List (Edda INLINE) -> String
   inlines xs = concatMap inline xs
 
-  parens : Char -> Char -> Either String (List (Edda PRIME INLINE)) -> String
+  parens : Char -> Char -> Either String (List (Edda INLINE)) -> String
   parens l r (Left str) = concat [cast l, str,        cast r]
   parens l r (Right ts) = concat [cast l, inlines ts, cast r]
 
-  markup : Char -> Either String (List (Edda PRIME INLINE)) -> String
+  markup : Char -> Either String (List (Edda INLINE)) -> String
   markup t txt = parens t t txt
 
-  link : String -> List (Edda PRIME INLINE) -> String
+  link : String -> List (Edda INLINE) -> String
   link uri Nil  = concat ["[[", uri, "]]"]
   link uri desc = concat ["[[", uri, "][", inlines desc, "]]"]
 
-  inline : Edda PRIME INLINE -> String
+  inline : Edda INLINE -> String
   inline (Text t) = t
   inline (Sans t) = t
   inline (Scap t) = t
@@ -118,7 +119,7 @@ mutual
   inline Equals     = "="
   inline Pipe       = "|"
 
-tag : String -> List (Edda PRIME INLINE) -> String
+tag : String -> List (Edda INLINE) -> String
 tag k vs = unlines [rawtag k (inlines vs)]
 
 -- ----------------------------------------------------- [ Write Generic Block ]
@@ -126,7 +127,7 @@ tag k vs = unlines [rawtag k (inlines vs)]
 genblock : (a -> String)
         -> String
         -> Maybe String
-        -> List (Edda PRIME INLINE)
+        -> List (Edda INLINE)
         -> a
         -> String
 genblock f t l c b = unlines
@@ -139,46 +140,47 @@ genblock f t l c b = unlines
 
 textblock : String
          -> Maybe String
-         -> List (Edda PRIME INLINE)
-         -> List (Edda PRIME INLINE)
+         -> List (Edda INLINE)
+         -> List (Edda INLINE)
          -> String
 textblock = genblock (inlines)
 
 verbblock : String
          -> Maybe String
-         -> List (Edda PRIME INLINE)
+         -> List (Edda INLINE)
          -> String
          -> String
 verbblock = genblock (\x => x)
 
 -- ------------------------------------------------------------- [ Write Block ]
 
-itemDef : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
+itemDef : (List (Edda INLINE), List (Edda INLINE)) -> String
 itemDef (k,vs) = unwords ["-", inlines k, "::", inlines vs]
 
-item : String -> List (Edda PRIME INLINE) -> String
+item : String -> List (Edda INLINE) -> String
 item m b = unwords [m, inlines b]
 
 
 ||| Convert a block to their org mode representation
 export
-block : Edda PRIME BLOCK -> String
-block (HRule PRIME) = "-----"
-block (Empty PRIME) = ""
-block (Section PRIME lvl label title as) =
-    unwords [ ntimes '*' lvl
-            , inlines title
-            , fromMaybe "" label
-            , "\n"]
-block (Figure PRIME l c as fig) =
+block : Edda BLOCK -> String
+block (HRule) = "-----"
+block (Empty) = ""
+block (Section lvl label title as body) =
+    unlines $ unwords [ ntimes '*' lvl
+                      , inlines title
+                      , fromMaybe "" label
+                      , "\n"]
+              :: map block body
+block (Figure l c as fig) =
     unlines [ tag "CAPTION" c
-            , rawtag "NAME" l
+            , rawtag "NAME" (fromMaybe "EMPTY" l)
             , attrs as
             , inline fig
             , "\n"]
-block (DList PRIME kvs) = (unlines $ map itemDef kvs)
-block (OList bs)        = (unlines $ map (item "1.") bs)
-block (BList bs)        = (unlines $ map (item "+")  bs)
+block (DList kvs) = (unlines $ map itemDef kvs)
+block (OList bs)  = (unlines $ map (item "1.") bs)
+block (BList bs)  = (unlines $ map (item "+")  bs)
 block (Para txt) = inlines txt ++ "\n"
 block (Listing l c lang langopts as src) =
     unlines [ tag "CAPTION" c
@@ -208,23 +210,19 @@ block (Example l c txt)     = textblock "EXAMPLE" l c txt
 
 ||| Convert a list of blocks to their org mode representation.
 export
-blocks : List (Edda PRIME BLOCK) -> String
+blocks : List (Edda BLOCK) -> String
 blocks bs = unlines $ map block bs
 
 -- -------------------------------------------------------- [ Write List (String, String) ]
 
-properties : List (String, String) -> String
-properties Nil = ""
-properties ps  = unlines ts
+properties : List (Edda INLINE) -> Dict String String -> String
+properties title ps = unlines ts
   where
     ps' : List (String, String)
-    ps' = nubAttribute "TITLE" $ nubAttribute "AUTHOR" $ nubAttribute "DATE" ps
+    ps' = toList ps
 
     ts : List String
-    ts = [ rawtag "TITLE"  $ fromMaybe "title missing" (lookup "TITLE" ps)
-         , rawtag "AUTHOR" $ fromMaybe "author missing" (lookup "AUTHOR" ps)
-         , rawtag "DATE"   $ fromMaybe "date missing" (lookup "DATE" ps)
-         ]
+    ts = [ rawtag "TITLE"  $ inlines title ]
          ++
          map (\(k,v) => rawtag k v) ps'
          ++
@@ -232,16 +230,30 @@ properties ps  = unlines ts
 
 -- --------------------------------------------------------------- [ Write Org ]
 
-||| Return a string containing the org mode representation of the document.
-export
-org : Edda PRIME MODEL -> String
-org (MkEdda ps body) = unlines $ (properties ps :: map block body)
+namespace Doc
+  ||| Return a string containing the org mode representation of the document.
+  export
+  org : Edda DOC -> String
+  org (Doc title ps body) = unlines $ (properties title ps :: map block body)
 
-||| Write the org mode representation of the given document to file.
-export
-writeOrg : String
-        -> Edda PRIME MODEL
-        -> Eff (FileOpSuccess) [FILE ()]
-writeOrg fn doc = writeEddaFile org fn doc
+  ||| Write the org mode representation of the given document to file.
+  export
+  writeOrgE : String
+          -> Edda DOC
+          -> Eff (FileOpSuccess) [FILE ()]
+  writeOrgE fn doc = writeEddaFileE org fn doc
+
+  export
+  writeOrg : String
+          -> Edda DOC
+          -> IO (Either FileError ())
+  writeOrg fn doc = writeEddaFile org fn doc
+
+namespace Snippet
+  export
+  org : Edda SNIPPET -> String
+  org (Snippet snippet prf) with (prf)
+    org (Snippet snippet prf) | IsInLine = inlines snippet
+    org (Snippet snippet prf) | IsBlock = blocks snippet
 
 -- --------------------------------------------------------------------- [ EOF ]

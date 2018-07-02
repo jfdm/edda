@@ -4,9 +4,10 @@
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
 
-module Edda.Reader.CommonMark
+module Text.Markup.Edda.Reader.CommonMark
 
--- TODO Make recursive parsing.
+import Data.AVL.Dict
+
 import Effects
 import Effect.File
 
@@ -14,47 +15,46 @@ import public Lightyear
 import public Lightyear.Char
 import public Lightyear.Strings
 
-import Edda.Model
-import Edda.Utils
+import Text.Markup.Edda.Model
 
-import Edda.Reader.Utils
-import public Edda.Reader.Common
+import Text.Markup.Edda.Reader.Utils
+import Text.Markup.Edda.Reader.Common
 
 %access private
 
 -- ------------------------------------------------------------------ [ Inline ]
 
-code : Parser (Edda STAR INLINE)
+code : Parser (EddaRaw INLINE)
 code = map (Raw CodeTy) (quoted '`') <?> "Code"
 
-markup : MarkupTy -> String -> Parser (Edda STAR INLINE)
+markup : MarkupTy -> String -> Parser (EddaRaw INLINE)
 markup mTy c = do
     txt <- between (string c) (string c) (some mText)
     pure $ Mark mTy txt
   <?> "Markup"
 
-bold : Parser (Edda STAR INLINE)
+bold : Parser (EddaRaw INLINE)
 bold = markup BoldTy "**" <|> markup BoldTy "__" <?> "Bold"
 
-emph : Parser (Edda STAR INLINE)
+emph : Parser (EddaRaw INLINE)
 emph = markup EmphTy "*" <|> markup EmphTy "_" <?> "Emph"
 
-expLink : Parser (Edda STAR INLINE)
+expLink : Parser (EddaRaw INLINE)
 expLink = do
   txt <- angles url
   pure $ Link ExposedTy txt Nil
 
-hyper : Parser (Edda STAR INLINE)
+hyper : Parser (EddaRaw INLINE)
 hyper = do
   d <- brackets $ some (text <* spaces)
   uri  <- parens $ url
   let desc = intersperse (Punc ' ') d
   pure $ Link HyperTy uri (desc)
 
-link : Parser (Edda STAR INLINE)
+link : Parser (EddaRaw INLINE)
 link = hyper <|> expLink <?> "Links"
 
-inline : Parser (Edda STAR INLINE)
+inline : Parser (EddaRaw INLINE)
 inline = text
      <|> link
      <|> bold
@@ -63,7 +63,7 @@ inline = text
      <|> punc
      <?> "Raw Inline"
 
-figure : Parser (Edda STAR BLOCK)
+figure : Parser (EddaRaw BLOCK)
 figure = do
     char '!'
     d <- brackets $ some text
@@ -72,7 +72,7 @@ figure = do
     let img = Link ExposedTy uri Nil
     endOfLine
     endOfLine
-    pure (Figure STAR "" desc Nil img)
+    pure (Figure (Just "") desc empty img)
   <?> "Figure"
 
 -- ------------------------------------------------------------------- [ Lists ]
@@ -90,114 +90,126 @@ olMarker = marker '.' <|> marker ')'
       pure ()
 
 -- @TODO Add coninuations
-listItem : Parser () -> Parser (List (Edda STAR INLINE))
+listItem : Parser () -> Parser (List (EddaRaw INLINE))
 listItem mark = do
     mark
     space
     line <- manyTill inline endOfLine
     pure $ line
 
-olist : Parser (Edda STAR BLOCK)
+olist : Parser (EddaRaw BLOCK)
 olist = do
     is <- some (listItem olMarker)
     endOfLine
     pure $ ListBlock NumberTy is
 
-blist : Parser (Edda STAR BLOCK)
+blist : Parser (EddaRaw BLOCK)
 blist = do
     is <- some (listItem ulMarker)
     endOfLine
     pure $ ListBlock BulletTy is
 
-list : Parser (Edda STAR BLOCK)
+list : Parser (EddaRaw BLOCK)
 list = blist <|> olist
 
 -- ------------------------------------------------------------------ [ Blocks ]
 
-indentedcode : Parser (Edda STAR BLOCK)
+indentedcode : Parser (EddaRaw BLOCK)
 indentedcode = identcode "\t" <|> identcode "    " <?> "Indented Code Block"
   where
-    identcode : String -> Parser (Edda STAR BLOCK)
+    identcode : String -> Parser (EddaRaw BLOCK)
     identcode m = do
       ss <- some $ (string m *!> manyTill (anyChar) endOfLine)
       endOfLine
       let src = concatMap (\x => pack (List.(++) x ['\n'])) ss
-      pure $ VerbBlock LiteralTy Nothing Nil Nil src
+      pure $ VerbBlock LiteralTy Nothing Nil empty src
      <?> "Indented Code"
 
-fencedcode : Parser (Edda STAR BLOCK)
+fencedcode : Parser (EddaRaw BLOCK)
 fencedcode = fencedcode' "```" <|> fencedcode' "~~~" <?> "Fenced Code Block"
   where
-    fencedcode' : String -> Parser (Edda STAR BLOCK)
+    fencedcode' : String -> Parser (EddaRaw BLOCK)
     fencedcode' m = do
         string m
         srcopts <- opt $ space *> manyTill (anyChar) endOfLine
-        let as = dealWithSrcAttrs (convertOpts srcopts) Nil
+        let as = dealWithSrcAttrs (convertOpts srcopts) empty
         src <- manyTill anyChar (string m)
         endOfLine
         pure $ VerbBlock ListingTy Nothing Nil as (pack src)
       <?> "Fenced Code Block: " ++ m
 
-blockquote : Parser (Edda STAR BLOCK)
+blockquote : Parser (EddaRaw BLOCK)
 blockquote = do
     txt <- some $ (token ">" *!> manyTill inline endOfLine)
     endOfLine
     let p = concat txt
-    pure $ TextBlock QuotationTy Nothing Nil Nil p
+    pure $ TextBlock QuotationTy Nothing Nil empty p
 
 -- ------------------------------------------------------------------- [ Paras ]
-para : Parser (Edda STAR BLOCK)
+para : Parser (EddaRaw BLOCK)
 para = do
     txt <- manyTill (inline) (endOfLine *> endOfLine)
-    pure $ TextBlock ParaTy Nothing Nil Nil txt
+    pure $ TextBlock ParaTy Nothing Nil empty txt
   <?> "Paragraphs"
 
-paraLast : Parser (Edda STAR BLOCK)
+paraLast : Parser (EddaRaw BLOCK)
 paraLast = do
     txt <- manyTill inline (endOfLine *> spaces)
-    pure $ TextBlock ParaTy Nothing Nil Nil txt
+    pure $ TextBlock ParaTy Nothing Nil empty txt
   <?> "Filthy hack for last para"
 
-hrule : Parser (Edda STAR BLOCK)
+hrule : Parser (EddaRaw BLOCK)
 hrule = hrule' "***" <|> hrule' "---" <|> hrule' "___" <?> "hrules"
   where
     hrule' m = do
       string m
       endOfLine
-      pure $ HRule STAR
+      pure $ HRule
 
-empty : Parser (Edda STAR BLOCK)
+empty : Parser (EddaRaw BLOCK)
 empty = do
   endOfLine
   endOfLine
-  pure $ Empty STAR
+  pure $ Empty
 
-header : Parser (Edda STAR BLOCK)
+header : Parser (EddaRaw BLOCK)
 header = char '#' >! do
     depth <- opt (many $ char '#')
     spaces
     title <- manyTill (inline) (endOfLine)
     endOfLine
     let d = length (fromMaybe Nil depth) + 1
-    pure (Section STAR d Nothing title Nil)
+    pure (Heading d Nothing title empty)
   <?> "Header"
 
-block : Parser (Edda STAR BLOCK)
+block : Parser (EddaRaw BLOCK)
 block = header
     <|> blockquote <|> indentedcode <|> fencedcode
     <|> list <|> figure <|> hrule <|> para <|> empty
     <?> "Block"
 
-parseCommonMark : Parser (Edda STAR MODEL)
+parseCommonMark : Parser (EddaRaw DOC)
 parseCommonMark = do
     txt <- some block
-    let txt' = intersperse (Empty STAR) txt
-    pure $ EddaRaw Nil (txt' ++ [Empty STAR])
+    let txt' = intersperse (Empty) txt
+    pure $ Doc Nil empty (txt' ++ [Empty])
   <?> "Raw Common Mark"
 
 -- -------------------------------------------------------------------- [ Read ]
+
 export
-readCommonMark : String -> Eff (Either String (Edda PRIME MODEL)) [FILE ()]
+readCommonMarkE : String -> Eff (Either String (Edda DOC)) [FILE ()]
+readCommonMarkE = readEddaFileE parseCommonMark
+
+readCommonMark : String -> IO (Either String (Edda DOC))
 readCommonMark = readEddaFile parseCommonMark
+
+export
+readCommonMarkInline : String -> Either String (Edda SNIPPET)
+readCommonMarkInline = readEddaSentance inline
+
+export
+readCommonMarkBody : String -> Either String (Edda SNIPPET)
+readCommonMarkBody s = readEddaBody block (s ++ "\n\n")
 
 -- --------------------------------------------------------------------- [ EOF ]

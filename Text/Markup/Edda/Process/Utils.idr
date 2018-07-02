@@ -3,30 +3,30 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-module Edda.Utils
+module Text.Markup.Edda.Process.Utils
 
-import Edda.Model
+import Data.AVL.Dict
 
+%default total
 %access export
 
-lookupType : List (String, String) -> Maybe String
+lookupType : Dict String String -> Maybe String
 lookupType = lookup "type"
 
-lookupSrcLang : List (String, String) -> Maybe String
+lookupSrcLang : Dict String String -> Maybe String
 lookupSrcLang = lookup "src_lang"
 
-lookupSrcOpts : List (String, String) -> Maybe String
+lookupSrcOpts : Dict String String -> Maybe String
 lookupSrcOpts = lookup "src_opts"
 
-nubAttribute : String -> List (String, String) -> List (String, String)
-nubAttribute _   Nil = Nil
-nubAttribute key as = doNub key as
+nubAttribute : String -> Dict String String -> Dict String String
+nubAttribute key as = fromList $ doNub key (toList as)
   where
     doNub : String -> List (String, String) -> List (String, String)
     doNub _   Nil     = Nil
-    doNub key (x::xs) with (x)
-      | (k,v) = case key == k of
-                  True => doNub key xs
-                  False => x :: doNub key xs
+    doNub key ((k,v)::xs) =
+      case key == k of
+        True => doNub key xs
+        False => (k,v) :: doNub key xs
 
 -- --------------------------------------------------------------------- [ EOF ]

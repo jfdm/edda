@@ -3,16 +3,18 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-module Edda.Writer.CommonMark
+module Text.Markup.Edda.Writer.CommonMark
+
+import Data.AVL.Dict
 
 import Effects
 import Effect.File
 import Effect.Exception
 
-import Edda.Model
-import Edda.Utils
+import Text.Markup.Edda.Model
+import Text.Markup.Edda.Process.Utils
 
-import Edda.Writer.Common
+import Text.Markup.Edda.Writer.Common
 
 -- -------------------------------------------------------------- [ Directives ]
 %access private
@@ -30,21 +32,22 @@ ntimes c n = concat $ ntimes' (S n)
 -- ----------------------------------------------------------- [ Write Inlines ]
 
 mutual
-  inlines : List (Edda PRIME INLINE) -> String
+  export
+  inlines : List (Edda INLINE) -> String
   inlines xs = concatMap inline xs
 
-  parens : String -> String -> Either String (List (Edda PRIME INLINE)) -> String
+  parens : String -> String -> Either String (List (Edda INLINE)) -> String
   parens l r (Left str) = concat [l, str,        r]
   parens l r (Right ts) = concat [l, inlines ts, r]
 
-  markup : String -> Either String (List (Edda PRIME INLINE)) -> String
+  markup : String -> Either String (List (Edda INLINE)) -> String
   markup t txt = parens t t txt
 
-  link : String -> List (Edda PRIME INLINE) -> String
+  link : String -> List (Edda INLINE) -> String
   link uri Nil  = concat ["<", uri, ">"]
   link uri desc = concat ["[", uri, "](", inlines desc, ")"]
 
-  inline : Edda PRIME INLINE -> String
+  inline : Edda INLINE -> String
   inline (Text t)     = t
   inline (Sans t)     = t
   inline (Scap t)     = t
@@ -114,7 +117,7 @@ genblock : (a -> String)
         -> String
 genblock f b = unlines [ f b, "\n"]
 
-textblock : List (Edda PRIME INLINE)
+textblock : List (Edda INLINE)
          -> String
 textblock = genblock (inlines)
 
@@ -124,23 +127,22 @@ verbblock = genblock (\x => ">" ++ x)
 
 -- ------------------------------------------------------------- [ Write Block ]
 
-itemDef : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
+itemDef : (List (Edda INLINE), List (Edda INLINE)) -> String
 itemDef (k,vs) =
     unwords ["+", markup "*" (Left $ inlines k), "::", inlines vs]
 
-item : String -> List (Edda PRIME INLINE) -> String
+item : String -> List (Edda INLINE) -> String
 item m b = unwords [m, inlines b]
 
 export
-block : Edda PRIME BLOCK -> String
-block (HRule PRIME) = "-----"
-block (Empty PRIME) = "\n"
-block (Section PRIME lvl label title as) =
-    unwords [ntimes '#' lvl, inlines title, fromMaybe "" label]
+block : Edda BLOCK -> String
+block (HRule) = "-----"
+block (Empty) = "\n"
+block (Section lvl label title as body) =
+   unlines $ unwords [ntimes '#' lvl, inlines title, fromMaybe "" label] :: (map block body)
+block (Figure l c as fig) = unlines [inline fig, "\n"]
 
-block (Figure PRIME l c as fig) = unlines [inline fig, "\n"]
-
-block (DList PRIME kvs) = (unlines $ map itemDef kvs)
+block (DList kvs) = (unlines $ map itemDef kvs)
 block (OList bs)        = (unlines $ map (item "1.") bs)
 block (BList bs)        = (unlines $ map (item "*")  bs)
 block (Para txt)        = inlines txt
@@ -168,29 +170,52 @@ block (Question l c txt)    = textblock txt
 block (Solution l c txt)    = textblock txt
 block (Example l c txt)     = textblock txt
 
+blocks : List (Edda BLOCK) -> String
+blocks = concatMap block
+
 -- -------------------------------------------------------- [ Write List (String, String) ]
 
-properties : List (String, String) -> String
-properties Nil = ""
-properties ps  =
+properties : List (Edda INLINE) -> Dict String String -> String
+properties t ps =
   unlines [ "%YAML 1.2\n---"
-          , concat ["title:",  fromMaybe "title missing" (lookup "TITLE" ps)]
+          , concat ["title:",  inlines t]
           , concat ["author:", fromMaybe "author missing" (lookup "AUTHOR" ps)]
-          , concat ["date:",   fromMaybe "date missing" (lookup "DATE" ps)]
+          , concat ["date:",   fromMaybe "date missing"   (lookup "DATE" ps)]
           , "...\n"
           ]
 
--- --------------------------------------------------------------- [ Write Org ]
-||| Convert edda document to markdown.
-export
-markdown : Edda PRIME MODEL -> String
-markdown (MkEdda ps body) = unlines $ (properties ps :: map block body)
+-- -------------------------------------------------------- [ Write CommonMark ]
 
-||| Write document to a markdown file.
-export
-writeMarkdown : String
-         -> Edda PRIME MODEL
-         -> Eff (FileOpSuccess) [FILE ()]
-writeMarkdown fn doc = writeEddaFile markdown fn doc
+namespace Doc
+  ||| Convert edda document to markdown.
+  export
+  cmark : Edda DOC -> String
+  cmark (Doc title attrs body) =
+     let attrsStr = properties title attrs in
+       unlines $ attrsStr :: map block body
+
+  ||| Write document to a markdown file.
+  export
+  writeCommonMarkE : String
+                 -> Edda DOC
+                 -> Eff (FileOpSuccess) [FILE ()]
+  writeCommonMarkE fn doc = writeEddaFileE cmark fn doc
+
+  ||| Write document to a markdown file.
+  export
+  writeCommonMark : String
+                 -> Edda DOC
+                 -> IO (Either FileError ())
+  writeCommonMark fn doc = writeEddaFile cmark fn doc
+
+namespace Snippet
+  ||| Convert edda document to markdown.
+  export
+  cmark : Edda SNIPPET -> String
+  cmark (Snippet snippet prf) with (prf)
+    cmark (Snippet snippet prf) | IsInLine = inlines snippet
+    cmark (Snippet snippet prf) | IsBlock = blocks snippet
+
+
 
 -- --------------------------------------------------------------------- [ EOF ]

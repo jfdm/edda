@@ -3,8 +3,7 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-
-module Edda.Reader.Org
+module Text.Markup.Edda.Reader.Org
 
 import Effects
 import Effect.File
@@ -13,70 +12,77 @@ import public Lightyear
 import public Lightyear.Char
 import public Lightyear.Strings
 
-import Edda.Model
-import Edda.Utils
-import Edda.Reader.Common
-import Edda.Reader.Utils
+import Data.AVL.Dict
 
-import public Edda.Refine
+import Lightyear
+import Lightyear.Char
+import Lightyear.Strings
+
+import Text.Markup.Edda.Model.Common
+import Text.Markup.Edda.Model.Raw
+import Text.Markup.Edda.Model.Processed
+
+import Text.Markup.Edda.Process.Utils
+import Text.Markup.Edda.Reader.Common
+import Text.Markup.Edda.Reader.Utils
 
 %access private
 
 -- --------------------------------------------------------------------- [ Org ]
 
-code : Parser (Edda STAR INLINE)
+code : Parser (EddaRaw INLINE)
 code = map (Raw CodeTy) (quoted '~') <?> "Code"
 
-verb : Parser (Edda STAR INLINE)
+verb : Parser (EddaRaw INLINE)
 verb = map (Raw VerbTy) (quoted '=') <?> "Verb"
 
-math : Parser (Edda STAR INLINE)
+math : Parser (EddaRaw INLINE)
 math = map (Raw MathTy) (quoted '$') <?> "Math"
 
-markup : MarkupTy -> Char -> Parser (Edda STAR INLINE)
+markup : MarkupTy -> Char -> Parser (EddaRaw INLINE)
 markup mTy c = do
     txt <- between (char c) (char c) (some mText)
     pure $ Mark mTy txt
   <?> "Markup"
 
-bold : Parser (Edda STAR INLINE)
+bold : Parser (EddaRaw INLINE)
 bold = markup BoldTy '*' <?> "Bold"
 
-emph : Parser (Edda STAR INLINE)
+emph : Parser (EddaRaw INLINE)
 emph = markup EmphTy '/'  <?> "Emph"
 
-strike : Parser (Edda STAR INLINE)
+strike : Parser (EddaRaw INLINE)
 strike = markup StrikeTy '+' <?> "Strike"
 
-uline : Parser (Edda STAR INLINE)
+uline : Parser (EddaRaw INLINE)
 uline = markup UlineTy '_' <?> "Uline"
 
-expLink : Parser (Edda STAR INLINE)
+expLink : Parser (EddaRaw INLINE)
 expLink = do
     txt <- brackets $ brackets url
     pure $ Link ExposedTy txt Nil
   <?> "Exposed Link"
 
-hyper : Parser (Edda STAR INLINE)
+hyper : Parser (EddaRaw INLINE)
 hyper = do
     (uri, desc) <- brackets internal
     pure $ Link HyperTy uri desc
   where
-    internal : Parser (String, List (Edda STAR INLINE))
+    internal : Parser (String, List (EddaRaw INLINE))
     internal = do
       u <- brackets url
       d <- brackets $ some (text <* spaces)
       pure (u, intersperse (Punc ' ' ) d)
 
-link : Parser (Edda STAR INLINE)
+link : Parser (EddaRaw INLINE)
 link = hyper <|> expLink <?> "Link"
 
-fnote : Parser (Edda STAR INLINE)
+fnote : Parser (EddaRaw INLINE)
 fnote = do
    (l,d) <- brackets doFnote
    pure $ Link FnoteTy (fromMaybe "" l) d
  where
-   doFnote : Parser (Maybe String, (List (Edda STAR INLINE)))
+   doFnote : Parser (Maybe String, (List (EddaRaw INLINE)))
    doFnote = do
      string "fn"
      colon
@@ -86,7 +92,7 @@ fnote = do
      pure (lab, fromMaybe Nil desc)
 
 export
-inline : Parser (Edda STAR INLINE)
+inline : Parser (EddaRaw INLINE)
 inline = text
      <|> fnote <|> link
      <|> bold <|> emph <|> strike <|> uline
@@ -107,7 +113,7 @@ attribute key = do
 property : Parser (String, String)
 property = attribute "PROPERTY" <?> "Property"
 
-inlineKeyWord : String -> Parser (String, List (Edda STAR INLINE))
+inlineKeyWord : String -> Parser (String, List (EddaRaw INLINE))
 inlineKeyWord key = do
     string "#+" *> string key
     colon
@@ -116,7 +122,7 @@ inlineKeyWord key = do
     pure (key, ps)
   <?> "Attribute."
 
-caption : Parser (List (Edda STAR INLINE))
+caption : Parser (List (EddaRaw INLINE))
 caption = do
     (k,v) <- inlineKeyWord "CAPTION"
     pure v
@@ -131,6 +137,12 @@ label = do
 target : Parser String
 target = angles $ angles url
   <?> "Target"
+
+title : Parser (List (EddaRaw INLINE))
+title = do
+    (k,v) <- inlineKeyWord "TITLE"
+    pure v
+  <?> "Label"
 
 -- ----------------------------------------------------------------- [ Drawers ]
 
@@ -177,7 +189,7 @@ getOrgBlockType str = case str of
     otherwise     => Left LiteralTy
 
 export
-block : Parser (Edda STAR BLOCK)
+block : Parser (EddaRaw BLOCK)
 block = do
     cap  <- opt caption
     lab  <- opt label
@@ -197,34 +209,35 @@ block = do
 
    <?> "Blocks"
 
-figure : Parser (Edda STAR BLOCK)
+figure : Parser (EddaRaw BLOCK)
 figure = do
     cap <- caption
     lab <- label
     as  <- opt $ some (attribute "ATTR")
     img <- expLink
     spaces
-    pure (Figure STAR lab cap (fromMaybe Nil as) img)
+    let attrs = maybe empty (fromList) as
+    pure (Figure (Just lab) cap attrs img)
   <?> "Figure"
 
 export
-para : Parser (Edda STAR BLOCK)
+para : Parser (EddaRaw BLOCK)
 para = do
     txt <- manyTill inline (endOfLine *> endOfLine)
     spaces
-    pure $ TextBlock ParaTy Nothing Nil Nil txt
+    pure $ TextBlock ParaTy Nothing Nil empty txt
   <?> "Paragraphs"
 
-paraLast : Parser (Edda STAR BLOCK)
+paraLast : Parser (EddaRaw BLOCK)
 paraLast = do
     txt <- manyTill inline (endOfLine *> spaces)
-    pure $ TextBlock ParaTy Nothing Nil Nil txt
+    pure $ TextBlock ParaTy Nothing Nil empty txt
   <?> "Filthy hack for last para"
 
-hrule : Parser (Edda STAR BLOCK)
+hrule : Parser (EddaRaw BLOCK)
 hrule = do
     token "-----"
-    pure (HRule STAR)
+    pure HRule
 
 ulMarker : Parser ()
 ulMarker = char' '+' <|> char' '-' <?> "UList Marker"
@@ -240,36 +253,36 @@ olMarker = marker '.' <|> marker ')'
       pure ()
 
 -- @TODO Add coninuations
-listItem : Parser () -> Parser (List (Edda STAR INLINE))
+listItem : Parser () -> Parser (List (EddaRaw INLINE))
 listItem mark = do
     mark
     line <- manyTill inline endOfLine
     pure $ line
 
-olist : Parser (Edda STAR BLOCK)
+olist : Parser (EddaRaw BLOCK)
 olist = do
     is <- some (listItem olMarker)
     endOfLine
     pure $ ListBlock NumberTy is
 
-blist : Parser (Edda STAR BLOCK)
+blist : Parser (EddaRaw BLOCK)
 blist = do
     is <- some (listItem ulMarker)
     endOfLine
     pure $ ListBlock BulletTy is
   <?> "Bulleted lists"
 
-dlist : Parser (Edda STAR BLOCK)
+dlist : Parser (EddaRaw BLOCK)
 dlist = do
     is <- some defItem <* endOfLine
-    pure $ DList STAR is
+    pure $ DList is
   <?> "Description Lists"
   where
-    marker : Parser (List (Edda STAR INLINE))
+    marker : Parser (List (EddaRaw INLINE))
     marker = ulMarker *> space *> manyTill inline (spaces *> colon *> colon)
         <?> "Desc Marker"
 
-    defItem : Parser (List (Edda STAR INLINE), List (Edda STAR INLINE))
+    defItem : Parser (List (EddaRaw INLINE), List (EddaRaw INLINE))
     defItem = do
         key <- marker
         spaces
@@ -277,11 +290,11 @@ dlist = do
         pure (key, values)
       <?> "Desc Lists"
 
-list : Parser (Edda STAR BLOCK)
+list : Parser (EddaRaw BLOCK)
 list = dlist <|> blist <|> olist <?> "Lists"
 
 export
-header : Parser (Edda STAR BLOCK)
+header : Parser (EddaRaw BLOCK)
 header = char '*' >! do
     depth <- opt (many $ char '*')
     let d = length (fromMaybe [] depth) + 1
@@ -290,35 +303,39 @@ header = char '*' >! do
     l <- opt target
     spaces
     as <- opt drawer
-    pure $ Section STAR d l title (fromMaybe Nil as)
+    let attrs = maybe empty (fromList) as
+    pure $ Heading d l title attrs
 
 export
-orgBlock : Parser (Edda STAR BLOCK)
+orgBlock : Parser (EddaRaw BLOCK)
 orgBlock = header <|> block <|> list <|> figure <|> hrule <|> para <?> "Org Blocks"
 
-parseOrg : Parser (Edda STAR MODEL)
+parseOrg : Parser (EddaRaw DOC)
 parseOrg = do
-  title  <- attribute "TITLE"
+  title'  <- title
   author <- attribute "AUTHOR"
   date   <- attribute "DATE" <* space
   txt    <- many orgBlock
   lpara  <- many paraLast -- Dirty Hack
-  let ps = the (List (String, String)) [title, author, date]
-  let txt' = intersperse (Empty STAR) txt
-  pure $ EddaRaw (ps) (txt' ++ [Empty STAR] ++ lpara)
+  let ps = fromList [author, date]
+  let txt' = intersperse Empty txt
+  pure $ Doc title' ps (txt' ++ [Empty] ++ lpara)
  <?> "Raw Org Mode"
 
 -- -------------------------------------------------------------------- [ Read ]
 export
-readOrg : String -> Eff (Either String (Edda PRIME MODEL)) [FILE ()]
+readOrgE : String -> Eff (Either String (Edda DOC)) [FILE ()]
+readOrgE = readEddaFileE parseOrg
+
+readOrg : String -> IO (Either String (Edda DOC))
 readOrg = readEddaFile parseOrg
 
 export
-readOrgInline : String -> Either String EddaString
+readOrgInline : String -> Either String (Edda SNIPPET)
 readOrgInline = readEddaSentance inline
 
 export
-readOrgBody : String -> Either String EddaBody
+readOrgBody : String -> Either String (Edda SNIPPET)
 readOrgBody s = readEddaBody orgBlock (s ++ "\n\n")
 
 -- --------------------------------------------------------------------- [ EOF ]

@@ -4,10 +4,10 @@
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
 
-module Edda
+module Text.Markup.Edda
 
-import public Edda.Model
-import public Edda.Model.Show
-import public Edda.Model.Eq
+import public Text.Markup.Edda.Model
+import public Text.Markup.Edda.Walk
+import public Text.Markup.Edda.Query
 
 -- --------------------------------------------------------------------- [ EOF ]

@@ -3,16 +3,17 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-module Edda.Writer.LaTeX
+module Text.Markup.Edda.Writer.LaTeX
+
+import Data.AVL.Dict
 
 import Effects
 import Effect.File
 import Effect.Exception
 
-import Edda.Model
-import Edda.Utils
+import Text.Markup.Edda.Model
 
-import Edda.Writer.Common
+import Text.Markup.Edda.Writer.Common
 
 -- -------------------------------------------------------------- [ Directives ]
 
@@ -26,17 +27,18 @@ macro c s = concat ["\\", c, "{", s, "}"]
 -- ----------------------------------------------------------- [ Write Inlines ]
 
 mutual
-  inlines : List (Edda PRIME INLINE) -> String
+  export
+  inlines : List (Edda INLINE) -> String
   inlines xs = concatMap inline xs
 
-  parens : String -> String -> List (Edda PRIME INLINE) -> String
+  parens : String -> String -> List (Edda INLINE) -> String
   parens l r ts = concat [l, inlines ts, r]
 
-  link : String -> List (Edda PRIME INLINE) -> String
+  link : String -> List (Edda INLINE) -> String
   link uri Nil  = macro "url"  uri
   link uri desc = concat [macro "href" uri, "{", inlines desc, "}"]
 
-  inline : Edda PRIME INLINE -> String
+  inline : Edda INLINE -> String
   inline (Text t) = t
   inline (Sans t) = macro "textsf" t
   inline (Scap t) = macro "textsc" t
@@ -112,8 +114,8 @@ env n body = unlines
 
 thm : String
    -> Maybe String
-   -> List (Edda PRIME INLINE)
-   -> List (Edda PRIME INLINE)
+   -> List (Edda INLINE)
+   -> List (Edda INLINE)
    -> String
 thm e l c b = env (toLower e) body
   where
@@ -125,7 +127,7 @@ thm e l c b = env (toLower e) body
       ]
 
 figure : Maybe String
-      -> List (Edda PRIME INLINE)
+      -> List (Edda INLINE)
       -> String
       -> String
 figure l c body = env ("figure") body'
@@ -139,19 +141,19 @@ figure l c body = env ("figure") body'
 
 
 -- Make generic
-list : String -> List (List (Edda PRIME INLINE)) -> String
+list : String -> List (List (Edda INLINE)) -> String
 list s is = env s (unlines $ map item is)
   where
-    item : List (Edda PRIME INLINE) -> String
+    item : List (Edda INLINE) -> String
     item bs = unwords ["\\item", inlines bs, "\n"]
 
-dlist : List (Pair (List (Edda PRIME INLINE)) (List (Edda PRIME INLINE))) -> String
+dlist : List (Pair (List (Edda INLINE)) (List (Edda INLINE))) -> String
 dlist kvs = env "description" (unlines $ map descItem kvs)
   where
-    descItem : (List (Edda PRIME INLINE), List (Edda PRIME INLINE)) -> String
+    descItem : (List (Edda INLINE), List (Edda INLINE)) -> String
     descItem (k,v) = unwords ["\\item[" ++ inlines k ++ "]", inlines v]
 
-secLvl : Nat -> List (Edda PRIME INLINE) -> String
+secLvl : Nat -> List (Edda INLINE) -> String
 secLvl Z                 t = macro "section"       (inlines t)
 secLvl (S Z)             t = macro "subsection"    (inlines t)
 secLvl (S (S Z))         t = macro "subsubsection" (inlines t)
@@ -163,17 +165,19 @@ secLvl _                 t = inlines t ++ " % Depth not recognised\n"
 -- deal with attrs
 ||| Write block to LaTeX version.
 export
-block : Edda PRIME BLOCK -> String
-block (HRule PRIME) = "\\hrulefill"
-block (Empty PRIME) = "\n"
-block (Section PRIME lvl label title as) =
-    unwords [ secLvl lvl title
-            , strFromMaybe (macro "label") label
-            , "\n"]
-block (Figure PRIME l c as fig) = figure (Just l) c (inline fig) ++ "\n"
-block (DList PRIME kvs)         = dlist kvs
-block (OList bs)                = list "itemize"  bs
-block (BList bs)                = list "enumerate" bs
+block : Edda BLOCK -> String
+block (HRule) = "\\hrulefill"
+block (Empty) = "\n"
+block (Section lvl label title as body) =
+    unlines $ unwords [ secLvl lvl title
+                      , strFromMaybe (macro "label") label
+                      , "\n"]
+              :: map block body
+
+block (Figure l c as fig) = figure l c (inline fig)
+block (DList kvs)         = dlist kvs
+block (OList bs)          = list "itemize"  bs
+block (BList bs)          = list "enumerate" bs
 
 block (Para txt) = inlines txt ++ "\n\n"
 
@@ -198,75 +202,91 @@ block (Question l c txt)    = thm "QUESTION" l c txt
 block (Solution l c txt)    = thm "SOLUTION" l c txt
 block (Example l c txt)     = thm "EXAMPLE" l c txt
 
+export
+blocks : (List (Edda BLOCK)) -> String
+blocks = concatMap block
 -- -------------------------------------------------------- [ Write List (String, String) ]
 
-properties : List (String, String) -> String
-properties Nil = ""
-properties ps  = unlines
-    [ macro "title"  $ fromMaybe "title missing"  (lookup "TITLE" ps)
+properties : List (Edda INLINE) -> Dict String String -> String
+properties t ps  = unlines
+    [ macro "title"  $ inlines t
     , macro "author" $ fromMaybe "author missing" (lookup "AUTHOR" ps)
     , macro "date"   $ fromMaybe "date missing"   (lookup "DATE" ps)
     , "\n"
     ]
-  where
-    ps' : List (String, String)
-    ps' = nubAttribute "TITLE" $ nubAttribute "AUTHOR" $ nubAttribute "DATE" ps
 
 -- --------------------------------------------------------------- [ Write Org ]
 
---@ TODO Add customisable preamble, and standalone
-||| Convert document to LaTeX instance.
-export
-latex : Edda PRIME MODEL -> String
-latex (MkEdda ps body) = unlines
-    [ """\documentclass{article}
-\usepackage{thmtools}
-\usepackage[normelem]{ulem}
-\usepackage{hyperref}
+namespace Doc
+  --@ TODO Add customisable preamble, and standalone
+  ||| Convert document to LaTeX instance.
+  export
+  latex : Edda DOC -> String
+  latex (Doc title ps body) = unlines
+      [ """\documentclass{article}
+  \usepackage{thmtools}
+  \usepackage[normelem]{ulem}
+  \usepackage{hyperref}
 
-\declaretheoremstyle[%
-  spaceabove=6pt, spacebelow=6pt,
-  headfont=\normalfont\bfseries,
-  bodyfont=\normalfont\em,
-  postheadspace=1em
-]{thmstyle}
+  \declaretheoremstyle[%
+    spaceabove=6pt, spacebelow=6pt,
+    headfont=\normalfont\bfseries,
+    bodyfont=\normalfont\em,
+    postheadspace=1em
+  ]{thmstyle}
 
-\declaretheoremstyle[%
-  spaceabove=6pt, spacebelow=6pt,
-  headfont=\normalfont\bfseries,
-  bodyfont=\normalfont,
-  postheadspace=1em
-]{notestyle}
+  \declaretheoremstyle[%
+    spaceabove=6pt, spacebelow=6pt,
+    headfont=\normalfont\bfseries,
+    bodyfont=\normalfont,
+    postheadspace=1em
+  ]{notestyle}
 
-\newcommand{\squote}[1]{`#1'}
-\newcommand{\dquote}[1]{``#1''}
+  \newcommand{\squote}[1]{`#1'}
+  \newcommand{\dquote}[1]{``#1''}
 
-\declaretheorem[style=notestyle, starred, name={\textbf{Note}}]{note}
-\declaretheorem[style=notestyle, starred, name={\textbf{Remark}}]{remark}
-\declaretheorem[style=thmstyle, name={Definition}]{definition}
-\declaretheorem[style=thmstyle, name={Example}]{example}
-\declaretheorem[style=thmstyle, name={Exercise}]{exercise}
-\declaretheorem[style=thmstyle, name={Problem}]{problem}
-\declaretheorem[style=thmstyle, name={Question}]{question}
-\declaretheorem[style=thmstyle, name={Solution}]{solution}
+  \declaretheorem[style=notestyle, starred, name={\textbf{Note}}]{note}
+  \declaretheorem[style=notestyle, starred, name={\textbf{Remark}}]{remark}
+  \declaretheorem[style=thmstyle, name={Definition}]{definition}
+  \declaretheorem[style=thmstyle, name={Example}]{example}
+  \declaretheorem[style=thmstyle, name={Exercise}]{exercise}
+  \declaretheorem[style=thmstyle, name={Problem}]{problem}
+  \declaretheorem[style=thmstyle, name={Question}]{question}
+  \declaretheorem[style=thmstyle, name={Solution}]{solution}
 
-\declaretheorem[style=thmstyle, name={Corollary}]{corollary}
-\declaretheorem[style=thmstyle, name={Lemma}]{lemma}
-\declaretheorem[style=thmstyle, name={Proposition}]{proposition}
-\declaretheorem[style=thmstyle, name={Theorem}]{theorem}
-"""
-    , properties ps
-    , "\\begin{document}\n\\maketitle"
-    , concatMap block body
-    , "\\end{document}"
-    ]
+  \declaretheorem[style=thmstyle, name={Corollary}]{corollary}
+  \declaretheorem[style=thmstyle, name={Lemma}]{lemma}
+  \declaretheorem[style=thmstyle, name={Proposition}]{proposition}
+  \declaretheorem[style=thmstyle, name={Theorem}]{theorem}
+  """
+      , properties title ps
+      , "\\begin{document}\n\\maketitle"
+      , concatMap block body
+      , "\\end{document}"
+      ]
 
 
-||| Write LaTeX representation to file.
-export
-writeLaTeX : String
-         -> Edda PRIME MODEL
-         -> Eff (FileOpSuccess) [FILE (), EXCEPTION String]
-writeLaTeX fn doc = writeEddaFile latex fn doc
+  ||| Write LaTeX representation to file.
+  export
+  writeLaTeXE : String
+            -> Edda DOC
+            -> Eff (FileOpSuccess) [FILE ()]
+  writeLaTeXE fn doc = writeEddaFileE latex fn doc
+
+  ||| Write LaTeX representation to file.
+  export
+  writeLaTeX : String
+           -> Edda DOC
+           -> IO (Either FileError ())
+  writeLaTeX fn doc = writeEddaFile latex fn doc
+
+
+namespace Snippet
+  ||| Convert edda document to latex.
+  export
+  latex : Edda SNIPPET -> String
+  latex (Snippet snippet prf) with (prf)
+    latex (Snippet snippet prf) | IsInLine = inlines snippet
+    latex (Snippet snippet prf) | IsBlock = blocks snippet
 
 -- --------------------------------------------------------------------- [ EOF ]

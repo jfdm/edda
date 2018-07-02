@@ -3,14 +3,19 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-module Edda.Reader.Utils
+module Text.Markup.Edda.Reader.Utils
+
+import Data.AVL.Dict
 
 import Lightyear
 import Lightyear.Char
 import Lightyear.Strings
 
-import Edda.Model
-import Edda.Utils
+import Text.Markup.Edda.Model.Common
+import Text.Markup.Edda.Model.Raw
+import Text.Markup.Edda.Model.Processed
+
+import Text.Markup.Edda.Process.Utils
 
 %access export
 
@@ -60,34 +65,30 @@ punctuation = satisfy (\x => not $ isAlphaNum x) <?> "Punctuation"
 -- -------------------------------------------------------------- [ Misc Stuff ]
 
 dealWithSrcAttrs : Maybe String
-              -> (List (String, String))
-              -> (List (String, String))
+                -> (Dict String String)
+                -> (Dict String String)
 dealWithSrcAttrs Nothing         as = as
-dealWithSrcAttrs (Just srcattrs) as = srcLang ++ srcOpts ++ as
+dealWithSrcAttrs (Just srcattrs) as = insert ("src_lang") (trim $ fst foo) $
+                                      insert ("src_opts") (trim $ snd foo ) as
   where
     foo : (String, String)
     foo = break (== ' ') srcattrs
-
-    srcLang : (List (String, String))
-    srcLang = [("src_lang", fst foo)]
-    srcOpts : (List (String, String))
-    srcOpts = [("src_opts", trim $ snd foo)]
 
 convertOpts : Maybe (List Char) -> Maybe String
 convertOpts b = case b of
                   Just x => Just (pack x)
                   Nothing => Nothing
 
-convertAttrs : Maybe (String, String) -> List (String, String)
-convertAttrs Nothing  = Nil
-convertAttrs (Just x) = [x]
+convertAttrs : Maybe (String, String) -> Dict String String
+convertAttrs Nothing  = empty
+convertAttrs (Just (k,v)) = insert k v empty
 
 -- ----------------------------------------------------------------- [ Parsers ]
 
-punc : Parser (Edda STAR INLINE)
+punc : Parser (EddaRaw INLINE)
 punc = map Punc punctuation <?> "Raw Punctuation"
 
-text : Parser (Edda STAR INLINE)
+text : Parser (EddaRaw INLINE)
 text = map (Font SerifTy) word <?> "Raw Word"
 
 rsvp : List Char
@@ -104,7 +105,7 @@ borderPunc = do
                 then satisfy (const False)
                 else pure x
 
-mText : Parser (Edda STAR INLINE)
+mText : Parser (EddaRaw INLINE)
 mText = text <|> map Punc borderPunc <?> "Texted used in markup"
 
 -- --------------------------------------------------------------------- [ EOF ]

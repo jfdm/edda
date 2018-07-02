@@ -1,12 +1,15 @@
-module Edda.Squash
+module Text.Markup.Edda.Process.Squash
 
-import Effects
-import Effect.State
+import Data.AVL.Dict
 
-import Edda.Model
+import Text.Markup.Edda.Model.Common
+import Text.Markup.Edda.Model.Raw
+import Text.Markup.Edda.Model.Processed
 
 %access private
 %default total
+
+-- Rewrite with views
 
 -- ----------------------------------------------------------- [ Double Squash ]
 scanSquash2 : (a -> a -> Maybe a) -> List a -> List a
@@ -17,39 +20,34 @@ scanSquash2 squaFunc (x::xs) with (xs)
                   Nothing  => x :: scanSquash2 squaFunc xs
     | Nil = x :: xs
 
-covering
-doSquash2 : (a -> a -> Maybe a) -> List a -> {[STATE Nat]} Eff (List a)
-doSquash2 squaFunc bs = do
-  oldLen <- get
-  let newBS = scanSquash2 squaFunc bs
-  if length newBS == oldLen
-    then pure newBS
-    else do
-      put $ length newBS
-      doSquash2 squaFunc newBS
+partial
+doSquash2 : (a -> a -> Maybe a) -> Nat -> List a -> List a
+doSquash2 squaFunc oldLen bs =
+  case scanSquash2 squaFunc bs of
+    xs => if length xs == oldLen
+             then xs
+             else doSquash2 squaFunc (length xs) xs
 
 export
-covering
 squash2By : (a -> a -> Maybe a) -> List a -> List a
-squash2By squaFunc xs = runPureInit [length xs] (doSquash2 squaFunc xs)
+squash2By squaFunc xs = assert_total $ doSquash2 squaFunc (length xs) xs
 
-squashEddaPair : Edda s ty -> Edda s ty -> Maybe (Edda s ty)
-squashEddaPair {s} (HRule s)  (HRule s) = Just $ HRule s
-squashEddaPair (Para xs) (Para ys)      = Just $ Para (xs ++ ys)
-squashEddaPair {s} (Empty s)  (Empty s) = Just $ Empty s
-squashEddaPair Space          Space     = Just Space
-squashEddaPair Hyphen         Hyphen    = Just EnDash
-squashEddaPair _              _         = Nothing
+squashEddaPair : Edda ty -> Edda ty -> Maybe (Edda ty)
+squashEddaPair HRule     HRule     = Just $ HRule
+squashEddaPair (Para xs) (Para ys) = Just $ Para (xs ++ ys)
+squashEddaPair Empty     Empty     = Just $ Empty
+squashEddaPair Space     Space     = Just Space
+squashEddaPair Hyphen    Hyphen    = Just EnDash
+squashEddaPair _         _         = Nothing
 
 export
-covering
-squash2 : List (Edda s ty) -> List (Edda s ty)
+squash2 : List (Edda ty) -> List (Edda ty)
 squash2 = squash2By (squashEddaPair)
 
 
 -- --------------------------------------------------- [ Triple Punc Squashing ]
+
 export
-covering
 squash3By : (a -> a -> a -> Maybe a) -> List a -> List a
 squash3By _        Nil     = Nil
 squash3By squaFunc (x::xs) with (xs)
@@ -59,14 +57,14 @@ squash3By squaFunc (x::xs) with (xs)
   | (y::ys)    = x :: xs
   | Nil        = x :: xs
 
-squashEddaTriples : Edda s ty -> Edda s ty -> Edda s ty -> Maybe (Edda s ty)
+squashEddaTriples : Edda ty -> Edda ty -> Edda ty -> Maybe (Edda ty)
 squashEddaTriples Period Period Period = Just Ellipsis
 squashEddaTriples Hyphen Hyphen Hyphen = Just EmDash
 squashEddaTriples _      _      _      = Nothing
 
 export
 covering
-squash3 : List (Edda s ty) -> List (Edda s ty)
+squash3 : List (Edda ty) -> List (Edda ty)
 squash3 = squash3By (squashEddaTriples)
 
 -- --------------------------------------------------------------------- [ EOF ]

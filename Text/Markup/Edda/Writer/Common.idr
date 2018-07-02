@@ -3,26 +3,32 @@
 -- Copyright : (c) Jan de Muijnck-Hughes
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
-module Edda.Writer.Common
+module Text.Markup.Edda.Writer.Common
 
 import Effects
 import Effect.Exception
 import Effect.File
 import Effect.StdIO
 
-import Edda.Model
+import Text.Markup.Edda.Model
 
 %access export
 -- -------------------------------------------------------------------- [ Body ]
 
 strFromMaybe : (a -> String) -> Maybe a -> String
-strFromMaybe f Nothing  = ""
+strFromMaybe f Nothing  = "EMPTY"
 strFromMaybe f (Just x) = f x
 
-writeEddaFile : (Edda PRIME MODEL -> String)
+writeEddaFileE : (Edda DOC -> String)
               -> String
-              -> Edda PRIME MODEL
+              -> Edda DOC
               -> Eff (FileOpSuccess) [FILE ()]
+writeEddaFileE write fname doc = writeFile fname (write doc)
+
+writeEddaFile : (Edda DOC -> String)
+             -> String
+             -> Edda DOC
+             -> IO (Either FileError ())
 writeEddaFile write fname doc = writeFile fname (write doc)
 
 -- --------------------------------------------------------------------- [ EOF ]
