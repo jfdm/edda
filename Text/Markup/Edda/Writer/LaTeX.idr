@@ -221,8 +221,8 @@ namespace Doc
   --@ TODO Add customisable preamble, and standalone
   ||| Convert document to LaTeX instance.
   export
-  latex : Edda DOC -> String
-  latex (Doc title ps body) = unlines
+  toLaTeX : Edda DOC -> String
+  toLaTeX (Doc title ps body) = unlines
       [ """\documentclass{article}
   \usepackage{thmtools}
   \usepackage[normelem]{ulem}
@@ -265,28 +265,29 @@ namespace Doc
       , "\\end{document}"
       ]
 
+namespace File
 
   ||| Write LaTeX representation to file.
   export
-  writeLaTeXE : String
+  toLaTeXE : String
             -> Edda DOC
             -> Eff (FileOpSuccess) [FILE ()]
-  writeLaTeXE fn doc = writeEddaFileE latex fn doc
+  toLaTeXE fn doc = writeEddaFileE toLaTeX fn doc
 
   ||| Write LaTeX representation to file.
   export
-  writeLaTeX : String
+  toLaTeX : String
            -> Edda DOC
            -> IO (Either FileError ())
-  writeLaTeX fn doc = writeEddaFile latex fn doc
+  toLaTeX fn doc = writeEddaFile toLaTeX fn doc
 
 
 namespace Snippet
   ||| Convert edda document to latex.
   export
-  latex : Edda SNIPPET -> String
-  latex (Snippet snippet prf) with (prf)
-    latex (Snippet snippet prf) | IsInLine = inlines snippet
-    latex (Snippet snippet prf) | IsBlock = blocks snippet
+  toLaTeX : Edda SNIPPET -> String
+  toLaTeX (Snippet snippet prf) with (prf)
+    toLaTeX (Snippet snippet prf) | IsInLine = inlines snippet
+    toLaTeX (Snippet snippet prf) | IsBlock = blocks snippet
 
 -- --------------------------------------------------------------------- [ EOF ]

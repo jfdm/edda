@@ -233,27 +233,29 @@ properties title ps = unlines ts
 namespace Doc
   ||| Return a string containing the org mode representation of the document.
   export
-  org : Edda DOC -> String
-  org (Doc title ps body) = unlines $ (properties title ps :: map block body)
+  toOrg : Edda DOC -> String
+  toOrg (Doc title ps body) = unlines $ (properties title ps :: map block body)
 
+
+namespace File
   ||| Write the org mode representation of the given document to file.
   export
-  writeOrgE : String
+  toOrgE : String
           -> Edda DOC
           -> Eff (FileOpSuccess) [FILE ()]
-  writeOrgE fn doc = writeEddaFileE org fn doc
+  toOrgE fn doc = writeEddaFileE toOrg fn doc
 
   export
-  writeOrg : String
+  toOrg : String
           -> Edda DOC
           -> IO (Either FileError ())
-  writeOrg fn doc = writeEddaFile org fn doc
+  toOrg fn doc = writeEddaFile toOrg fn doc
 
 namespace Snippet
   export
-  org : Edda SNIPPET -> String
-  org (Snippet snippet prf) with (prf)
-    org (Snippet snippet prf) | IsInLine = inlines snippet
-    org (Snippet snippet prf) | IsBlock = blocks snippet
+  toOrg : Edda SNIPPET -> String
+  toOrg (Snippet snippet prf) with (prf)
+    toOrg (Snippet snippet prf) | IsInLine = inlines snippet
+    toOrg (Snippet snippet prf) | IsBlock = blocks snippet
 
 -- --------------------------------------------------------------------- [ EOF ]

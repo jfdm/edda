@@ -323,19 +323,25 @@ parseOrg = do
  <?> "Raw Org Mode"
 
 -- -------------------------------------------------------------------- [ Read ]
-export
-readOrgE : String -> Eff (Either String (Edda DOC)) [FILE ()]
-readOrgE = readEddaFileE parseOrg
 
-readOrg : String -> IO (Either String (Edda DOC))
-readOrg = readEddaFile parseOrg
+namespace Doc
+  export
+  fromOrgE : String -> Eff (Either String (Edda DOC)) [FILE ()]
+  fromOrgE = readEddaFileE parseOrg
 
-export
-readOrgInline : String -> Either String (Edda SNIPPET)
-readOrgInline = readEddaSentance inline
+  export
+  fromOrg : String -> IO (Either String (Edda DOC))
+  fromOrg = readEddaFile parseOrg
 
-export
-readOrgBody : String -> Either String (Edda SNIPPET)
-readOrgBody s = readEddaBody orgBlock (s ++ "\n\n")
+namespace Snippet
+  namespace Inline
+    export
+    fromOrg : String -> Either String (Edda SNIPPET)
+    fromOrg = readEddaSentance inline
+
+  namespace Para
+    export
+    fromOrg : String -> Either String (Edda SNIPPET)
+    fromOrg s = readEddaBody orgBlock (s ++ "\n\n")
 
 -- --------------------------------------------------------------------- [ EOF ]

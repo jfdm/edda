@@ -189,32 +189,33 @@ properties t ps =
 namespace Doc
   ||| Convert edda document to markdown.
   export
-  cmark : Edda DOC -> String
-  cmark (Doc title attrs body) =
+  toCommonMark : Edda DOC -> String
+  toCommonMark (Doc title attrs body) =
      let attrsStr = properties title attrs in
        unlines $ attrsStr :: map block body
 
+namespace File
   ||| Write document to a markdown file.
   export
-  writeCommonMarkE : String
+  toCommonMarkE : String
                  -> Edda DOC
                  -> Eff (FileOpSuccess) [FILE ()]
-  writeCommonMarkE fn doc = writeEddaFileE cmark fn doc
+  toCommonMarkE fn doc = writeEddaFileE toCommonMark fn doc
 
   ||| Write document to a markdown file.
   export
-  writeCommonMark : String
+  toCommonMark : String
                  -> Edda DOC
                  -> IO (Either FileError ())
-  writeCommonMark fn doc = writeEddaFile cmark fn doc
+  toCommonMark fn doc = writeEddaFile toCommonMark fn doc
 
 namespace Snippet
   ||| Convert edda document to markdown.
   export
-  cmark : Edda SNIPPET -> String
-  cmark (Snippet snippet prf) with (prf)
-    cmark (Snippet snippet prf) | IsInLine = inlines snippet
-    cmark (Snippet snippet prf) | IsBlock = blocks snippet
+  toCommonMark : Edda SNIPPET -> String
+  toCommonMark (Snippet snippet prf) with (prf)
+    toCommonMark (Snippet snippet prf) | IsInLine = inlines snippet
+    toCommonMark (Snippet snippet prf) | IsBlock = blocks snippet
 
 
 

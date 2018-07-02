@@ -197,19 +197,24 @@ parseCommonMark = do
 
 -- -------------------------------------------------------------------- [ Read ]
 
-export
-readCommonMarkE : String -> Eff (Either String (Edda DOC)) [FILE ()]
-readCommonMarkE = readEddaFileE parseCommonMark
+namespace Doc
+  export
+  fromCommonMarkE : String -> Eff (Either String (Edda DOC)) [FILE ()]
+  fromCommonMarkE = readEddaFileE parseCommonMark
 
-readCommonMark : String -> IO (Either String (Edda DOC))
-readCommonMark = readEddaFile parseCommonMark
+  export
+  fromCommonMark : String -> IO (Either String (Edda DOC))
+  fromCommonMark = readEddaFile parseCommonMark
 
-export
-readCommonMarkInline : String -> Either String (Edda SNIPPET)
-readCommonMarkInline = readEddaSentance inline
+namespace Snippet
+  namespace Inline
+    export
+    fromCommonMark : String -> Either String (Edda SNIPPET)
+    fromCommonMark = readEddaSentance inline
 
-export
-readCommonMarkBody : String -> Either String (Edda SNIPPET)
-readCommonMarkBody s = readEddaBody block (s ++ "\n\n")
+  namespace Para
+    export
+    fromCommonMark : String -> Either String (Edda SNIPPET)
+    fromCommonMark s = readEddaBody block (s ++ "\n\n")
 
 -- --------------------------------------------------------------------- [ EOF ]
