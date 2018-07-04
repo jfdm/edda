@@ -16,7 +16,7 @@ import Text.Markup.Edda.Model
 import Text.Markup.Edda.Writer.Common
 
 -- -------------------------------------------------------------- [ Directives ]
-
+%default total
 %access private
 
 -- ------------------------------------------------------------ [ Misc Writing ]
@@ -29,7 +29,7 @@ macro c s = concat ["\\", c, "{", s, "}"]
 mutual
   export
   inlines : List (Edda INLINE) -> String
-  inlines xs = concatMap inline xs
+  inlines xs = assert_total (concatMap inline xs)
 
   parens : String -> String -> List (Edda INLINE) -> String
   parens l r ts = concat [l, inlines ts, r]
@@ -168,7 +168,7 @@ export
 block : Edda BLOCK -> String
 block (HRule) = "\\hrulefill"
 block (Empty) = "\n"
-block (Section lvl label title as body) =
+block (Section lvl label title as body) = assert_total $
     unlines $ unwords [ secLvl lvl title
                       , strFromMaybe (macro "label") label
                       , "\n"]

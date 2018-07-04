@@ -17,6 +17,7 @@ import Text.Markup.Edda.Process.Utils
 import Text.Markup.Edda.Writer.Common
 
 -- -------------------------------------------------------------- [ Directives ]
+%default total
 %access private
 
 -- @TODO Attributes...
@@ -34,7 +35,7 @@ ntimes c n = concat $ ntimes' (S n)
 mutual
   export
   inlines : List (Edda INLINE) -> String
-  inlines xs = concatMap inline xs
+  inlines xs = assert_total $ concatMap inline xs
 
   parens : String -> String -> Either String (List (Edda INLINE)) -> String
   parens l r (Left str) = concat [l, str,        r]
@@ -139,7 +140,7 @@ block : Edda BLOCK -> String
 block (HRule) = "-----"
 block (Empty) = "\n"
 block (Section lvl label title as body) =
-   unlines $ unwords [ntimes '#' lvl, inlines title, fromMaybe "" label] :: (map block body)
+   assert_total (unlines $ unwords [ntimes '#' lvl, inlines title, fromMaybe "" label] :: (map block body))
 block (Figure l c as fig) = unlines [inline fig, "\n"]
 
 block (DList kvs) = (unlines $ map itemDef kvs)

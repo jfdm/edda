@@ -21,6 +21,7 @@ import Text.Markup.Edda.Reader.Utils
 import Text.Markup.Edda.Reader.Common
 
 %access private
+%default partial
 
 -- ------------------------------------------------------------------ [ Inline ]
 
@@ -200,21 +201,21 @@ parseCommonMark = do
 namespace Doc
   export
   fromCommonMarkE : String -> Eff (Either String (Edda DOC)) [FILE ()]
-  fromCommonMarkE = readEddaFileE parseCommonMark
+  fromCommonMarkE = assert_total $ readEddaFileE parseCommonMark
 
   export
   fromCommonMark : String -> IO (Either String (Edda DOC))
-  fromCommonMark = readEddaFile parseCommonMark
+  fromCommonMark = assert_total $ readEddaFile parseCommonMark
 
 namespace Snippet
   namespace Inline
     export
     fromCommonMark : String -> Either String (Edda SNIPPET)
-    fromCommonMark = readEddaSentance inline
+    fromCommonMark = assert_total $ readEddaSentance inline
 
   namespace Para
     export
     fromCommonMark : String -> Either String (Edda SNIPPET)
-    fromCommonMark s = readEddaBody block (s ++ "\n\n")
+    fromCommonMark s = assert_total $ readEddaBody block (s ++ "\n\n")
 
 -- --------------------------------------------------------------------- [ EOF ]

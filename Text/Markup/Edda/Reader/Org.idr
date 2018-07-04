@@ -26,6 +26,7 @@ import Text.Markup.Edda.Process.Utils
 import Text.Markup.Edda.Reader.Common
 import Text.Markup.Edda.Reader.Utils
 
+%default partial
 %access private
 
 -- --------------------------------------------------------------------- [ Org ]
@@ -327,21 +328,21 @@ parseOrg = do
 namespace Doc
   export
   fromOrgE : String -> Eff (Either String (Edda DOC)) [FILE ()]
-  fromOrgE = readEddaFileE parseOrg
+  fromOrgE = assert_total $ readEddaFileE parseOrg
 
   export
   fromOrg : String -> IO (Either String (Edda DOC))
-  fromOrg = readEddaFile parseOrg
+  fromOrg = assert_total $ readEddaFile parseOrg
 
 namespace Snippet
   namespace Inline
     export
     fromOrg : String -> Either String (Edda SNIPPET)
-    fromOrg = readEddaSentance inline
+    fromOrg = assert_total $ readEddaSentance inline
 
   namespace Para
     export
     fromOrg : String -> Either String (Edda SNIPPET)
-    fromOrg s = readEddaBody orgBlock (s ++ "\n\n")
+    fromOrg s = assert_total $ readEddaBody orgBlock (s ++ "\n\n")
 
 -- --------------------------------------------------------------------- [ EOF ]

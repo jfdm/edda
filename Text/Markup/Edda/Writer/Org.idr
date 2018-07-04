@@ -16,7 +16,7 @@ import Text.Markup.Edda.Model
 import Text.Markup.Edda.Writer.Common
 
 -- -------------------------------------------------------------- [ Directives ]
-
+%default total
 %access private
 
 -- ------------------------------------------------------------ [ Misc Writing ]
@@ -43,7 +43,7 @@ mutual
   |||  Convert the list of inlines to their org mode representation.
   export
   inlines : List (Edda INLINE) -> String
-  inlines xs = concatMap inline xs
+  inlines xs = assert_total $ concatMap inline xs
 
   parens : Char -> Char -> Either String (List (Edda INLINE)) -> String
   parens l r (Left str) = concat [cast l, str,        cast r]
@@ -166,7 +166,7 @@ export
 block : Edda BLOCK -> String
 block (HRule) = "-----"
 block (Empty) = ""
-block (Section lvl label title as body) =
+block (Section lvl label title as body) = assert_total $
     unlines $ unwords [ ntimes '*' lvl
                       , inlines title
                       , fromMaybe "" label
